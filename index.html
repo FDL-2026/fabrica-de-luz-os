@@ -511,8 +511,14 @@ window.onload = async () => {
 };
 
 async function trySupabaseAuth() {
-  /* Em produção: verifica sessão ativa no Supabase Auth */
-  /* Aqui: mostra login */
+  // Verifica sessão salva localmente
+  const sess = localStorage.getItem('fdl_session');
+  if (sess) {
+    try {
+      const user = JSON.parse(sess);
+      if (user && user.id) { doLogin(user); return; }
+    } catch(e) {}
+  }
   showLogin();
 }
 
@@ -559,10 +565,15 @@ function updateDots() {
 }
 
 async function tryPin() {
-  if (SB) {
-    const { data } = await SB.from('users').select('*').eq('pin_hash', pinBuf).single();
-    if (data) { doLogin(data); return; }
+  if (!SB) {
+    showPinErr(); return;
   }
+  const { data, error } = await SB.from('users').select('*').eq('pin_hash', pinBuf).maybeSingle();
+  if (!error && data) { doLogin(data); return; }
+  showPinErr();
+}
+
+function showPinErr() {
   document.getElementById('pin-err').style.display = 'block';
   pinBuf = ''; updateDots();
   setTimeout(() => document.getElementById('pin-err').style.display='none', 2500);
@@ -570,22 +581,30 @@ async function tryPin() {
 
 async function loginEmail() {
   const e = document.getElementById('inp-email').value.trim();
-  const s = document.getElementById('inp-senha').value;
-  if (!e || !s) { document.getElementById('email-err').style.display='block'; setTimeout(()=>document.getElementById('email-err').style.display='none',2500); return; }
-  if (SB) {
-    const { data, error } = await SB.auth.signInWithPassword({ email:e, password:s });
-    if (!error && data.user) {
-      const { data:ud } = await SB.from('users').select('*').eq('auth_id', data.user.id).single();
-      if (ud) { doLogin(ud); return; }
-    }
-  }
-  document.getElementById('email-err').style.display = 'block';
-  setTimeout(() => document.getElementById('email-err').style.display='none', 2500);
+  const s = document.getElementById('inp-senha').value.trim();
+  if (!e || !s) { showEmailErr(); return; }
+  if (!SB) { showEmailErr(); return; }
+  // Login direto pela tabela users — sem Supabase Auth
+  const { data, error } = await SB
+    .from('users')
+    .select('*')
+    .eq('email', e)
+    .eq('password_hash', s)
+    .maybeSingle();
+  if (!error && data) { doLogin(data); return; }
+  showEmailErr();
+}
+
+function showEmailErr() {
+  const el = document.getElementById('email-err');
+  el.style.display = 'block';
+  setTimeout(() => el.style.display='none', 2500);
 }
 
 
 function doLogin(user) {
   CU = user;
+  localStorage.setItem('fdl_session', JSON.stringify(user));
   document.getElementById('login').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('u-name').textContent = user.name;
@@ -596,6 +615,7 @@ function doLogin(user) {
 
 function logout() {
   CU = null; pinBuf = ''; nextPulled = false;
+  localStorage.removeItem('fdl_session');
   document.getElementById('app').classList.add('hidden');
   document.getElementById('login').classList.remove('hidden');
   document.getElementById('inp-email').value = '';
