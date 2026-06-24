@@ -324,7 +324,7 @@ fselect{border:0.5px solid var(--bdr);border-radius:var(--rs);padding:8px 11px;f
     <div class="login-logo">
       <div class="login-star">
         <svg viewBox="0 0 32 32" fill="none">
-          <polygon points="16,3 19.5,12.5 30,12.5 21.5,18.5 24.5,28 16,22.5 7.5,28 10.5,18.5 2,12.5 12.5,12.5" stroke="#E8D5A3" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+          <polygon points="16,3 19.5,12.5 30,12.5 21.5,18.5 24.5,28 16,22.5 7.5,28 10.5,18.5 2,12.5 12.5,12.5" stroke="#E8D5A3" stroke-width="1.5" fill="rgba(232,213,163,0.2)" stroke-linejoin="round"/>
         </svg>
       </div>
       <div class="login-name">Fábrica de Luz</div>
@@ -386,11 +386,7 @@ fselect{border:0.5px solid var(--bdr);border-radius:var(--rs);padding:8px 11px;f
     <div class="hdr-brand">
       <div class="hdr-mark">
         <svg viewBox="0 0 22 22" fill="none">
-          <circle cx="8" cy="4" r="2" stroke="#E8D5A3" stroke-width="1.5" fill="none"/>
-          <path d="M8 6C8 6 3 10 2.5 16C2 20 4 22 4 22" stroke="#E8D5A3" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-          <path d="M8 8.5C8 8.5 13 11.5 14.5 17" stroke="#E8D5A3" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-          <path d="M15 7L17 4.5M17 4.5L20 2M17 4.5L20 7M17 4.5L14.5 2" stroke="#E8D5A3" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-          <circle cx="20" cy="2" r="1.5" fill="#E8D5A3"/>
+          <polygon points="11,2 13.5,8 20,8 15,12 17,18.5 11,14.5 5,18.5 7,12 2,8 8.5,8" stroke="#E8D5A3" stroke-width="1.4" fill="rgba(232,213,163,0.15)" stroke-linejoin="round"/>
         </svg>
       </div>
       <div>
@@ -670,6 +666,9 @@ function goTab(id, btn) {
   document.querySelectorAll('.ntab').forEach(b => b.classList.remove('active'));
   document.getElementById('sc-'+id)?.classList.add('active');
   btn.classList.add('active');
+  if (id === 'usuarios') buildUsuarios();
+  if (id === 'painel')   buildPainel();
+  if (id === 'cronograma') buildCronograma();
 }
 
 function renderAll() {
@@ -684,7 +683,7 @@ function renderTab(t) {
   if (t==='painel')     el.innerHTML = buildPainel();
   if (t==='cronograma') el.innerHTML = buildCronograma();
   if (t==='importar')   el.innerHTML = buildImportar();
-  if (t==='usuarios')   el.innerHTML = buildUsuarios();
+  if (t==='usuarios')   buildUsuariosStatic();
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1180,45 +1179,164 @@ function cancelImport() {
 }
 
 /* ════════════════════════════════════════════════════════════
-   TELA: USUÁRIOS (ADMIN)
+   TELA: USUÁRIOS (ADMIN) — carrega do banco e cria usuários
 ════════════════════════════════════════════════════════════ */
-function buildUsuarios() {
-  const users = [
-    { name:'Admin',  email:'admin@fdl.com',  role:'Admin',          roleKey:'admin',        color:'var(--roxo-p)', tc:'var(--roxo-d)' },
-    { name:'Gestor Geral', email:'geral@fdl.com', role:'Gestor Geral', roleKey:'gestor_geral', color:'var(--info-p)',  tc:'#0C447C' },
-    { name:'Lucas',  email:'lucas@fdl.com',  role:'Gestor · TOP SHOPPING', roleKey:'gestor_obra', color:'var(--warn-p)', tc:'#633806' },
-    { name:'Aryane', email:'PIN 123456',      role:'Montador · TOP SHOPPING', roleKey:'montador',  color:'var(--ok-p)',   tc:'#085041' },
-  ];
-  const roleIcons = {
-    admin:'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
-    gestor_geral:'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
-    gestor_obra:'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
-    montador:'M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z',
+async function buildUsuarios() {
+  const el = document.getElementById('sc-usuarios');
+  if (!el) return;
+
+  // Carrega usuários do banco
+  let dbUsers = [];
+  if (SB) {
+    const { data } = await SB.from('users').select('*').order('created_at');
+    dbUsers = data || [];
+  }
+
+  const roleColors = {
+    admin:        { bg:'var(--roxo-p)', tc:'var(--roxo-d)', label:'Admin' },
+    gestor_geral: { bg:'var(--info-p)', tc:'#0C447C',       label:'Gestor Geral' },
+    gestor_obra:  { bg:'var(--warn-p)', tc:'#633806',       label:'Gestor de Obra' },
+    montador:     { bg:'var(--ok-p)',   tc:'#085041',       label:'Montador' },
   };
 
   let html = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
       <div class="sec" style="margin:0">Usuários do sistema</div>
-      <button class="add-btn" onclick="alert('No sistema real: formulário de novo usuário com geração automática de PIN')">
+      <button class="add-btn" onclick="showNovoUsuario()">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="14" height="14"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
         Novo usuário
       </button>
     </div>
-    <div class="card" style="padding:4px 15px">`;
 
-  users.forEach(u => {
-    html += `
-      <div class="user-row">
-        <div class="ur-l">
-          <div class="ur-av" style="background:${u.color};color:${u.tc}">
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="15" height="15"><path d="${roleIcons[u.roleKey]}"/></svg>
+    <div id="form-novo-usuario" style="display:none;background:var(--roxo-p);border-radius:var(--r);padding:14px;margin-bottom:14px;border:1px solid var(--bdr)">
+      <div style="font-size:13px;font-weight:500;color:var(--roxo-d);margin-bottom:12px">Novo usuário</div>
+      <div class="fgroup"><label class="flabel">Nome</label><input type="text" class="finput" id="nu-nome" placeholder="Nome completo" style="background:white"></div>
+      <div class="fgroup"><label class="flabel">Perfil</label>
+        <select class="finput" id="nu-role" onchange="toggleCamposUsuario()" style="background:white">
+          <option value="gestor_geral">Gestor Geral</option>
+          <option value="gestor_obra">Gestor de Obra</option>
+          <option value="montador">Montador Líder</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div id="campos-email">
+        <div class="fgroup"><label class="flabel">E-mail</label><input type="email" class="finput" id="nu-email" placeholder="email@fabricadeluz.com.br" style="background:white"></div>
+        <div class="fgroup"><label class="flabel">Senha</label><input type="text" class="finput" id="nu-senha" placeholder="Mínimo 6 caracteres" style="background:white"></div>
+      </div>
+      <div id="campos-pin" style="display:none">
+        <div class="fgroup"><label class="flabel">PIN de acesso (6 dígitos)</label><input type="text" class="finput" id="nu-pin" placeholder="Ex: 445521" maxlength="6" style="background:white;letter-spacing:.2em;font-size:18px"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn-o" style="flex:1" onclick="hideNovoUsuario()">Cancelar</button>
+        <button class="btn-p" style="margin-top:0;flex:2" onclick="criarUsuario()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="13" height="13"><polyline points="2 8 6 12 14 4"/></svg>
+          Criar usuário
+        </button>
+      </div>
+      <div class="toast t-ok" id="toast-usuario" style="margin-top:8px"></div>
+      <div class="toast t-err" id="toast-usuario-err" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card" style="padding:4px 15px" id="lista-usuarios">`;
+
+  if (dbUsers.length === 0) {
+    html += `<div style="text-align:center;padding:24px;color:var(--t2);font-size:13px">Nenhum usuário cadastrado ainda</div>`;
+  } else {
+    dbUsers.forEach(u => {
+      const rc = roleColors[u.role] || { bg:'var(--bg)', tc:'var(--t2)', label: u.role };
+      const acesso = u.pin_hash ? `PIN: ${u.pin_hash}` : u.email || '—';
+      html += `
+        <div class="user-row">
+          <div class="ur-l">
+            <div class="ur-av" style="background:${rc.bg};color:${rc.tc};font-size:13px;font-weight:500">
+              ${u.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div class="ur-name">${u.name}</div>
+              <div class="ur-info">${acesso} · ${rc.label}</div>
+            </div>
           </div>
-          <div>
-            <div class="ur-name">${u.name}</div>
-            <div class="ur-info">${u.email} · ${u.role}</div>
+          <div class="ur-actions">
+            <button class="icon-btn" title="Excluir" onclick="excluirUsuario('${u.id}','${u.name}')">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="14" height="14"><polyline points="2 4 14 4"/><path d="M6 4V2h4v2"/><path d="M3 4l1 10h8l1-10"/></svg>
+            </button>
           </div>
-        </div>
-        <div class="ur-actions">
+        </div>`;
+    });
+  }
+
+  html += `</div>
+    <div style="font-size:11px;color:var(--t3);margin-top:10px;padding:10px 12px;background:var(--bg);border-radius:var(--rs);line-height:1.6">
+      <strong style="color:var(--t2)">Montador:</strong> acessa pelo PIN · <strong style="color:var(--t2)">Gestor / Admin:</strong> acessa por e-mail e senha
+    </div>`;
+
+  el.innerHTML = html;
+}
+
+function showNovoUsuario() {
+  document.getElementById('form-novo-usuario').style.display = 'block';
+}
+function hideNovoUsuario() {
+  document.getElementById('form-novo-usuario').style.display = 'none';
+}
+function toggleCamposUsuario() {
+  const role = document.getElementById('nu-role').value;
+  const isMontador = role === 'montador';
+  document.getElementById('campos-email').style.display = isMontador ? 'none' : 'block';
+  document.getElementById('campos-pin').style.display   = isMontador ? 'block' : 'none';
+}
+async function criarUsuario() {
+  const nome  = document.getElementById('nu-nome').value.trim();
+  const role  = document.getElementById('nu-role').value;
+  const email = document.getElementById('nu-email')?.value.trim();
+  const senha = document.getElementById('nu-senha')?.value.trim();
+  const pin   = document.getElementById('nu-pin')?.value.trim();
+  const ok    = document.getElementById('toast-usuario');
+  const err   = document.getElementById('toast-usuario-err');
+
+  if (!nome) { err.textContent='Preencha o nome.'; err.style.display='block'; setTimeout(()=>err.style.display='none',2500); return; }
+
+  const payload = { name: nome, role };
+  if (role === 'montador') {
+    if (!pin || pin.length !== 6) { err.textContent='PIN deve ter 6 dígitos.'; err.style.display='block'; setTimeout(()=>err.style.display='none',2500); return; }
+    payload.pin_hash = pin;
+  } else {
+    if (!email || !senha) { err.textContent='Preencha e-mail e senha.'; err.style.display='block'; setTimeout(()=>err.style.display='none',2500); return; }
+    payload.email = email;
+    payload.password_hash = senha;
+  }
+
+  const { data, error } = await SB.from('users').insert(payload).select().single();
+  if (error) {
+    err.textContent = error.message.includes('unique') ? 'E-mail ou PIN já cadastrado.' : 'Erro ao criar usuário.';
+    err.style.display = 'block';
+    setTimeout(()=>err.style.display='none',3000);
+    return;
+  }
+  ok.textContent = `✓ ${nome} criado com sucesso!`;
+  ok.style.display = 'block';
+  setTimeout(()=>ok.style.display='none',3000);
+  document.getElementById('nu-nome').value = '';
+  document.getElementById('nu-email').value = '';
+  document.getElementById('nu-senha').value = '';
+  document.getElementById('nu-pin').value = '';
+  hideNovoUsuario();
+  buildUsuarios();
+}
+
+async function excluirUsuario(id, nome) {
+  if (!confirm(`Excluir o usuário "${nome}"?`)) return;
+  await SB.from('users').delete().eq('id', id);
+  buildUsuarios();
+}
+
+// Dummy para compatibilidade
+function buildUsuariosStatic() {
+  const el = document.getElementById('sc-usuarios');
+  if (!el) return;
+  el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--t2)">Carregando...</div>';
+  buildUsuarios();
+}
           <button class="icon-btn" title="Editar" onclick="alert('Editar ${u.name}')">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M11.5 2.5a1.41 1.41 0 012 2L5 13H2v-3z"/></svg>
           </button>
