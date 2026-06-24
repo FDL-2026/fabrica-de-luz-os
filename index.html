@@ -375,45 +375,7 @@ fselect{border:0.5px solid var(--bdr);border-radius:var(--rs);padding:8px 11px;f
         <div class="login-err" id="email-err">E-mail ou senha incorretos.</div>
       </div>
 
-      <div class="demo-box">
-        <div class="demo-title">Usuários de demonstração — clique para entrar</div>
-        <div class="demo-row" onclick="demo('admin')">
-          <div class="dr-l">
-            <div class="dr-av" style="background:rgba(107,45,139,.15)">
-              <svg viewBox="0 0 14 14" fill="none" stroke="#6B2D8B" stroke-width="1.5" stroke-linecap="round"><path d="M7 1.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"/><path d="M1.5 12.5c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M9 4l1 1 2-2"/></svg>
-            </div>
-            <div><div class="dr-name">Admin</div><div class="dr-role">Acesso total</div></div>
-          </div>
-          <div class="dr-cred">admin@fdl.com / admin123</div>
-        </div>
-        <div class="demo-row" onclick="demo('gestor_geral')">
-          <div class="dr-l">
-            <div class="dr-av" style="background:rgba(24,95,165,.12)">
-              <svg viewBox="0 0 14 14" fill="none" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="5" height="5" rx="1"/><rect x="8" y="1" width="5" height="5" rx="1"/><rect x="1" y="8" width="5" height="5" rx="1"/><rect x="8" y="8" width="5" height="5" rx="1"/></svg>
-            </div>
-            <div><div class="dr-name">Gestor Geral</div><div class="dr-role">Visão de todas as obras</div></div>
-          </div>
-          <div class="dr-cred">geral@fdl.com / geral123</div>
-        </div>
-        <div class="demo-row" onclick="demo('gestor_obra')">
-          <div class="dr-l">
-            <div class="dr-av" style="background:rgba(239,159,39,.12)">
-              <svg viewBox="0 0 14 14" fill="none" stroke="#EF9F27" stroke-width="1.5" stroke-linecap="round"><path d="M7 1L1.5 4v5.5L7 13l5.5-3.5V4z"/></svg>
-            </div>
-            <div><div class="dr-name">Lucas (Gestor TOP)</div><div class="dr-role">Valida OSs · TOP SHOPPING</div></div>
-          </div>
-          <div class="dr-cred">lucas@fdl.com / lucas123</div>
-        </div>
-        <div class="demo-row" onclick="demo('montador')">
-          <div class="dr-l">
-            <div class="dr-av" style="background:rgba(29,158,117,.12)">
-              <svg viewBox="0 0 14 14" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round"><path d="M2 12l3-3 1 1-3 3-1-1zM10 2a2 2 0 012 2 2 2 0 01-1 1.7L5 11.7 2.3 9l5.7-5.7A2 2 0 0110 2z"/></svg>
-            </div>
-            <div><div class="dr-name">Aryane (Montador)</div><div class="dr-role">PIN · TOP SHOPPING</div></div>
-          </div>
-          <div class="dr-cred">PIN: 123456</div>
-        </div>
-      </div>
+
     </div>
   </div>
 </div>
@@ -458,13 +420,7 @@ let CFG = { url:'', key:'', wpp:'', cbk:'' };
 let SB  = null;
 let CU  = null; // current user
 
-/* DADOS DEMO — substituídos por Supabase em produção */
-const DEMO_USERS = {
-  'admin@fdl.com:admin123':   { name:'Admin',    role:'admin',        proj:null  },
-  'geral@fdl.com:geral123':   { name:'Gestor Geral', role:'gestor_geral', proj:null },
-  'lucas@fdl.com:lucas123':   { name:'Lucas',    role:'gestor_obra',  proj:['topshopping'] },
-  '123456':                   { name:'Aryane',   role:'montador',     proj:'topshopping' },
-};
+
 
 /* ── CRONOGRAMA REAL DO TOP SHOPPING (gerado via importação) ── */
 const PROJ_META = {
@@ -603,10 +559,7 @@ function updateDots() {
 }
 
 async function tryPin() {
-  const u = DEMO_USERS[pinBuf];
-  if (u) { doLogin(u); return; }
   if (SB) {
-    /* Em produção: busca no banco por pin hash */
     const { data } = await SB.from('users').select('*').eq('pin_hash', pinBuf).single();
     if (data) { doLogin(data); return; }
   }
@@ -618,8 +571,7 @@ async function tryPin() {
 async function loginEmail() {
   const e = document.getElementById('inp-email').value.trim();
   const s = document.getElementById('inp-senha').value;
-  const u = DEMO_USERS[e+':'+s];
-  if (u) { doLogin(u); return; }
+  if (!e || !s) { document.getElementById('email-err').style.display='block'; setTimeout(()=>document.getElementById('email-err').style.display='none',2500); return; }
   if (SB) {
     const { data, error } = await SB.auth.signInWithPassword({ email:e, password:s });
     if (!error && data.user) {
@@ -631,16 +583,6 @@ async function loginEmail() {
   setTimeout(() => document.getElementById('email-err').style.display='none', 2500);
 }
 
-function demo(role) {
-  const map = {
-    admin:       'admin@fdl.com:admin123',
-    gestor_geral:'geral@fdl.com:geral123',
-    gestor_obra: 'lucas@fdl.com:lucas123',
-    montador:    '123456',
-  };
-  const key = map[role];
-  doLogin(DEMO_USERS[key]);
-}
 
 function doLogin(user) {
   CU = user;
