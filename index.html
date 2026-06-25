@@ -257,6 +257,200 @@ fselect{border:0.5px solid var(--bdr);border-radius:var(--rs);padding:8px 11px;f
 .dr-name{font-size:12px;font-weight:500;color:rgba(232,213,163,.7);transition:color .15s}
 .dr-role{font-size:11px;color:rgba(232,213,163,.4)}
 .dr-cred{font-size:11px;color:rgba(232,213,163,.35);font-family:monospace}
+
+/* ═══ RESPONSIVE — DESKTOP LAYOUT ═══════════════════════════ */
+.is-desktop { display: none !important; }
+.is-mobile  { display: flex !important; }
+
+@media (min-width: 768px) {
+  body { background: #1A0A24; }
+
+  /* Hide mobile shell, show desktop */
+  #app { display: none !important; }
+  #app-desktop { display: flex !important; }
+
+  .is-desktop { display: flex !important; }
+  .is-mobile  { display: none !important; }
+
+  /* Login wider on desktop */
+  #login { background: #1A0A24; }
+  .login-wrap { max-width: 420px; }
+  .login-card { padding: 32px 28px; }
+
+  /* Loading centered */
+  #loading { background: #1A0A24; }
+}
+
+/* ─── DESKTOP SHELL ─────────────────────────────────────────── */
+#app-desktop {
+  display: none;
+  min-height: 100vh;
+  background: #1A0A24;
+}
+.ds-sidebar {
+  width: 240px;
+  background: var(--roxo-d);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+.ds-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(232,213,163,.1);
+}
+.ds-logo-name {
+  font-family: var(--fd);
+  font-size: 20px;
+  color: var(--bege);
+  margin-top: 10px;
+}
+.ds-logo-sub {
+  font-size: 10px;
+  color: rgba(232,213,163,.4);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.ds-nav {
+  padding: 12px 0;
+  flex: 1;
+}
+.ds-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(232,213,163,.45);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all .15s;
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+.ds-nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.ds-nav-item:hover { color: rgba(232,213,163,.8); background: rgba(232,213,163,.05); }
+.ds-nav-item.active {
+  color: var(--bege);
+  background: rgba(232,213,163,.1);
+  border-left: 3px solid var(--bege);
+}
+.ds-nav-section {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(232,213,163,.25);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  padding: 16px 20px 6px;
+}
+.ds-user {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(232,213,163,.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ds-user-av {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(232,213,163,.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 500; color: var(--bege); flex-shrink: 0;
+}
+.ds-user-name { font-size: 13px; font-weight: 500; color: var(--bege); }
+.ds-user-role { font-size: 11px; color: rgba(232,213,163,.4); margin-top: 1px; }
+.ds-logout {
+  margin-left: auto;
+  background: transparent; border: none;
+  color: rgba(232,213,163,.35); cursor: pointer; font-size: 18px;
+  transition: color .15s; padding: 4px;
+}
+.ds-logout:hover { color: var(--bege); }
+
+.ds-main {
+  margin-left: 240px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.ds-topbar {
+  background: var(--sur);
+  border-bottom: 1px solid var(--bdr);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+}
+.ds-page-title {
+  font-family: var(--fd);
+  font-size: 22px;
+  color: var(--t1);
+}
+.ds-page-sub { font-size: 13px; color: var(--t2); margin-top: 2px; }
+.ds-content { padding: 28px 32px; flex: 1; }
+
+/* Desktop 2-col layout for painel+cronograma */
+.ds-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.ds-col { }
+.ds-sec {
+  font-size: 11px; font-weight: 500; color: var(--t2);
+  text-transform: uppercase; letter-spacing: .07em;
+  margin: 0 0 12px;
+}
+.ds-card {
+  background: var(--sur);
+  border: 0.5px solid var(--bdr);
+  border-radius: var(--r);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(107,45,139,.05);
+}
+.ds-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.ds-stat {
+  background: var(--sur);
+  border: 0.5px solid var(--bdr);
+  border-radius: var(--r);
+  padding: 16px;
+}
+.ds-stat-val {
+  font-family: var(--fd);
+  font-size: 28px;
+  color: var(--roxo);
+}
+.ds-stat-lbl { font-size: 12px; color: var(--t2); margin-top: 3px; }
+.ds-proj-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 0.5px solid var(--bdr);
+  cursor: pointer;
+}
+.ds-proj-row:last-child { border-bottom: none; }
+.ds-proj-row:hover { background: var(--bg); margin: 0 -18px; padding: 12px 18px; border-radius: var(--rs); }
+.ds-proj-name { font-size: 14px; font-weight: 500; color: var(--t1); }
+.ds-proj-sub { font-size: 12px; color: var(--t2); margin-top: 2px; }
+.ds-proj-pct { font-family: var(--fd); font-size: 18px; color: var(--roxo); min-width: 44px; text-align: right; }
 </style>
 </head>
 <body>
@@ -597,16 +791,7 @@ function showEmailErr() {
 }
 
 
-function doLogin(user) {
-  CU = user;
-  localStorage.setItem('fdl_session', JSON.stringify(user));
-  document.getElementById('login').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  document.getElementById('u-name').textContent = user.name;
-  const roleMap = { admin:'Admin', gestor_geral:'Gestor Geral', gestor_obra:'Gestor de Obra', montador:'Montador Líder' };
-  document.getElementById('hdr-sub').textContent = roleMap[user.role] || user.role;
-  buildNav(); buildScreens();
-}
+// doLogin moved to desktop section below
 
 function logout() {
   CU = null; pinBuf = ''; nextPulled = false;
@@ -665,9 +850,10 @@ function goTab(id, btn) {
   document.querySelectorAll('.ntab').forEach(b => b.classList.remove('active'));
   document.getElementById('sc-'+id)?.classList.add('active');
   btn.classList.add('active');
-  if (id === 'usuarios') buildUsuarios();
-  if (id === 'painel')   buildPainel();
+  if (id === 'usuarios')   buildUsuarios();
+  if (id === 'painel')     buildPainel();
   if (id === 'cronograma') buildCronograma();
+  if (id === 'noite')      renderTab('noite');
 }
 
 function renderAll() {
@@ -679,8 +865,8 @@ function renderTab(t) {
   const el = document.getElementById('sc-'+t);
   if (!el) return;
   if (t==='noite')      el.innerHTML = buildNoite();
-  if (t==='painel')     el.innerHTML = buildPainel();
-  if (t==='cronograma') el.innerHTML = buildCronograma();
+  if (t==='painel')     buildPainel();
+  if (t==='cronograma') buildCronograma();
   if (t==='importar')   el.innerHTML = buildImportar();
   if (t==='usuarios')   buildUsuariosStatic();
 }
@@ -893,130 +1079,197 @@ async function sendNoite() {
 }
 
 /* ════════════════════════════════════════════════════════════
-   TELA: PAINEL (GESTOR GERAL — visual)
+   TELA: PAINEL (GESTOR GERAL — visual) — carrega do banco
 ════════════════════════════════════════════════════════════ */
-function buildPainel() {
-  const totalOS   = NOITES_BASE.reduce((a,n)=>a+n.os.length,0);
-  const entriesOS = Object.keys(osCompleted).length;
-  const pctGeral  = Math.round(entriesOS/totalOS*100);
+async function buildPainel() {
+  const el = document.getElementById('sc-painel');
+  if (!el) return;
+  el.innerHTML = '<div style="padding:32px;text-align:center;color:var(--t2)">Carregando projetos...</div>';
 
-  // Agrupa por grupo
-  const grupos = {};
-  NOITES_BASE.forEach((n,ni) => {
-    if (!grupos[n.grupo]) grupos[n.grupo] = {noites:[],total:0,done:0};
-    const g = grupos[n.grupo];
-    g.noites.push(n.n);
-    n.os.forEach((os,oi) => {
-      const p = osProgress[ni][oi];
-      g.total++;
-      if (p.pct===100&&p.foto) g.done++;
-    });
-  });
+  if (!SB) { el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--t2)">Sem conexão com o banco.</div>'; return; }
+
+  const { data: projetos } = await SB.from('projects').select('*').order('created_at', { ascending: false });
+  const lista = projetos || [];
+
+  if (lista.length === 0) {
+    el.innerHTML = `<div style="padding:40px 24px;text-align:center;color:var(--t2)">
+      <div style="font-size:32px;margin-bottom:12px">📋</div>
+      <div style="font-size:15px;font-weight:500;color:var(--t1);margin-bottom:6px">Nenhum projeto importado ainda</div>
+      <div style="font-size:13px">Importe um cronograma Excel na aba <strong>Importar</strong></div>
+    </div>`;
+    return;
+  }
+
+  const total = lista.length;
+  const progMedio = Math.round(lista.reduce((a,p) => a + (p.progress_pct||0), 0) / total);
 
   let html = `
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-val">${NOITES_BASE.length}</div><div class="stat-lbl">Noites totais</div></div>
-      <div class="stat-card"><div class="stat-val">${nightSent.filter(Boolean).length}</div><div class="stat-lbl">Noites enviadas</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--ok)">${Object.keys(osCompleted).length}</div><div class="stat-lbl">OSs concluídas</div></div>
-      <div class="stat-card"><div class="stat-val">${pctGeral}%</div><div class="stat-lbl">Realizado</div></div>
+      <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">Projetos ativos</div></div>
+      <div class="stat-card"><div class="stat-val">${progMedio}%</div><div class="stat-lbl">Progresso médio</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--ok)">${lista.filter(p=>(p.progress_pct||0)===100).length}</div><div class="stat-lbl">Concluídos</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--warn)">${lista.filter(p=>(p.progress_pct||0)<100&&(p.progress_pct||0)>0).length}</div><div class="stat-lbl">Em andamento</div></div>
     </div>
-    <div class="sec">TOP SHOPPING — progresso geral</div>
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div style="font-size:13px;font-weight:500;color:var(--t1)">Progresso total da obra</div>
-        <span style="font-family:var(--fd);font-size:18px;color:var(--roxo)">${pctGeral}%</span>
-      </div>
-      <div class="pbar-w md"><div class="pbar" style="width:${pctGeral}%"></div></div>
-      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--t2)">
-        <span>Início: ${PROJ_META.inicio}</span><span>Inauguração: ${PROJ_META.inauguracao}</span>
-      </div>
-    </div>
-    <div class="sec">Por grupo de atividades</div>`;
+    <div class="sec">Todos os projetos</div>`;
 
-  Object.entries(grupos).forEach(([nome, g]) => {
-    const pct = g.total ? Math.round(g.done/g.total*100) : 0;
-    const color = pct===100?'var(--ok)':pct>0?'var(--warn)':'var(--bdr)';
-    const nightRange = g.noites.length>1 ? `Noites ${g.noites[0]}–${g.noites[g.noites.length-1]}` : `Noite ${g.noites[0]}`;
+  lista.forEach(p => {
+    const pct = p.progress_pct || 0;
+    const color = pct===100?'var(--ok)':pct>0?'var(--warn)":'var(--bdr)';
+    const bc = pct===100?'b-ok':pct>0?'b-warn':'b-gray';
+    const bl = pct===100?'Concluído':pct>0?'Em andamento':'Não iniciado';
+    const lastEntry = p.last_entry ? new Date(p.last_entry).toLocaleDateString('pt-BR') : 'Sem registros';
     html += `
-      <div class="grupo-card">
+      <div class="grupo-card" style="cursor:pointer" onclick="abrirProjeto('${p.id}')">
         <div class="gc-top">
           <div>
-            <div class="gc-name">${nome}</div>
-            <div class="gc-sub">${nightRange} · ${g.total} atividades</div>
+            <div class="gc-name">${p.nome || 'Sem nome'}</div>
+            <div class="gc-sub">${p.local||''} ${p.local&&p.responsavel?'·':''} ${p.responsavel||''} · Último registro: ${lastEntry}</div>
           </div>
-          <div class="gc-pct" style="color:${color}">${pct}%</div>
+          <span class="badge ${bc}">${bl}</span>
         </div>
-        <div class="pbar-w sm"><div class="pbar" style="width:${pct}%;background:${color}"></div></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+          <div class="pbar-w sm" style="flex:1"><div class="pbar" style="width:${pct}%;background:${color}"></div></div>
+          <span style="font-size:12px;font-weight:500;color:${color};min-width:34px;text-align:right">${pct}%</span>
+        </div>
       </div>`;
   });
-  return html;
+
+  el.innerHTML = html;
+}
+
+function abrirProjeto(id) {
+  projetoAtualId = id;
+  const btn = document.querySelector('.ntab[onclick*="cronograma"]');
+  if (btn) { goTab('cronograma', btn); }
 }
 
 /* ════════════════════════════════════════════════════════════
-   TELA: CRONOGRAMA (GESTOR OBRA — valida OS)
+   TELA: CRONOGRAMA (GESTOR OBRA — carrega do banco)
 ════════════════════════════════════════════════════════════ */
-function buildCronograma() {
-  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <div class="sec" style="margin:0">9 noites · TOP SHOPPING</div>
-    <span class="badge b-roxo">${PROJ_META.lider} · líder</span>
-  </div>`;
+let projetoAtualId = null;
 
-  NOITES_BASE.forEach((noite, ni) => {
-    const osVis = getOSvisiveis(ni, false);
-    const total = noite.os.length;
-    const visiveis = osVis.length;
-    const done = osVis.filter(o=>o.pct===100&&o.foto).length;
-    const pct = total ? Math.round(done/total*100) : 0;
-    const skipped = total - visiveis; // concluídas antes
-    const isSent = nightSent[ni];
-    const bc = pct===100&&isSent?'b-ok':pct>0?'b-warn':'b-gray';
-    const bl = pct===100&&isSent?'Validado':pct===100?'Aguarda validação':pct>0?'Em andamento':'Pendente';
-    const pctColor = pct===100?'var(--ok)':pct>0?'var(--warn)':'var(--bg)';
-    const isOpen = openRows[ni];
+async function buildCronograma() {
+  const el = document.getElementById('sc-cronograma');
+  if (!el) return;
+  el.innerHTML = '<div style="padding:32px;text-align:center;color:var(--t2)">Carregando...</div>';
 
-    html += `
-      <div class="night-row">
-        <div class="nrow-progress"><div class="nrow-prog-fill" style="width:${pct}%;background:${pctColor}"></div></div>
-        <div class="nrow-hdr" onclick="togRow(${ni})">
-          <div>
-            <div class="nrow-title">Noite ${noite.n} · ${noite.data}</div>
-            <div class="nrow-sub">${noite.grupo}${skipped>0?` · ${skipped} concluída(s) em noites anteriores`:''}</div>
-          </div>
-          <div class="nrow-right">
-            <span class="badge ${bc}">${bl}</span>
-            <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="transform:${isOpen?'rotate(180deg)':''}"><polyline points="4 6 8 10 12 6"/></svg>
-          </div>
-        </div>
-        <div class="nrow-body${isOpen?' open':''}">
-          ${osVis.length===0 ? `<div style="text-align:center;padding:12px;color:var(--t2);font-size:13px">Todas as atividades foram concluídas em noites anteriores ✓</div>` : ''}
-          ${osVis.map((os,oi) => {
-            const vkey = `${ni}-${os.id}-${os.parte}`;
-            const isVal = validatedOS[vkey];
-            const color = os.pct===100?'var(--ok)':os.pct>0?'var(--roxo)':'#EEE8F4';
-            return `<div class="os-mini">
-              <div class="osm-name"><span style="font-size:10px;color:var(--t3);font-weight:500">[${os.id}]</span> ${os.nome}${os.total>1?`<span style="font-size:10px;color:var(--t3);margin-left:4px">parte ${os.parte}/${os.total}</span>`:''}
-              </div>
-              <div class="osm-bar"><div class="osm-fill" style="width:${os.pct}%;background:${color}"></div></div>
-              <span class="osm-pct" style="color:${os.pct===100?'var(--ok)':'var(--t2)'}">${os.pct}%</span>
-              ${os.pct===100&&os.foto ? `<button class="val-btn${isVal?' done':''}" onclick="validarOS('${vkey}',this)">${isVal?'✓ OK':'Validar'}</button>` : ''}
-            </div>`;
-          }).join('')}
-        </div>
-      </div>`;
+  if (!SB) return;
+
+  // Carrega lista de projetos para o select
+  const { data: projetos } = await SB.from('projects').select('*').order('created_at', { ascending: false });
+  const lista = projetos || [];
+
+  if (lista.length === 0) {
+    el.innerHTML = '<div style="padding:40px 24px;text-align:center;color:var(--t2)">Nenhum projeto encontrado. Importe um cronograma primeiro.</div>';
+    return;
+  }
+
+  if (!projetoAtualId) projetoAtualId = lista[0].id;
+  const proj = lista.find(p => p.id === projetoAtualId) || lista[0];
+
+  // Carrega OSs do projeto selecionado
+  const { data: oss } = await SB.from('service_orders')
+    .select('*')
+    .eq('project_id', projetoAtualId)
+    .order('night_num')
+    .order('order_index');
+  const todasOS = oss || [];
+
+  // Agrupa por noite
+  const noitesMap = {};
+  todasOS.forEach(os => {
+    const key = os.night_num || 1;
+    if (!noitesMap[key]) noitesMap[key] = { num: key, grupo: os.grupo||'Atividades', data: os.night_date||'—', os: [] };
+    noitesMap[key].os.push(os);
   });
-  return html;
+  const noites = Object.values(noitesMap).sort((a,b) => a.num - b.num);
+
+  // Carrega entradas de progresso
+  const { data: entries } = await SB.from('os_entries')
+    .select('*')
+    .eq('project_id', projetoAtualId);
+  const entriesMap = {};
+  (entries||[]).forEach(e => { entriesMap[e.os_id] = e; });
+
+  const optionsHTML = lista.map(p =>
+    `<option value="${p.id}"${p.id===projetoAtualId?' selected':''} >${p.nome||'Projeto'} — ${p.local||''}</option>`
+  ).join('');
+
+  let html = `
+    <div style="margin-bottom:14px">
+      <select class="fselect" style="width:100%;border:0.5px solid var(--bdr);border-radius:var(--rs);padding:9px 11px;font-size:13px;background:var(--sur)"
+        onchange="projetoAtualId=this.value;buildCronograma()">${optionsHTML}</select>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="sec" style="margin:0">${noites.length} noites · ${proj.nome||''}</div>
+      <span class="badge b-roxo">${proj.lider||'—'} · líder</span>
+    </div>`;
+
+  if (noites.length === 0) {
+    html += '<div style="padding:24px;text-align:center;color:var(--t2)">Nenhuma OS encontrada para este projeto.</div>';
+  } else {
+    noites.forEach((noite, ni) => {
+      const totalOS = noite.os.length;
+      const doneOS = noite.os.filter(os => {
+        const e = entriesMap[os.id];
+        return e && e.pct===100 && e.concluida;
+      }).length;
+      const pct = totalOS ? Math.round(doneOS/totalOS*100) : 0;
+      const pctColor = pct===100?'var(--ok)':pct>0?'var(--warn)':'var(--bdr)';
+      const bc = pct===100?'b-ok':pct>0?'b-warn':'b-gray';
+      const bl = pct===100?'Concluído':pct>0?'Em andamento':'Pendente';
+      const isOpen = openRows[`${projetoAtualId}-${ni}`];
+      const dataStr = noite.data && noite.data !== '—' ? new Date(noite.data).toLocaleDateString('pt-BR') : `Noite ${noite.num}`;
+
+      html += `
+        <div class="night-row">
+          <div class="nrow-progress"><div class="nrow-prog-fill" style="width:${pct}%;background:${pctColor}"></div></div>
+          <div class="nrow-hdr" onclick="togRow('${projetoAtualId}-${ni}')">
+            <div>
+              <div class="nrow-title">Noite ${noite.num} · ${dataStr}</div>
+              <div class="nrow-sub">${noite.grupo} · ${totalOS} atividade${totalOS!==1?'s':''}</div>
+            </div>
+            <div class="nrow-right">
+              <span class="badge ${bc}">${bl}</span>
+              <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="transform:${isOpen?'rotate(180deg)':''};width:16px;height:16px"><polyline points="4 6 8 10 12 6"/></svg>
+            </div>
+          </div>
+          <div class="nrow-body${isOpen?' open':''}" id="nb-${projetoAtualId}-${ni}">
+            ${noite.os.map((os) => {
+              const e = entriesMap[os.id];
+              const pctOS = e ? (e.pct||0) : 0;
+              const fotoOK = e && e.foto_url;
+              const vkey = `${projetoAtualId}-${os.id}`;
+              const isVal = validatedOS[vkey];
+              const colorOS = pctOS===100?'var(--ok)':pctOS>0?'var(--roxo)':'#EEE8F4';
+              return `<div class="os-mini">
+                <div class="osm-name">
+                  <span style="font-size:10px;color:var(--t3);font-weight:500">[${os.os_id}]</span>
+                  ${os.nome}
+                  ${os.total_partes>1?`<span style="font-size:10px;color:var(--t3);margin-left:4px">parte ${os.parte}/${os.total_partes}</span>`:''}
+                </div>
+                <div class="osm-bar"><div class="osm-fill" style="width:${pctOS}%;background:${colorOS}"></div></div>
+                <span class="osm-pct" style="color:${pctOS===100?'var(--ok)':'var(--t2)'}">${pctOS}%</span>
+                ${pctOS===100&&fotoOK ? `<button class="val-btn${isVal?' done':''}" onclick="validarOS('${vkey}',this)">${isVal?'✓ OK':'Validar'}</button>` : ''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    });
+  }
+
+  el.innerHTML = html;
 }
 
-function togRow(i) {
-  openRows[i] = !openRows[i];
-  renderTab('cronograma');
+function togRow(key) {
+  openRows[key] = !openRows[key];
+  buildCronograma();
 }
 
 function validarOS(key, btn) {
   validatedOS[key] = true;
   btn.classList.add('done');
   btn.textContent = '✓ OK';
-  // Em produção: SB.from('os_validations').insert({ key, validated_by: CU.name, at: new Date() })
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1336,6 +1589,384 @@ function buildUsuariosStatic() {
   el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--t2)">Carregando...</div>';
   buildUsuarios();
 }
+
+/* ════════════════════════════════════════════════════════════
+   DETECÇÃO DE DISPOSITIVO & DESKTOP SHELL
+════════════════════════════════════════════════════════════ */
+const IS_DESKTOP = window.innerWidth >= 768;
+
+function doLogin(user) {
+  CU = user;
+  localStorage.setItem('fdl_session', JSON.stringify(user));
+  document.getElementById('login').classList.add('hidden');
+
+  const roleMap = { admin:'Admin', gestor_geral:'Gestor Geral', gestor_obra:'Gestor de Obra', montador:'Montador Líder' };
+
+  if (IS_DESKTOP && user.role !== 'montador') {
+    // DESKTOP experience for gestores & admin
+    document.getElementById('app-desktop').style.display = 'flex';
+    document.getElementById('ds-user-name').textContent = user.name;
+    document.getElementById('ds-user-role').textContent = roleMap[user.role] || user.role;
+    document.getElementById('ds-user-av').textContent = user.name.charAt(0).toUpperCase();
+    buildDesktopNav();
+    dsGoTo('painel');
+  } else {
+    // MOBILE experience
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('u-name').textContent = user.name;
+    document.getElementById('hdr-sub').textContent = roleMap[user.role] || user.role;
+    buildNav(); buildScreens();
+  }
+}
+
+/* ─── DESKTOP NAV ───────────────────────────────────────────── */
+const DS_TABS = {
+  admin:        [
+    { id:'painel',    label:'Painel geral',    sub:'Visão de todos os projetos',   icon:'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z' },
+    { id:'cronograma',label:'Cronograma',       sub:'Acompanhamento noite a noite', icon:'M8 2v4M16 2v4M3 8h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z' },
+    { id:'importar',  label:'Importar',          sub:'Subir cronograma Excel',       icon:'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3' },
+    { id:'usuarios',  label:'Usuários',          sub:'Gerenciar acessos',            icon:'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75' },
+  ],
+  gestor_geral: [
+    { id:'painel',    label:'Painel geral',    sub:'Visão de todos os projetos',   icon:'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z' },
+    { id:'usuarios',  label:'Usuários',         sub:'Gerenciar acessos',            icon:'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75' },
+  ],
+  gestor_obra:  [
+    { id:'painel',    label:'Meus projetos',   sub:'Projetos atribuídos a mim',    icon:'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z' },
+    { id:'cronograma',label:'Cronograma',       sub:'Validar OSs noite a noite',    icon:'M8 2v4M16 2v4M3 8h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z' },
+    { id:'importar',  label:'Importar',          sub:'Subir cronograma Excel',       icon:'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3' },
+  ],
+};
+
+let dsCurrentTab = 'painel';
+
+function buildDesktopNav() {
+  const tabs = DS_TABS[CU.role] || DS_TABS.gestor_obra;
+  const nav = document.getElementById('ds-nav');
+  nav.innerHTML = tabs.map(t => `
+    <button class="ds-nav-item" id="dsnav-${t.id}" onclick="dsGoTo('${t.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="${t.icon}"/>
+      </svg>
+      ${t.label}
+    </button>`).join('');
+}
+
+async function dsGoTo(id) {
+  dsCurrentTab = id;
+  document.querySelectorAll('.ds-nav-item').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('dsnav-' + id);
+  if (btn) btn.classList.add('active');
+
+  const tabs = DS_TABS[CU.role] || DS_TABS.gestor_obra;
+  const tab = tabs.find(t => t.id === id);
+  if (tab) {
+    document.getElementById('ds-page-title').textContent = tab.label;
+    document.getElementById('ds-page-sub').textContent = tab.sub;
+  }
+
+  const content = document.getElementById('ds-content');
+  content.innerHTML = '<div style="text-align:center;padding:60px;color:var(--t2)">Carregando...</div>';
+
+  if (id === 'painel')     await buildDesktopPainel();
+  if (id === 'cronograma') await buildDesktopCronograma();
+  if (id === 'importar')   buildDesktopImportar();
+  if (id === 'usuarios')   await buildUsuariosDesktop();
+}
+
+/* ─── DESKTOP: PAINEL ───────────────────────────────────────── */
+async function buildDesktopPainel() {
+  const el = document.getElementById('ds-content');
+  if (!SB) { el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--t2)">Sem conexão com o banco.</div>'; return; }
+
+  const { data: projetos } = await SB.from('projects').select('*').order('created_at', { ascending: false });
+  const lista = projetos || [];
+
+  if (lista.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:60px 40px;color:var(--t2)">
+      <div style="font-size:48px;margin-bottom:16px">📋</div>
+      <div style="font-size:18px;font-weight:500;color:var(--t1);margin-bottom:8px">Nenhum projeto importado ainda</div>
+      <div style="font-size:14px">Acesse <strong>Importar</strong> no menu lateral para subir o primeiro cronograma</div>
+    </div>`;
+    return;
+  }
+
+  const total = lista.length;
+  const progMedio = Math.round(lista.reduce((a,p) => a + (p.progress_pct||0), 0) / total);
+  const concluidos = lista.filter(p => (p.progress_pct||0) === 100).length;
+  const emAndamento = lista.filter(p => (p.progress_pct||0) > 0 && (p.progress_pct||0) < 100).length;
+
+  let html = `
+    <div class="ds-stat-grid">
+      <div class="ds-stat"><div class="ds-stat-val">${total}</div><div class="ds-stat-lbl">Projetos ativos</div></div>
+      <div class="ds-stat"><div class="ds-stat-val">${progMedio}%</div><div class="ds-stat-lbl">Progresso médio</div></div>
+      <div class="ds-stat"><div class="ds-stat-val" style="color:var(--ok)">${concluidos}</div><div class="ds-stat-lbl">Concluídos</div></div>
+      <div class="ds-stat"><div class="ds-stat-val" style="color:var(--warn)">${emAndamento}</div><div class="ds-stat-lbl">Em andamento</div></div>
+    </div>
+    <div class="ds-two-col">
+      <div class="ds-col">
+        <div class="ds-sec">Projetos</div>
+        <div class="ds-card" style="padding:4px 18px">`;
+
+  lista.forEach(p => {
+    const pct = p.progress_pct || 0;
+    const color = pct===100?'var(--ok)':pct>0?'var(--warn)':'var(--bdr)';
+    const bc = pct===100?'b-ok':pct>0?'b-warn':'b-gray';
+    const lastEntry = p.last_entry ? new Date(p.last_entry).toLocaleDateString('pt-BR') : 'Sem registros';
+    html += `
+      <div class="ds-proj-row" onclick="projetoAtualId='${p.id}';dsGoTo('cronograma')">
+        <div style="flex:1">
+          <div class="ds-proj-name">${p.nome||'—'}</div>
+          <div class="ds-proj-sub">${p.local||''} ${p.responsavel?'· '+p.responsavel:''} · ${lastEntry}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+            <div style="flex:1;height:4px;background:#EEE8F4;border-radius:99px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${color};border-radius:99px"></div>
+            </div>
+            <span class="badge ${bc}" style="font-size:11px">${pct}%</span>
+          </div>
+        </div>
+      </div>`;
+  });
+
+  html += `</div></div>
+      <div class="ds-col">
+        <div class="ds-sec">Ocorrências recentes</div>
+        <div class="ds-card" id="ds-occ-list">
+          <div style="text-align:center;padding:20px;color:var(--t2);font-size:13px">Carregando...</div>
+        </div>
+      </div>
+    </div>`;
+
+  el.innerHTML = html;
+
+  // Load recent occurrences
+  const { data: entries } = await SB.from('os_entries')
+    .select('*, projects(nome)')
+    .eq('urgencia', 'warn')
+    .order('created_at', { ascending: false })
+    .limit(8);
+
+  const occEl = document.getElementById('ds-occ-list');
+  if (!occEl) return;
+  if (!entries || entries.length === 0) {
+    occEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--t2);font-size:13px">Nenhuma ocorrência registrada</div>';
+    return;
+  }
+  occEl.innerHTML = entries.map(e => `
+    <div style="display:flex;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--bdr)">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--warn);flex-shrink:0;margin-top:5px"></div>
+      <div>
+        <div style="font-size:13px;color:var(--t1)">${e.observacao||'(sem descrição)'}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${e.projects?.nome||'—'} · ${new Date(e.created_at).toLocaleDateString('pt-BR')}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ─── DESKTOP: CRONOGRAMA ───────────────────────────────────── */
+async function buildDesktopCronograma() {
+  const el = document.getElementById('ds-content');
+  if (!SB) return;
+
+  const { data: projetos } = await SB.from('projects').select('*').order('created_at', { ascending: false });
+  const lista = projetos || [];
+
+  if (lista.length === 0) {
+    el.innerHTML = '<div style="padding:60px;text-align:center;color:var(--t2)">Nenhum projeto encontrado.</div>';
+    return;
+  }
+
+  if (!projetoAtualId) projetoAtualId = lista[0].id;
+  const proj = lista.find(p => p.id === projetoAtualId) || lista[0];
+
+  const { data: oss } = await SB.from('service_orders')
+    .select('*').eq('project_id', projetoAtualId)
+    .order('night_num').order('order_index');
+  const todasOS = oss || [];
+
+  const { data: entries } = await SB.from('os_entries').select('*').eq('project_id', projetoAtualId);
+  const entriesMap = {};
+  (entries||[]).forEach(e => { entriesMap[e.os_id] = e; });
+
+  // Group by night
+  const noitesMap = {};
+  todasOS.forEach(os => {
+    const key = os.night_num || 1;
+    if (!noitesMap[key]) noitesMap[key] = { num: key, grupo: os.grupo||'Atividades', data: os.night_date||'—', os: [] };
+    noitesMap[key].os.push(os);
+  });
+  const noites = Object.values(noitesMap).sort((a,b) => a.num - b.num);
+
+  const doneNoites = noites.filter(n => n.os.every(os => { const e=entriesMap[os.id]; return e&&e.pct===100; })).length;
+  const pctTotal = noites.length ? Math.round(doneNoites/noites.length*100) : 0;
+
+  const optionsHTML = lista.map(p =>
+    `<option value="${p.id}"${p.id===projetoAtualId?' selected':''}>${p.nome||'Projeto'} — ${p.local||''}</option>`
+  ).join('');
+
+  let html = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+      <select style="border:0.5px solid var(--bdr);border-radius:var(--rs);padding:9px 14px;font-size:14px;background:var(--sur);color:var(--t1);font-family:var(--f)"
+        onchange="projetoAtualId=this.value;buildDesktopCronograma()">
+        ${optionsHTML}
+      </select>
+      <span class="badge b-roxo">${proj.lider||'—'} · líder</span>
+      <span class="badge b-ok">${doneNoites}/${noites.length} noites concluídas</span>
+      <span style="margin-left:auto;font-family:var(--fd);font-size:20px;color:var(--roxo)">${pctTotal}%</span>
+    </div>
+    <div class="ds-two-col">
+      <div class="ds-col">
+        <div class="ds-sec">Noites previstas</div>`;
+
+  noites.forEach((noite, ni) => {
+    const doneOS = noite.os.filter(os => { const e=entriesMap[os.id]; return e&&e.pct===100; }).length;
+    const pct = noite.os.length ? Math.round(doneOS/noite.os.length*100) : 0;
+    const color = pct===100?'var(--ok)':pct>0?'var(--warn)':'var(--bdr)';
+    const bc = pct===100?'b-ok':pct>0?'b-warn':'b-gray';
+    const bl = pct===100?'Concluído':pct>0?'Em andamento':'Pendente';
+    const dataStr = noite.data && noite.data!=='—' ? new Date(noite.data).toLocaleDateString('pt-BR') : `Noite ${noite.num}`;
+    const isOpen = openRows[`ds-${projetoAtualId}-${ni}`];
+
+    html += `
+      <div class="ds-card" style="padding:0;overflow:hidden;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;background:${isOpen?'var(--bg)':'var(--sur)'}"
+          onclick="openRows['ds-${projetoAtualId}-${ni}']=!openRows['ds-${projetoAtualId}-${ni}'];buildDesktopCronograma()">
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--t1)">Noite ${noite.num} · ${dataStr}</div>
+            <div style="font-size:11px;color:var(--t2);margin-top:1px">${noite.grupo} · ${noite.os.length} atividade${noite.os.length!==1?'s':''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="badge ${bc}">${bl}</span>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="16" height="16" style="transform:${isOpen?'rotate(180deg)':''}"><polyline points="4 6 8 10 12 6"/></svg>
+          </div>
+        </div>
+        <div style="height:3px;background:#EEE8F4"><div style="height:100%;width:${pct}%;background:${color};transition:width .3s"></div></div>
+        ${isOpen ? `<div style="padding:4px 16px 12px">
+          ${noite.os.map(os => {
+            const e = entriesMap[os.id];
+            const pctOS = e ? (e.pct||0) : 0;
+            const colorOS = pctOS===100?'var(--ok)':pctOS>0?'var(--roxo)':'#EEE8F4';
+            const vkey = `ds-${projetoAtualId}-${os.id}`;
+            const isVal = validatedOS[vkey];
+            return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--bdr)">
+              <span style="font-size:11px;color:var(--t3);font-weight:500;min-width:28px">[${os.os_id}]</span>
+              <span style="font-size:13px;color:var(--t1);flex:1">${os.nome}${os.total_partes>1?`<span style="font-size:10px;color:var(--t3);margin-left:6px">parte ${os.parte}/${os.total_partes}</span>`:''}</span>
+              <div style="width:60px;height:4px;background:#EEE8F4;border-radius:99px;overflow:hidden"><div style="height:100%;width:${pctOS}%;background:${colorOS}"></div></div>
+              <span style="font-size:12px;font-weight:500;color:${pctOS===100?'var(--ok)':'var(--t2)'};min-width:34px;text-align:right">${pctOS}%</span>
+              ${pctOS===100 ? `<button class="val-btn${isVal?' done':''}" onclick="validatedOS['${vkey}']=true;this.className='val-btn done';this.textContent='✓ OK'">${isVal?'✓ OK':'Validar'}</button>` : '<span style="width:52px"></span>'}
+            </div>`;
+          }).join('')}
+        </div>` : ''}
+      </div>`;
+  });
+
+  html += `</div>
+      <div class="ds-col">
+        <div class="ds-sec">Resumo do projeto</div>
+        <div class="ds-card">
+          <div style="font-size:15px;font-weight:500;color:var(--t1);margin-bottom:4px">${proj.nome||'—'}</div>
+          <div style="font-size:13px;color:var(--t2);margin-bottom:14px">${proj.local||''} ${proj.responsavel?'· Resp: '+proj.responsavel:''}</div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;color:var(--t2)">
+            <span>Progresso geral</span><span style="font-weight:500;color:var(--roxo)">${pctTotal}%</span>
+          </div>
+          <div style="height:7px;background:#EEE8F4;border-radius:99px;overflow:hidden;margin-bottom:14px">
+            <div style="height:100%;width:${pctTotal}%;background:var(--roxo);border-radius:99px"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--bg);border-radius:var(--rs);padding:12px;text-align:center">
+              <div style="font-family:var(--fd);font-size:22px;color:var(--roxo)">${noites.length}</div>
+              <div style="font-size:11px;color:var(--t2);margin-top:2px">Noites previstas</div>
+            </div>
+            <div style="background:var(--bg);border-radius:var(--rs);padding:12px;text-align:center">
+              <div style="font-family:var(--fd);font-size:22px;color:var(--ok)">${doneNoites}</div>
+              <div style="font-size:11px;color:var(--t2);margin-top:2px">Concluídas</div>
+            </div>
+            <div style="background:var(--bg);border-radius:var(--rs);padding:12px;text-align:center">
+              <div style="font-family:var(--fd);font-size:22px;color:var(--t1)">${todasOS.length}</div>
+              <div style="font-size:11px;color:var(--t2);margin-top:2px">Total de OSs</div>
+            </div>
+            <div style="background:var(--bg);border-radius:var(--rs);padding:12px;text-align:center">
+              <div style="font-family:var(--fd);font-size:22px;color:var(--warn)">${todasOS.filter(os=>{const e=entriesMap[os.id];return !e||e.pct<100;}).length}</div>
+              <div style="font-size:11px;color:var(--t2);margin-top:2px">OSs pendentes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  el.innerHTML = html;
+}
+
+/* ─── DESKTOP: IMPORTAR ─────────────────────────────────────── */
+function buildDesktopImportar() {
+  const el = document.getElementById('ds-content');
+  el.innerHTML = `
+    <div style="max-width:600px">
+      ${buildImportar()}
+    </div>`;
+}
+
+/* ─── DESKTOP: USUÁRIOS ─────────────────────────────────────── */
+async function buildUsuariosDesktop() {
+  const el = document.getElementById('ds-content');
+  el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--t2)">Carregando usuários...</div>';
+  // Reuse mobile buildUsuarios but render into ds-content
+  const tempDiv = document.createElement('div');
+  tempDiv.id = 'sc-usuarios';
+  tempDiv.style.display = 'none';
+  document.body.appendChild(tempDiv);
+  await buildUsuarios();
+  el.innerHTML = `<div style="max-width:700px">${tempDiv.innerHTML}</div>`;
+  tempDiv.remove();
+}
+
 </script>
+
+<!-- ══ DESKTOP APP SHELL ══════════════════════════════════════ -->
+<div id="app-desktop" style="display:none">
+
+  <!-- Sidebar -->
+  <div class="ds-sidebar">
+    <div class="ds-logo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <polygon points="18,3 21.5,13 33,13 23.5,19.5 27,29.5 18,23 9,29.5 12.5,19.5 3,13 14.5,13"
+          stroke="#E8D5A3" stroke-width="1.5" fill="rgba(232,213,163,0.15)" stroke-linejoin="round"/>
+      </svg>
+      <div class="ds-logo-name">Fábrica de Luz</div>
+      <div class="ds-logo-sub">Sistema OS</div>
+    </div>
+
+    <div class="ds-nav" id="ds-nav"></div>
+
+    <div class="ds-user">
+      <div class="ds-user-av" id="ds-user-av">G</div>
+      <div>
+        <div class="ds-user-name" id="ds-user-name">—</div>
+        <div class="ds-user-role" id="ds-user-role">—</div>
+      </div>
+      <button class="ds-logout" onclick="logout()" aria-label="Sair">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="18" height="18">
+          <path d="M13 3h4v14h-4"/><path d="M8 14l4-4-4-4"/><line x1="12" y1="10" x2="3" y2="10"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="ds-main">
+    <div class="ds-topbar">
+      <div>
+        <div class="ds-page-title" id="ds-page-title">Painel</div>
+        <div class="ds-page-sub" id="ds-page-sub">Visão geral de todos os projetos</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="badge b-roxo" id="ds-season-badge">Temporada 2025/2026</span>
+      </div>
+    </div>
+    <div class="ds-content" id="ds-content">
+      <div style="text-align:center;padding:60px;color:var(--t2)">Carregando...</div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
