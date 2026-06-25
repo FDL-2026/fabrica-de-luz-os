@@ -1114,7 +1114,7 @@ async function buildPainel() {
 
   lista.forEach(p => {
     const pct = p.progress_pct || 0;
-    const color = pct===100?'var(--ok)':pct>0?'var(--warn)":'var(--bdr)';
+    const color = pct===100?'var(--ok)':pct>0?'var(--warn)':'var(--bdr)';
     const bc = pct===100?'b-ok':pct>0?'b-warn':'b-gray';
     const bl = pct===100?'Concluído':pct>0?'Em andamento':'Não iniciado';
     const lastEntry = p.last_entry ? new Date(p.last_entry).toLocaleDateString('pt-BR') : 'Sem registros';
