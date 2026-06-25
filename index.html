@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- FDL v2.1 -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1335,23 +1336,6 @@ function buildUsuariosStatic() {
   el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--t2)">Carregando...</div>';
   buildUsuarios();
 }
-          <button class="icon-btn" title="Editar" onclick="alert('Editar ${u.name}')">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M11.5 2.5a1.41 1.41 0 012 2L5 13H2v-3z"/></svg>
-          </button>
-          <button class="icon-btn" title="Alocar em obra" onclick="alert('Alocar ${u.name} em obra')">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 3a4 4 0 010 5.66L5.66 13A4 4 0 012 10l4.34-4.34A4 4 0 0110 3z"/><circle cx="10" cy="6" r="1" fill="currentColor"/></svg>
-          </button>
-        </div>
-      </div>`;
-  });
-
-  html += `</div>
-    <div style="background:var(--bg);border-radius:var(--rs);padding:11px 13px;font-size:12px;color:var(--t2);margin-top:10px;line-height:1.6">
-      <span style="font-weight:500;color:var(--t1)">PIN automático:</span> ao criar um montador o sistema gera um PIN único de 6 dígitos e envia por WhatsApp ou e-mail. O PIN pode ser redefinido a qualquer momento.
-    </div>`;
-  return html;
-}
 </script>
 </body>
 </html>
-
