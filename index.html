@@ -1307,7 +1307,7 @@ function buildImportar() {
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn-o" style="flex:1" onclick="cancelImport()">Cancelar</button>
-        <button class="btn-p" style="margin-top:0;flex:2" onclick="confirmImport()">
+        <button class="btn-p" style="margin-top:0;flex:2" id="btn-confirm-import" onclick="confirmImport()">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="14" height="14"><polyline points="2 8 6 12 14 4"/></svg>
           Confirmar e criar projeto
         </button>
@@ -1400,23 +1400,84 @@ function parseImportedExcel(rows, fname) {
 async function confirmImport() {
   if (!importPreviewData) return;
   const { tasks, meta } = importPreviewData;
-  if (SB) {
-    const { data:proj } = await SB.from('projects').insert({
-      nome: meta.shopping, local:'', responsavel: meta.responsavel, lider: meta.equipe,
-      created_at: new Date().toISOString(),
-    }).select().single();
-    if (proj) {
-      for (const t of tasks.filter(t=>!t.isGroup)) {
-        for (let p=0; p<t.duracao; p++) {
-          await SB.from('service_orders').insert({
-            project_id: proj.id, os_id: t.id, nome: t.nome,
-            inicio: t.inicio, parte: p+1, total_partes: t.duracao,
-            pct: 0, created_at: new Date().toISOString(),
-          });
-        }
-      }
-    }
+
+  const btn = document.getElementById('btn-confirm-import');
+  if (btn) { btn.disabled = true; btn.textContent = 'Importando...'; }
+
+  if (!SB) { alert('Sem conexão com o banco.'); return; }
+
+  // 1. Cria o projeto
+  const { data:proj, error:projErr } = await SB.from('projects').insert({
+    nome: meta.shopping || 'Novo Projeto',
+    local: meta.local || '',
+    responsavel: meta.responsavel || '',
+    lider: meta.equipe || '',
+    progress_pct: 0,
+    created_at: new Date().toISOString(),
+  }).select().single();
+
+  if (projErr || !proj) {
+    alert('Erro ao criar projeto: ' + (projErr?.message || 'desconhecido'));
+    return;
   }
+
+  // 2. Calcula noites — mapeia datas únicas para números de noite
+  const subTasks = tasks.filter(t => !t.isGroup);
+  const grupoMap = {}; // id_pai -> nome do grupo
+  tasks.filter(t => t.isGroup).forEach(t => { grupoMap[t.id] = t.nome; });
+
+  // Coleta todas as datas e ordena
+  const allDates = [];
+  subTasks.forEach(t => {
+    if (!t.inicio) return;
+    const [d,m,y] = t.inicio.split('/');
+    const base = new Date(`${y}-${m}-${d}`);
+    for (let i = 0; i < t.duracao; i++) {
+      const dt = new Date(base); dt.setDate(base.getDate() + i);
+      const str = dt.toISOString().split('T')[0];
+      if (!allDates.includes(str)) allDates.push(str);
+    }
+  });
+  allDates.sort();
+  const dateToNight = {};
+  allDates.forEach((d, i) => { dateToNight[d] = i + 1; });
+
+  // 3. Insere cada OS por noite
+  const inserts = [];
+  let orderIdx = 0;
+  subTasks.forEach(t => {
+    if (!t.inicio) return;
+    const parentId = t.id.split('.')[0];
+    const grupo = grupoMap[parentId] || 'Atividades';
+    const [d,m,y] = t.inicio.split('/');
+    const base = new Date(`${y}-${m}-${d}`);
+
+    for (let p = 0; p < t.duracao; p++) {
+      const dt = new Date(base); dt.setDate(base.getDate() + p);
+      const dateStr = dt.toISOString().split('T')[0];
+      const nightNum = dateToNight[dateStr] || (p + 1);
+      inserts.push({
+        project_id:   proj.id,
+        os_id:        t.id,
+        nome:         t.nome,
+        grupo:        grupo,
+        night_date:   dateStr,
+        night_num:    nightNum,
+        parte:        p + 1,
+        total_partes: t.duracao,
+        order_index:  orderIdx++,
+      });
+    }
+  });
+
+  // Insere em lotes de 50
+  for (let i = 0; i < inserts.length; i += 50) {
+    const { error } = await SB.from('service_orders').insert(inserts.slice(i, i+50));
+    if (error) { console.error('Insert error:', error); }
+  }
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Confirmar e criar projeto'; }
+
   const t = document.getElementById('import-toast');
   if (t) { t.style.display='block'; setTimeout(()=>t.style.display='none',4000); }
 }
