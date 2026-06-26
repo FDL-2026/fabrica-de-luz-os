@@ -4,12 +4,15 @@ export default function HomePage() {
       <section className="w-full max-w-4xl rounded-3xl border border-purple-900/60 bg-white/5 p-10 shadow-2xl">
         <div className="mb-8">
           <div className="mb-4 text-5xl text-[#d9b56f]">☆</div>
+
           <p className="text-sm uppercase tracking-[0.3em] text-purple-300">
             Sistema OS
           </p>
+
           <h1 className="mt-3 text-4xl font-bold text-white">
             Fábrica de Luz
           </h1>
+
           <p className="mt-3 max-w-2xl text-purple-200">
             Diário de montagem, acompanhamento de cronograma, controle de OSs,
             registros fotográficos e gestão operacional por projeto.
