@@ -24,8 +24,14 @@ function redirectWithCookies(
   const response = NextResponse.redirect(url);
 
   cookieResponse.cookies.getAll().forEach((cookie) => {
-    const { name, value, ...options } = cookie;
-    response.cookies.set(name, value, options);
+    response.cookies.set(cookie.name, cookie.value, {
+      path: "/",
+      sameSite: "lax",
+      httpOnly: cookie.httpOnly,
+      secure: cookie.secure,
+      maxAge: cookie.maxAge,
+      expires: cookie.expires,
+    });
   });
 
   return response;
@@ -54,7 +60,10 @@ export async function POST(request: NextRequest) {
           });
 
           cookiesToSet.forEach(({ name, value, options }) => {
-            cookieResponse.cookies.set(name, value, options);
+            cookieResponse.cookies.set(name, value, {
+              ...options,
+              path: "/",
+            });
           });
         },
       },
@@ -69,7 +78,10 @@ export async function POST(request: NextRequest) {
 
   if (!email || !password) {
     return NextResponse.redirect(
-      new URL(`/login?error=preencha&next=${encodeURIComponent(nextPath)}`, request.url)
+      new URL(
+        `/login?error=preencha&next=${encodeURIComponent(nextPath)}`,
+        request.url
+      )
     );
   }
 
@@ -83,7 +95,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.redirect(
       new URL(
-        `/login?error=auth&message=${message}&next=${encodeURIComponent(nextPath)}`,
+        `/login?error=auth&message=${message}&next=${encodeURIComponent(
+          nextPath
+        )}`,
         request.url
       )
     );
@@ -91,7 +105,10 @@ export async function POST(request: NextRequest) {
 
   if (!data.user) {
     return NextResponse.redirect(
-      new URL(`/login?error=sem_usuario&next=${encodeURIComponent(nextPath)}`, request.url)
+      new URL(
+        `/login?error=sem_usuario&next=${encodeURIComponent(nextPath)}`,
+        request.url
+      )
     );
   }
 
@@ -105,7 +122,10 @@ export async function POST(request: NextRequest) {
     await supabase.auth.signOut();
 
     return NextResponse.redirect(
-      new URL(`/login?error=perfil&next=${encodeURIComponent(nextPath)}`, request.url)
+      new URL(
+        `/login?error=perfil&next=${encodeURIComponent(nextPath)}`,
+        request.url
+      )
     );
   }
 
