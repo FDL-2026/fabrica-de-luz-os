@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import LoginForm from "./login-form";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -10,6 +11,7 @@ type LoginPageProps = {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const nextPath = params?.next ?? "/dashboard";
+
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
       <div className="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
@@ -76,54 +78,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 </p>
               </div>
 
-              <form
-  action={`/login/submit?next=${encodeURIComponent(nextPath)}`}
-  method="post"
-  className="space-y-5"
->
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="mb-2 block text-sm font-medium text-white/80"
-                  >
-                    E-mail
-                  </label>
-
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    placeholder="seu.email@fabricadeluz.com.br"
-                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-white outline-none transition placeholder:text-white/35 focus:border-[var(--fdl-cream)] focus:ring-4 focus:ring-[var(--fdl-cream)]/10"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="password"
-                    className="mb-2 block text-sm font-medium text-white/80"
-                  >
-                    Senha
-                  </label>
-
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    placeholder="Digite sua senha"
-                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-white outline-none transition placeholder:text-white/35 focus:border-[var(--fdl-cream)] focus:ring-4 focus:ring-[var(--fdl-cream)]/10"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="h-12 w-full rounded-2xl bg-[var(--fdl-cream)] font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
-                >
-                  Entrar
-                </button>
-              </form>
+              <LoginForm nextPath={nextPath} />
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
                 <p className="text-sm text-white/65">Montador de campo?</p>
