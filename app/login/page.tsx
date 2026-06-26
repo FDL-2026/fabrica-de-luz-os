@@ -1,3 +1,4 @@
+import { login } from "./actions";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -68,7 +69,7 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              <form className="space-y-5">
+              <form action={login} className="space-y-5">
                 <div>
                   <label
                     htmlFor="email"
@@ -78,11 +79,12 @@ export default function LoginPage() {
                   </label>
 
                   <input
-                    id="email"
-                    type="email"
-                    placeholder="seu.email@fabricadeluz.com.br"
-                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-white outline-none transition placeholder:text-white/35 focus:border-[var(--fdl-cream)] focus:ring-4 focus:ring-[var(--fdl-cream)]/10"
-                  />
+  id="email"
+  name="email"
+  type="email"
+  placeholder="seu.email@fabricadeluz.com.br"
+  className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-white outline-none transition placeholder:text-white/35 focus:border-[var(--fdl-cream)] focus:ring-4 focus:ring-[var(--fdl-cream)]/10"
+/>
                 </div>
 
                 <div>
@@ -102,7 +104,7 @@ export default function LoginPage() {
                 </div>
 
                 <button
-                  type="button"
+                  type="submit"
                   className="h-12 w-full rounded-2xl bg-[var(--fdl-cream)] font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
                 >
                   Entrar
