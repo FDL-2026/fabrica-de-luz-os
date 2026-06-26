@@ -66,3 +66,22 @@
     @apply bg-background text-foreground;
   }
 }
+:root {
+  --fdl-purple: #643b8f;
+  --fdl-purple-dark: #16051f;
+  --fdl-purple-deep: #2b123a;
+  --fdl-cream: #ede0b1;
+  --fdl-white: #ffffff;
+  --fdl-lilac: #d6cce6;
+  --fdl-text-dark: #231329;
+  --fdl-muted: #8f79a8;
+}
+
+body {
+  background: var(--fdl-purple-dark);
+}
+
+::selection {
+  background: var(--fdl-cream);
+  color: var(--fdl-purple-dark);
+}
