@@ -40,8 +40,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
       return;
     }
 
-    router.push(nextPath || "/dashboard");
-    router.refresh();
+    window.location.href = nextPath || "/dashboard";
   }
 
   return (
