@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -36,13 +37,16 @@ export default async function DashboardPage() {
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
       <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
         <aside className="border-r border-white/10 bg-[var(--fdl-purple)] p-6">
-          <div className="mb-10">
-            <div className="mb-4 text-4xl text-[var(--fdl-cream)]">☆</div>
-            <h1 className="text-2xl font-bold">Fábrica de Luz</h1>
-            <p className="mt-1 text-xs uppercase tracking-[0.25em] text-white/60">
-              Sistema OS
-            </p>
-          </div>
+          <div className="mb-10 flex items-center justify-center rounded-3xl bg-white/5 p-4">
+  <Image
+    src="/brand/H_TAGLINE_SF_ROXO.png"
+    alt="Fábrica de Luz"
+    width={420}
+    height={220}
+    priority
+    className="h-auto max-h-28 w-full object-contain"
+  />
+</div>
 
           <nav className="space-y-2 text-sm">
             <a
@@ -103,7 +107,7 @@ export default async function DashboardPage() {
             </div>
 
             <div className="rounded-full bg-white/10 px-4 py-2 text-sm text-white/70">
-              Temporada 2025/2026
+              Temporada 2026
             </div>
           </header>
 
