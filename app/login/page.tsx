@@ -1,4 +1,3 @@
-import { login } from "./actions";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -69,7 +68,7 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              <form action={login} className="space-y-5">
+              <form action="/login/submit" method="post" className="space-y-5">
                 <div>
                   <label
                     htmlFor="email"
