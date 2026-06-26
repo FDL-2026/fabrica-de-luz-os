@@ -1,7 +1,10 @@
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
+  await connection();
+  
   const supabase = await createClient();
 
   const {
@@ -75,6 +78,14 @@ export default async function DashboardPage() {
             <p className="text-sm font-semibold">{usuario.nome}</p>
             <p className="mt-1 text-xs text-white/60">{usuario.perfil}</p>
           </div>
+
+          <a
+  href="/logout"
+  className="mt-4 block rounded-2xl border border-white/15 px-4 py-3 text-center text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+>
+  Sair
+</a>
+
         </aside>
 
         <section className="p-8">
