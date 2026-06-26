@@ -1,58 +1,57 @@
-import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button";
-import { Hero } from "@/components/hero";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
-import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/lib/utils";
-import Link from "next/link";
-import { Suspense } from "react";
-
-export default function Home() {
+export default function HomePage() {
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-20 items-center">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>Next.js Supabase Starter</Link>
-              <div className="flex items-center gap-2">
-                <DeployButton />
-              </div>
-            </div>
-            {!hasEnvVars ? (
-              <EnvVarWarning />
-            ) : (
-              <Suspense>
-                <AuthButton />
-              </Suspense>
-            )}
-          </div>
-        </nav>
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          <Hero />
-          <main className="flex-1 flex flex-col gap-6 px-4">
-            <h2 className="font-medium text-xl mb-4">Next steps</h2>
-            {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-          </main>
+    <main className="min-h-screen bg-[#16051f] text-white flex items-center justify-center px-6">
+      <section className="w-full max-w-4xl rounded-3xl border border-purple-900/60 bg-white/5 p-10 shadow-2xl">
+        <div className="mb-8">
+          <div className="mb-4 text-5xl text-[#d9b56f]">☆</div>
+          <p className="text-sm uppercase tracking-[0.3em] text-purple-300">
+            Sistema OS
+          </p>
+          <h1 className="mt-3 text-4xl font-bold text-white">
+            Fábrica de Luz
+          </h1>
+          <p className="mt-3 max-w-2xl text-purple-200">
+            Diário de montagem, acompanhamento de cronograma, controle de OSs,
+            registros fotográficos e gestão operacional por projeto.
+          </p>
         </div>
 
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-          <p>
-            Powered by{" "}
-            <a
-              href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-              target="_blank"
-              className="font-bold hover:underline"
-              rel="noreferrer"
-            >
-              Supabase
-            </a>
-          </p>
-          <ThemeSwitcher />
-        </footer>
-      </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl bg-white p-5 text-[#231329]">
+            <p className="text-sm text-[#7d6488]">Projetos</p>
+            <strong className="mt-2 block text-3xl">0</strong>
+            <span className="text-sm text-[#7d6488]">em acompanhamento</span>
+          </div>
+
+          <div className="rounded-2xl bg-white p-5 text-[#231329]">
+            <p className="text-sm text-[#7d6488]">OSs pendentes</p>
+            <strong className="mt-2 block text-3xl">0</strong>
+            <span className="text-sm text-[#7d6488]">aguardando execução</span>
+          </div>
+
+          <div className="rounded-2xl bg-white p-5 text-[#231329]">
+            <p className="text-sm text-[#7d6488]">Status</p>
+            <strong className="mt-2 block text-3xl">Online</strong>
+            <span className="text-sm text-green-600">sistema publicado</span>
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-wrap gap-3">
+          <a
+            href="/login"
+            className="rounded-xl bg-[#d9b56f] px-5 py-3 font-semibold text-[#16051f] transition hover:opacity-90"
+          >
+            Acessar sistema
+          </a>
+
+          <a
+            href="/montador/M1001"
+            className="rounded-xl border border-purple-500 px-5 py-3 font-semibold text-purple-100 transition hover:bg-white/10"
+          >
+            Acesso montador teste
+          </a>
+        </div>
+      </section>
     </main>
   );
 }
