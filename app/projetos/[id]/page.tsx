@@ -3,6 +3,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type PageProps = {
   params: Promise<{
     id: string;
@@ -68,8 +71,8 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
-  }
+  redirect(`/login?error=sem_sessao&from=projeto_${id}`);
+}
 
   const { data: usuario } = await supabase
     .from("usuarios")
@@ -78,8 +81,8 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
     .single();
 
   if (!usuario || !usuario.ativo) {
-    redirect("/login");
-  }
+  redirect(`/login?error=perfil_projeto&from=projeto_${id}`);
+}
 
   const { data: projeto } = await supabase
     .from("projetos")
