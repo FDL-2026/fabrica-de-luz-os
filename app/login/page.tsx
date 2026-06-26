@@ -1,7 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams?: Promise<{
+    next?: string;
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  const nextPath = params?.next ?? "/dashboard";
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
       <div className="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
@@ -68,7 +76,11 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              <form action="/login/submit" method="post" className="space-y-5">
+              <form
+  action={`/login/submit?next=${encodeURIComponent(nextPath)}`}
+  method="post"
+  className="space-y-5"
+>
                 <div>
                   <label
                     htmlFor="email"
