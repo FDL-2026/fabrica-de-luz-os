@@ -79,12 +79,13 @@ export default function LoginPage() {
                   </label>
 
                   <input
-  id="email"
-  name="email"
-  type="email"
-  placeholder="seu.email@fabricadeluz.com.br"
-  className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-white outline-none transition placeholder:text-white/35 focus:border-[var(--fdl-cream)] focus:ring-4 focus:ring-[var(--fdl-cream)]/10"
-/>
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="seu.email@fabricadeluz.com.br"
+                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-white outline-none transition placeholder:text-white/35 focus:border-[var(--fdl-cream)] focus:ring-4 focus:ring-[var(--fdl-cream)]/10"
+                  />
                 </div>
 
                 <div>
@@ -97,7 +98,9 @@ export default function LoginPage() {
 
                   <input
                     id="password"
+                    name="password"
                     type="password"
+                    required
                     placeholder="Digite sua senha"
                     className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-white outline-none transition placeholder:text-white/35 focus:border-[var(--fdl-cream)] focus:ring-4 focus:ring-[var(--fdl-cream)]/10"
                   />
@@ -112,9 +115,7 @@ export default function LoginPage() {
               </form>
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                <p className="text-sm text-white/65">
-                  Montador de campo?
-                </p>
+                <p className="text-sm text-white/65">Montador de campo?</p>
 
                 <Link
                   href="/montador/M1001"
