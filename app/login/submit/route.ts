@@ -1,74 +1,17 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 function getSafeNext(request: NextRequest) {
   const next = request.nextUrl.searchParams.get("next");
 
-  if (!next) {
-    return "/dashboard";
-  }
-
-  if (!next.startsWith("/") || next.startsWith("//")) {
-    return "/dashboard";
-  }
+  if (!next) return "/dashboard";
+  if (!next.startsWith("/") || next.startsWith("//")) return "/dashboard";
 
   return next;
 }
 
-function redirectWithCookies(
-  request: NextRequest,
-  path: string,
-  cookieResponse: NextResponse
-) {
-  const url = new URL(path, request.url);
-  const response = NextResponse.redirect(url);
-
-  cookieResponse.cookies.getAll().forEach((cookie) => {
-    response.cookies.set(cookie.name, cookie.value, {
-      path: "/",
-      sameSite: "lax",
-      httpOnly: cookie.httpOnly,
-      secure: cookie.secure,
-      maxAge: cookie.maxAge,
-      expires: cookie.expires,
-    });
-  });
-
-  return response;
-}
-
 export async function POST(request: NextRequest) {
-  let cookieResponse = NextResponse.next({
-    request,
-  });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value);
-          });
-
-          cookieResponse = NextResponse.next({
-            request,
-          });
-
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieResponse.cookies.set(name, value, {
-              ...options,
-              path: "/",
-            });
-          });
-        },
-      },
-    }
-  );
+  const supabase = await createClient();
 
   const formData = await request.formData();
 
@@ -129,5 +72,5 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return redirectWithCookies(request, nextPath, cookieResponse);
+  return NextResponse.redirect(new URL(nextPath, request.url));
 }
