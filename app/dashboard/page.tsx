@@ -37,14 +37,14 @@ export default async function DashboardPage() {
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
       <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
         <aside className="border-r border-white/10 bg-[var(--fdl-purple)] p-6">
-          <div className="mb-10 flex items-center justify-center rounded-3xl bg-white/5 p-4">
+          <div className="mb-10 rounded-3xl bg-white/5 p-4">
   <Image
     src="/brand/H_TAGLINE_SF_ROXO.png"
     alt="Fábrica de Luz"
-    width={420}
-    height={220}
+    width={500}
+    height={260}
     priority
-    className="h-auto max-h-28 w-full object-contain"
+    className="h-auto w-full object-contain"
   />
 </div>
 
