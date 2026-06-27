@@ -258,19 +258,19 @@ export default async function ProjetosPage() {
                     </div>
 
                     <div className="mt-5 flex flex-wrap gap-3">
-                      <Link
-                        href={`/projetos/${projeto.id}`}
-                        className="rounded-2xl bg-[var(--fdl-cream)] px-5 py-3 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
-                      >
-                        Ver projeto
-                      </Link>
+                     <a
+  href={`/projetos/${projeto.id}`}
+  className="rounded-2xl bg-[var(--fdl-cream)] px-5 py-3 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+>
+  Ver projeto
+</a>
 
-                      <Link
-                        href={`/projetos/${projeto.id}/cronograma`}
-                        className="rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-                      >
-                        Cronograma
-                      </Link>
+                     <a
+  href={`/projetos/${projeto.id}/cronograma`}
+  className="rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+>
+  Cronograma
+</a>
                     </div>
                   </article>
                 ))}

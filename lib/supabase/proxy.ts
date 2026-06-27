@@ -34,37 +34,7 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
-
-  const protectedRoutes = [
-    "/dashboard",
-    "/projetos",
-    "/usuarios",
-    "/importar",
-  ];
-
-  const isProtectedRoute = protectedRoutes.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`)
-  );
-
-  if (!user && isProtectedRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
-
-    return NextResponse.redirect(url);
-  }
-
-  if (user && pathname === "/login") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-
-    return NextResponse.redirect(url);
-  }
+  await supabase.auth.getUser();
 
   return supabaseResponse;
 }

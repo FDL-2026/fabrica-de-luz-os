@@ -184,12 +184,12 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
         <section className="p-8">
           <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <Link
-                href="/projetos"
-                className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
-              >
-                ← Voltar para projetos
-              </Link>
+              <a
+  href="/projetos"
+  className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
+>
+  ← Voltar para projetos
+</a>
 
               <p className="mt-6 text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
                 Projeto
