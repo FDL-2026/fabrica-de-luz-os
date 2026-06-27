@@ -45,6 +45,14 @@ type CronogramaPreview = {
   avisos: string[];
 };
 
+type ResultadoImportacao = {
+  projeto_id: string;
+  projeto_nome: string;
+  etapas_processadas: number;
+  os_criadas: number;
+  os_atualizadas: number;
+};
+
 function limparTexto(valor: CellValue) {
   if (valor === null || valor === undefined) return "";
 
@@ -229,7 +237,8 @@ function interpretarCronograma(file: File, workbook: XLSX.WorkBook) {
     const duracaoReal = formatarNumero(row[7]);
     const terminoReal = formatarData(row[8]);
     const progresso = formatarProgresso(row[9]);
-    const responsavelLinha = limparTexto(row[10]) || preview.responsavelComercial;
+    const responsavelLinha =
+      limparTexto(row[10]) || preview.responsavelComercial;
     const equipeLinha = limparTexto(row[11]) || preview.equipe;
 
     if (ehLinhaEtapa(id)) {
@@ -286,7 +295,7 @@ function interpretarCronograma(file: File, workbook: XLSX.WorkBook) {
 
   if (preview.uf === "Não identificado") {
     preview.avisos.push(
-      "UF não identificada pelo nome do arquivo. Na próxima fase será possível revisar antes de gravar."
+      "UF não identificada pelo nome do arquivo. Revise antes de confirmar a importação."
     );
   }
 
@@ -297,6 +306,8 @@ export default function ImportarClient() {
   const [preview, setPreview] = useState<CronogramaPreview | null>(null);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
+  const [resultado, setResultado] = useState<ResultadoImportacao | null>(null);
 
   const resumo = useMemo(() => {
     if (!preview) {
@@ -325,6 +336,7 @@ export default function ImportarClient() {
 
     setErro("");
     setPreview(null);
+    setResultado(null);
 
     if (!file) return;
 
@@ -360,22 +372,64 @@ export default function ImportarClient() {
     }
   }
 
+  async function handleConfirmarImportacao() {
+    if (!preview) return;
+
+    setErro("");
+    setResultado(null);
+    setConfirmando(true);
+
+    try {
+      const response = await fetch("/importar/confirmar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(preview),
+      });
+
+      const json = await response.json();
+
+      if (!response.ok) {
+        throw new Error(json?.error ?? "Não foi possível confirmar a importação.");
+      }
+
+      const resultadoImportacao = json?.resultado as ResultadoImportacao | null;
+
+      if (!resultadoImportacao?.projeto_id) {
+        throw new Error("A importação foi concluída, mas o projeto não foi retornado.");
+      }
+
+      setResultado(resultadoImportacao);
+
+      window.location.href = `/projetos/${resultadoImportacao.projeto_id}`;
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Não foi possível confirmar a importação.";
+
+      setErro(message);
+      setConfirmando(false);
+    }
+  }
+
   return (
     <div className="space-y-8">
       <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
         <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
           <div>
             <p className="text-sm uppercase tracking-[0.24em] text-[var(--fdl-cream)]">
-              Fase 1
+              Fase 2
             </p>
 
             <h2 className="mt-2 text-2xl font-bold">
-              Ler cronograma e gerar prévia
+              Ler cronograma e confirmar importação
             </h2>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60">
-              Nesta etapa o sistema apenas lê o Excel e mostra o que será
-              importado. Nada é gravado no Supabase ainda.
+              O sistema lê o Excel, mostra a prévia e, ao confirmar, cria ou
+              atualiza o projeto, etapas e OSs automaticamente no Supabase.
             </p>
 
             <div className="mt-6">
@@ -409,30 +463,40 @@ export default function ImportarClient() {
               </div>
             ) : null}
 
+            {confirmando ? (
+              <div className="mt-5 rounded-2xl border border-[var(--fdl-cream)]/30 bg-[var(--fdl-cream)]/10 p-4 text-sm text-[var(--fdl-cream)]">
+                Confirmando importação e criando dados do projeto...
+              </div>
+            ) : null}
+
             {erro ? (
               <div className="mt-5 rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">
                 {erro}
               </div>
             ) : null}
+
+            {resultado ? (
+              <div className="mt-5 rounded-2xl border border-green-400/30 bg-green-500/10 p-4 text-sm text-green-100">
+                Importação concluída. Abrindo projeto...
+              </div>
+            ) : null}
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-            <h3 className="text-lg font-semibold">Como o sistema interpreta</h3>
+            <h3 className="text-lg font-semibold">Como o sistema grava</h3>
 
             <div className="mt-4 space-y-3 text-sm text-white/65">
               <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                IDs inteiros, como <strong>1</strong>, <strong>2</strong> e{" "}
-                <strong>3</strong>, viram etapas.
+                IDs inteiros viram etapas do projeto.
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                IDs com ponto, como <strong>2.1</strong> e{" "}
-                <strong>2.2</strong>, viram OSs.
+                IDs com ponto viram OSs vinculadas à etapa correspondente.
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                Datas, equipe, responsável e progresso são puxados das colunas
-                padrão do cronograma.
+                Se o projeto já existir, as etapas e OSs são atualizadas em vez
+                de duplicadas.
               </div>
             </div>
           </div>
@@ -470,9 +534,9 @@ export default function ImportarClient() {
 
             <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
               <p className="text-sm text-[#7d6488]">Status</p>
-              <strong className="mt-3 block text-3xl">Prévia</strong>
-              <span className="mt-2 block text-sm text-yellow-600">
-                nada gravado ainda
+              <strong className="mt-3 block text-3xl">Pronto</strong>
+              <span className="mt-2 block text-sm text-green-600">
+                prévia gerada
               </span>
             </div>
           </section>
@@ -580,7 +644,7 @@ export default function ImportarClient() {
               <div className="mb-5">
                 <h2 className="text-xl font-semibold">OSs identificadas</h2>
                 <p className="mt-1 text-sm text-white/50">
-                  Amostra das primeiras OSs que serão criadas.
+                  Amostra das primeiras OSs que serão criadas ou atualizadas.
                 </p>
               </div>
 
@@ -637,11 +701,19 @@ export default function ImportarClient() {
 
               <button
                 type="button"
-                disabled
-                className="mt-6 h-12 w-full cursor-not-allowed rounded-2xl bg-white/10 text-sm font-semibold text-white/45"
+                onClick={handleConfirmarImportacao}
+                disabled={confirmando || preview.ordensServico.length === 0}
+                className="mt-6 h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Confirmar importação será liberado na próxima etapa
+                {confirmando
+                  ? "Confirmando importação..."
+                  : "Confirmar importação e criar projeto"}
               </button>
+
+              <p className="mt-3 text-center text-xs text-white/40">
+                Após confirmar, o sistema abrirá automaticamente a página do
+                projeto criado ou atualizado.
+              </p>
             </div>
           </section>
         </>
