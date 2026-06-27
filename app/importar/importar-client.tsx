@@ -193,7 +193,6 @@ function interpretarCronograma(file: File, workbook: XLSX.WorkBook) {
   const responsavelComercial = lerCelula(sheet, "B2");
   const equipe = lerCelula(sheet, "B3");
   const clienteCelula = extrairClienteDaCelula(lerCelula(sheet, "B7"));
-  const inicioOperacoes = lerCelula(sheet, "D9");
 
   const clientePlanilhaGenerico =
     !clienteCelula ||
@@ -204,6 +203,30 @@ function interpretarCronograma(file: File, workbook: XLSX.WorkBook) {
     ? infoArquivo.cliente
     : clienteCelula;
 
+  let dataDesembarqueCliente = "";
+
+  rows.forEach((row, index) => {
+    const numeroLinhaExcel = index + 1;
+
+    if (numeroLinhaExcel < 13) return;
+
+    const tarefa = limparTexto(row[1])
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+    if (
+      !dataDesembarqueCliente &&
+      tarefa.includes("desembarque") &&
+      tarefa.includes("cliente")
+    ) {
+      dataDesembarqueCliente = formatarData(row[3]);
+    }
+  });
+
+  const inicioOperacoes =
+    dataDesembarqueCliente || lerCelula(sheet, "D9") || "Não informado";
+
   const preview: CronogramaPreview = {
     arquivo: file.name,
     aba,
@@ -212,7 +235,7 @@ function interpretarCronograma(file: File, workbook: XLSX.WorkBook) {
     uf: infoArquivo.uf || "Não identificado",
     responsavelComercial: responsavelComercial || "Não informado",
     equipe: equipe || "Não informada",
-    inicioOperacoes: inicioOperacoes || "Não informado",
+    inicioOperacoes,
     etapas: [],
     ordensServico: [],
     avisos: [],
@@ -296,6 +319,12 @@ function interpretarCronograma(file: File, workbook: XLSX.WorkBook) {
   if (preview.uf === "Não identificado") {
     preview.avisos.push(
       "UF não identificada pelo nome do arquivo. Revise antes de confirmar a importação."
+    );
+  }
+
+  if (!dataDesembarqueCliente) {
+    preview.avisos.push(
+      "Não foi encontrada uma linha com 'Desembarque no cliente'. O início previsto do projeto pode precisar de revisão."
     );
   }
 
