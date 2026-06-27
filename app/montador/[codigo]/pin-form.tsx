@@ -291,13 +291,12 @@ export default function PinForm({ codigo }: PinFormProps) {
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      disabled
-                      className="mt-4 h-12 w-full cursor-not-allowed rounded-2xl bg-white/10 text-sm font-semibold text-white/45"
-                    >
-                      Abrir OSs na próxima etapa
-                    </button>
+                    <a
+  href={`/montador/${codigo}/projetos/${projeto.projeto_id}`}
+  className="mt-4 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+>
+  Abrir OSs do projeto
+</a>
                   </article>
                 );
               })}
