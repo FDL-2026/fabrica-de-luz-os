@@ -325,13 +325,12 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
                 </div>
               </div>
 
-              <button
-                type="button"
-                disabled
-                className="mt-4 h-12 w-full cursor-not-allowed rounded-2xl bg-white/10 text-sm font-semibold text-white/45"
+              <a
+                href={`/montador/${codigo}/projetos/${projetoId}/os/${os.os_id}`}
+                className="mt-4 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
               >
-                Registro e conclusão na próxima etapa
-              </button>
+                Abrir OS
+              </a>
             </article>
           ))}
         </div>
