@@ -206,7 +206,7 @@ export default async function ProjetosPage() {
                         </h3>
 
                         <p className="mt-1 text-sm text-white/60">
-                          {projeto.cidade} / {projeto.uf}
+                           {projeto.uf}
                         </p>
                       </div>
 

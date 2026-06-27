@@ -245,7 +245,7 @@ export default function PinForm({ codigo }: PinFormProps) {
                         </h4>
 
                         <p className="mt-1 text-sm text-white/55">
-                          {projeto.cidade} / {projeto.uf}
+                           {projeto.uf}
                         </p>
                       </div>
 

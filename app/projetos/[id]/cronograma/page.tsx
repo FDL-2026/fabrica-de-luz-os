@@ -203,7 +203,7 @@ export default async function CronogramaProjetoPage({ params }: PageProps) {
               </h1>
 
               <p className="mt-2 text-sm text-white/60">
-                {projeto.cidade} / {projeto.uf} · Temporada {projeto.temporada}
+                 {projeto.uf} · Temporada {projeto.temporada}
               </p>
             </div>
 

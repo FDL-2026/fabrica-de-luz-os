@@ -137,7 +137,7 @@ export default async function DashboardPage() {
                 <thead className="bg-white/10 text-white/70">
                   <tr>
                     <th className="px-4 py-3">Cliente</th>
-                    <th className="px-4 py-3">Cidade</th>
+                    <th className="px-4 py-3">UF</th>
                     <th className="px-4 py-3">Temporada</th>
                     <th className="px-4 py-3">Status</th>
                   </tr>
@@ -152,7 +152,7 @@ export default async function DashboardPage() {
                         </td>
 
                         <td className="px-4 py-3 text-white/70">
-                          {projeto.cidade} / {projeto.uf}
+                           {projeto.uf}
                         </td>
 
                         <td className="px-4 py-3 text-white/70">
