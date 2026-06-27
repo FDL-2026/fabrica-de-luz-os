@@ -21,7 +21,7 @@ export async function createClient() {
               });
             });
           } catch {
-            // Pode falhar em Server Components; o proxy cuida de atualizar sessão.
+            // Em Server Components pode falhar. O proxy atualiza a sessão.
           }
         },
       },

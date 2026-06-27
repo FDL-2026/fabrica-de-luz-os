@@ -1,33 +1,12 @@
 import Image from "next/image";
-import { connection } from "next/server";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
+import { requireUser } from "@/lib/auth/require-user";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function DashboardPage() {
-  await connection();
-  
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  const { data: usuario } = await supabase
-    .from("usuarios")
-    .select("id, nome, email, perfil, ativo")
-    .eq("auth_user_id", user.id)
-    .single();
-
-  if (!usuario || !usuario.ativo) {
-    redirect("/login");
-  }
+  const { supabase, usuario } = await requireUser("/dashboard");
 
   const { data: projetos } = await supabase
     .from("projetos")
@@ -40,59 +19,60 @@ export default async function DashboardPage() {
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
       <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
         <aside className="border-r border-white/10 bg-[var(--fdl-purple)] p-6">
-          <div className="mb-10 rounded-3xl bg-white/5 p-4">
-  <Image
-    src="/brand/H_TAGLINE_SF_ROXO.png"
-    alt="Fábrica de Luz"
-    width={500}
-    height={260}
-    priority
-    className="h-auto w-full object-contain"
-  />
-</div>
+          <div className="mb-10 flex items-center justify-center rounded-3xl bg-white/5 p-4">
+            <Image
+              src="/brand/H_TAGLINE_SF_ROXO.png"
+              alt="Fábrica de Luz"
+              width={500}
+              height={300}
+              priority
+              className="h-auto max-h-28 w-full object-contain"
+            />
+          </div>
 
           <nav className="space-y-2 text-sm">
-            <a
+            <Link
               href="/dashboard"
               className="block rounded-2xl bg-white/15 px-4 py-3 font-semibold text-white"
             >
               Painel geral
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/projetos"
               className="block rounded-2xl px-4 py-3 text-white/70 hover:bg-white/10 hover:text-white"
             >
               Projetos
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/usuarios"
               className="block rounded-2xl px-4 py-3 text-white/70 hover:bg-white/10 hover:text-white"
             >
               Usuários
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/importar"
               className="block rounded-2xl px-4 py-3 text-white/70 hover:bg-white/10 hover:text-white"
             >
               Importar cronograma
-            </a>
+            </Link>
           </nav>
 
           <div className="mt-10 rounded-3xl border border-white/10 bg-white/10 p-4">
             <p className="text-sm font-semibold">{usuario.nome}</p>
-            <p className="mt-1 text-xs text-white/60">{usuario.perfil}</p>
+            <p className="mt-1 text-xs text-white/60">
+              {usuario.perfil.replace("_", " ")}
+            </p>
           </div>
 
           <a
-  href="/logout"
-  className="mt-4 block rounded-2xl border border-white/15 px-4 py-3 text-center text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
->
-  Sair
-</a>
-
+            href="/logout"
+            className="mt-4 block rounded-2xl border border-white/15 px-4 py-3 text-center text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+          >
+            Sair
+          </a>
         </aside>
 
         <section className="p-8">
@@ -101,9 +81,11 @@ export default async function DashboardPage() {
               <p className="text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
                 Painel geral
               </p>
-              <h2 className="mt-2 text-3xl font-bold">
+
+              <h1 className="mt-2 text-3xl font-bold">
                 Bem-vindo, {usuario.nome}
-              </h2>
+              </h1>
+
               <p className="mt-2 text-sm text-white/60">
                 Acompanhe os projetos, cronogramas e registros de montagem.
               </p>
@@ -143,13 +125,11 @@ export default async function DashboardPage() {
           </div>
 
           <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-semibold">Projetos recentes</h3>
-                <p className="mt-1 text-sm text-white/50">
-                  Primeiros dados carregados do banco.
-                </p>
-              </div>
+            <div className="mb-5">
+              <h2 className="text-xl font-semibold">Projetos recentes</h2>
+              <p className="mt-1 text-sm text-white/50">
+                Primeiros dados carregados do banco.
+              </p>
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-white/10">
@@ -170,15 +150,18 @@ export default async function DashboardPage() {
                         <td className="px-4 py-3">
                           {projeto.cliente || projeto.shopping}
                         </td>
+
                         <td className="px-4 py-3 text-white/70">
                           {projeto.cidade} / {projeto.uf}
                         </td>
+
                         <td className="px-4 py-3 text-white/70">
                           {projeto.temporada}
                         </td>
+
                         <td className="px-4 py-3">
                           <span className="rounded-full bg-[var(--fdl-cream)] px-3 py-1 text-xs font-semibold text-[var(--fdl-purple-dark)]">
-                            {projeto.status}
+                            {projeto.status.replace("_", " ")}
                           </span>
                         </td>
                       </tr>

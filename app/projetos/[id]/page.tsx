@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
+import { requireUser } from "@/lib/auth/require-user";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -16,6 +16,18 @@ function formatDate(date: string | null) {
   if (!date) return "Não informado";
 
   return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
+}
+
+function formatTime(time: string | null) {
+  if (!time) return "--h";
+
+  const [hour, minute] = time.split(":");
+
+  if (minute === "00") {
+    return `${hour}h`;
+  }
+
+  return `${hour}h${minute}`;
 }
 
 function formatStatus(status: string | null) {
@@ -43,19 +55,24 @@ function statusClass(status: string | null) {
     case "em_montagem":
     case "em_andamento":
       return "bg-green-100 text-green-700";
+
     case "planejamento":
     case "prevista":
       return "bg-blue-100 text-blue-700";
+
     case "pausado":
     case "pendente":
       return "bg-yellow-100 text-yellow-700";
+
     case "concluido":
     case "concluida":
       return "bg-[var(--fdl-cream)] text-[var(--fdl-purple-dark)]";
+
     case "cancelado":
     case "atrasada":
     case "bloqueada":
       return "bg-red-100 text-red-700";
+
     default:
       return "bg-white/20 text-white";
   }
@@ -64,25 +81,7 @@ function statusClass(status: string | null) {
 export default async function ProjetoDetalhePage({ params }: PageProps) {
   const { id } = await params;
 
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-  redirect(`/login?error=sem_sessao&from=projeto_${id}`);
-}
-
-  const { data: usuario } = await supabase
-    .from("usuarios")
-    .select("id, nome, email, perfil, ativo")
-    .eq("auth_user_id", user.id)
-    .single();
-
-  if (!usuario || !usuario.ativo) {
-  redirect(`/login?error=perfil_projeto&from=projeto_${id}`);
-}
+  const { supabase, usuario } = await requireUser(`/projetos/${id}`);
 
   const { data: projeto } = await supabase
     .from("projetos")
@@ -109,12 +108,15 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
     .order("codigo_os", { ascending: true });
 
   const totalNoites = noites?.length ?? 0;
+
   const noitesConcluidas =
     noites?.filter((noite) => noite.status === "concluida").length ?? 0;
 
   const totalOS = ordensServico?.length ?? 0;
+
   const osConcluidas =
     ordensServico?.filter((os) => os.status === "concluida").length ?? 0;
+
   const osPendentes =
     ordensServico?.filter((os) => os.status === "pendente").length ?? 0;
 
@@ -173,23 +175,23 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
             </p>
           </div>
 
-          <Link
+          <a
             href="/logout"
             className="mt-4 block rounded-2xl border border-white/15 px-4 py-3 text-center text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
           >
             Sair
-          </Link>
+          </a>
         </aside>
 
         <section className="p-8">
           <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <a
-  href="/projetos"
-  className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
->
-  ← Voltar para projetos
-</a>
+                href="/projetos"
+                className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
+              >
+                ← Voltar para projetos
+              </a>
 
               <p className="mt-6 text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
                 Projeto
@@ -213,12 +215,12 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                 {formatStatus(projeto.status)}
               </span>
 
-              <Link
+              <a
                 href={`/projetos/${projeto.id}/cronograma`}
                 className="rounded-full bg-[var(--fdl-cream)] px-5 py-2 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
               >
                 Ver cronograma
-              </Link>
+              </a>
             </div>
           </header>
 
@@ -308,7 +310,9 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
 
             <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
               <div className="mb-5">
-                <h2 className="text-xl font-semibold">Cronograma noite a noite</h2>
+                <h2 className="text-xl font-semibold">
+                  Cronograma noite a noite
+                </h2>
                 <p className="mt-1 text-sm text-white/50">
                   Visão geral das noites de montagem.
                 </p>
@@ -327,8 +331,8 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                         </p>
                         <p className="mt-1 text-sm text-white/50">
                           {formatDate(noite.data)} ·{" "}
-                          {noite.horario_inicio || "--:--"} às{" "}
-                          {noite.horario_fim || "--:--"}
+                          {formatTime(noite.horario_inicio)} às{" "}
+                          {formatTime(noite.horario_fim)}
                         </p>
                       </div>
 
@@ -359,12 +363,12 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                 </p>
               </div>
 
-              <Link
+              <a
                 href={`/projetos/${projeto.id}/cronograma`}
                 className="w-fit rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
               >
                 Abrir cronograma
-              </Link>
+              </a>
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-white/10">

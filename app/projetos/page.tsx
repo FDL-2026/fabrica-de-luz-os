@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth/require-user";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -37,26 +36,13 @@ function statusClass(status: string | null) {
   }
 }
 
+function formatDate(date: string | null) {
+  if (!date) return "Não informado";
+  return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
+}
+
 export default async function ProjetosPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  const { data: usuario } = await supabase
-    .from("usuarios")
-    .select("id, nome, email, perfil, ativo")
-    .eq("auth_user_id", user.id)
-    .single();
-
-  if (!usuario || !usuario.ativo) {
-    redirect("/login");
-  }
+  const { supabase, usuario } = await requireUser("/projetos");
 
   const { data: projetos } = await supabase
     .from("projetos")
@@ -66,8 +52,10 @@ export default async function ProjetosPage() {
     .order("criado_em", { ascending: false });
 
   const totalProjetos = projetos?.length ?? 0;
+
   const projetosEmMontagem =
     projetos?.filter((projeto) => projeto.status === "em_montagem").length ?? 0;
+
   const projetosPlanejamento =
     projetos?.filter((projeto) => projeto.status === "planejamento").length ??
     0;
@@ -124,12 +112,12 @@ export default async function ProjetosPage() {
             </p>
           </div>
 
-          <Link
+          <a
             href="/logout"
             className="mt-4 block rounded-2xl border border-white/15 px-4 py-3 text-center text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
           >
             Sair
-          </Link>
+          </a>
         </aside>
 
         <section className="p-8">
@@ -153,12 +141,12 @@ export default async function ProjetosPage() {
                 Temporada 2026
               </div>
 
-              <Link
+              <a
                 href="/importar"
                 className="rounded-full bg-[var(--fdl-cream)] px-5 py-2 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
               >
                 Importar cronograma
-              </Link>
+              </a>
             </div>
           </header>
 
@@ -193,13 +181,11 @@ export default async function ProjetosPage() {
           </div>
 
           <section className="mt-8">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold">Projetos cadastrados</h2>
-                <p className="mt-1 text-sm text-white/50">
-                  Clique em um projeto para abrir o acompanhamento detalhado.
-                </p>
-              </div>
+            <div className="mb-5">
+              <h2 className="text-xl font-semibold">Projetos cadastrados</h2>
+              <p className="mt-1 text-sm text-white/50">
+                Clique em um projeto para abrir o acompanhamento detalhado.
+              </p>
             </div>
 
             {projetos && projetos.length > 0 ? (
@@ -237,40 +223,32 @@ export default async function ProjetosPage() {
                       <div>
                         <p className="text-white/45">Início previsto</p>
                         <p className="mt-1 font-semibold">
-                          {projeto.data_inicio
-                            ? new Date(projeto.data_inicio).toLocaleDateString(
-                                "pt-BR"
-                              )
-                            : "Não informado"}
+                          {formatDate(projeto.data_inicio)}
                         </p>
                       </div>
 
                       <div>
                         <p className="text-white/45">Fim previsto</p>
                         <p className="mt-1 font-semibold">
-                          {projeto.data_fim
-                            ? new Date(projeto.data_fim).toLocaleDateString(
-                                "pt-BR"
-                              )
-                            : "Não informado"}
+                          {formatDate(projeto.data_fim)}
                         </p>
                       </div>
                     </div>
 
                     <div className="mt-5 flex flex-wrap gap-3">
-                     <a
-  href={`/projetos/${projeto.id}`}
-  className="rounded-2xl bg-[var(--fdl-cream)] px-5 py-3 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
->
-  Ver projeto
-</a>
+                      <a
+                        href={`/projetos/${projeto.id}`}
+                        className="rounded-2xl bg-[var(--fdl-cream)] px-5 py-3 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                      >
+                        Ver projeto
+                      </a>
 
-                     <a
-  href={`/projetos/${projeto.id}/cronograma`}
-  className="rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
->
-  Cronograma
-</a>
+                      <a
+                        href={`/projetos/${projeto.id}/cronograma`}
+                        className="rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+                      >
+                        Cronograma
+                      </a>
                     </div>
                   </article>
                 ))}
