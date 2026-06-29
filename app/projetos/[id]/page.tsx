@@ -355,7 +355,26 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
           </section>
 
           
+      
       <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-xl font-bold">Equipe do projeto</h2>
+            <p className="mt-1 text-sm text-white/55">
+              Vincule montadores, supervisores e gestores que terão acesso a este projeto.
+            </p>
+          </div>
+
+          <a
+            href={`/projetos/${projeto.id}/equipe`}
+            className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--fdl-lilac)] px-5 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:bg-white"
+          >
+            Gerenciar equipe
+          </a>
+        </div>
+      </section>
+
+<section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
         <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-xl font-bold">Ordens de serviço</h2>
