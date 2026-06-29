@@ -62,6 +62,16 @@ export default function UsuariosClient() {
   const [pin, setPin] = useState("");
   const [ativo, setAtivo] = useState(true);
 
+  const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
+  const [editNome, setEditNome] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editSenha, setEditSenha] = useState("");
+  const [editPerfil, setEditPerfil] = useState("gestor_operacoes");
+  const [editTipoLogin, setEditTipoLogin] = useState("email");
+  const [editCodigoAcesso, setEditCodigoAcesso] = useState("");
+  const [editPin, setEditPin] = useState("");
+  const [editAtivo, setEditAtivo] = useState(true);
+
   async function carregarUsuarios() {
     setCarregando(true);
     setErro("");
@@ -100,6 +110,61 @@ export default function UsuariosClient() {
     }
   }
 
+  function alterarTipoLoginEdicao(value: string) {
+    setEditTipoLogin(value);
+
+    if (value === "pin") {
+      setEditPerfil("montador");
+      setEditEmail("");
+      setEditSenha("");
+      setEditCodigoAcesso(
+        (atual) => atual || gerarCodigoMontador(usuarios.length)
+      );
+    }
+
+    if (value === "email") {
+      setEditCodigoAcesso("");
+      setEditPin("");
+      if (editPerfil === "montador") {
+        setEditPerfil("gestor_operacoes");
+      }
+    }
+  }
+
+  function abrirEdicao(usuario: Usuario) {
+    setErro("");
+    setSucesso("");
+    setUsuarioEditando(usuario);
+    setEditNome(usuario.nome ?? "");
+    setEditEmail(usuario.email ?? "");
+    setEditSenha("");
+    setEditPerfil(usuario.perfil ?? "gestor_operacoes");
+    setEditTipoLogin(usuario.tipo_login ?? "email");
+    setEditCodigoAcesso(usuario.codigo_acesso ?? "");
+    setEditPin("");
+    setEditAtivo(Boolean(usuario.ativo));
+  }
+
+  function fecharEdicao() {
+    setUsuarioEditando(null);
+    setEditNome("");
+    setEditEmail("");
+    setEditSenha("");
+    setEditPerfil("gestor_operacoes");
+    setEditTipoLogin("email");
+    setEditCodigoAcesso("");
+    setEditPin("");
+    setEditAtivo(true);
+  }
+
+  async function obterAccessToken() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    return session?.access_token ?? "";
+  }
+
   async function criarUsuario(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -107,11 +172,9 @@ export default function UsuariosClient() {
     setSucesso("");
     setSalvando(true);
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const accessToken = await obterAccessToken();
 
-    if (!session?.access_token) {
+    if (!accessToken) {
       setErro("Sessão expirada. Faça login novamente.");
       setSalvando(false);
       return;
@@ -121,7 +184,7 @@ export default function UsuariosClient() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${session.access_token}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({
         nome,
@@ -164,6 +227,58 @@ export default function UsuariosClient() {
     setSalvando(false);
   }
 
+  async function salvarEdicao(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!usuarioEditando) return;
+
+    setErro("");
+    setSucesso("");
+    setSalvando(true);
+
+    const accessToken = await obterAccessToken();
+
+    if (!accessToken) {
+      setErro("Sessão expirada. Faça login novamente.");
+      setSalvando(false);
+      return;
+    }
+
+    const response = await fetch("/api/usuarios/atualizar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        usuario_id: usuarioEditando.usuario_id,
+        nome: editNome,
+        email: editEmail,
+        senha: editSenha,
+        perfil: editPerfil,
+        tipo_login: editTipoLogin,
+        codigo_acesso: editCodigoAcesso,
+        pin: editPin,
+        ativo: editAtivo,
+      }),
+    });
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      setErro(payload?.error ?? "Não foi possível atualizar o usuário.");
+      setSalvando(false);
+      return;
+    }
+
+    setSucesso("Usuário atualizado com sucesso.");
+    fecharEdicao();
+
+    await carregarUsuarios();
+
+    setSalvando(false);
+  }
+
   return (
     <div className="space-y-6">
       <header className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
@@ -174,9 +289,187 @@ export default function UsuariosClient() {
         <h1 className="mt-2 text-3xl font-bold">Usuários</h1>
 
         <p className="mt-2 text-sm text-white/60">
-          Cadastre usuários administrativos e montadores com acesso por PIN.
+          Cadastre, edite, ative ou inative usuários administrativos e
+          montadores.
         </p>
       </header>
+
+      {usuarioEditando ? (
+        <section className="rounded-3xl border border-[var(--fdl-cream)]/30 bg-white/[0.08] p-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
+                Editando usuário
+              </p>
+              <h2 className="mt-2 text-2xl font-bold">
+                {usuarioEditando.nome || "Usuário"}
+              </h2>
+              <p className="mt-1 text-sm text-white/55">
+                Para alterar o PIN ou senha, preencha o novo valor. Se deixar em
+                branco, o acesso atual será mantido.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={fecharEdicao}
+              className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/75 transition hover:bg-white/10 hover:text-white"
+            >
+              Cancelar edição
+            </button>
+          </div>
+
+          <form
+            onSubmit={salvarEdicao}
+            className="mt-6 grid gap-4 lg:grid-cols-2"
+          >
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-white">
+                Tipo de acesso
+              </label>
+
+              <select
+                value={editTipoLogin}
+                onChange={(event) => alterarTipoLoginEdicao(event.target.value)}
+                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+              >
+                <option className="text-black" value="email">
+                  E-mail e senha
+                </option>
+                <option className="text-black" value="pin">
+                  Código + PIN
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-white">
+                Perfil
+              </label>
+
+              <select
+                value={editPerfil}
+                onChange={(event) => setEditPerfil(event.target.value)}
+                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+              >
+                {perfis.map((item) => (
+                  <option key={item.value} className="text-black" value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-white">
+                Nome
+              </label>
+
+              <input
+                value={editNome}
+                onChange={(event) => setEditNome(event.target.value)}
+                required
+                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
+                placeholder="Nome completo"
+              />
+            </div>
+
+            {editTipoLogin === "email" ? (
+              <>
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-white">
+                    E-mail
+                  </label>
+
+                  <input
+                    type="email"
+                    value={editEmail}
+                    onChange={(event) => setEditEmail(event.target.value)}
+                    required
+                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
+                    placeholder="usuario@fabricadeluz.com.br"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-white">
+                    Nova senha provisória
+                  </label>
+
+                  <input
+                    type="password"
+                    value={editSenha}
+                    onChange={(event) => setEditSenha(event.target.value)}
+                    minLength={6}
+                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
+                    placeholder="Deixe em branco para manter"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-white">
+                    Código de acesso
+                  </label>
+
+                  <input
+                    value={editCodigoAcesso}
+                    onChange={(event) =>
+                      setEditCodigoAcesso(event.target.value.toUpperCase())
+                    }
+                    required
+                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
+                    placeholder="Exemplo: M1001"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-white">
+                    Novo PIN
+                  </label>
+
+                  <input
+                    value={editPin}
+                    onChange={(event) => setEditPin(event.target.value)}
+                    inputMode="numeric"
+                    minLength={4}
+                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
+                    placeholder="Deixe em branco para manter"
+                  />
+                </div>
+              </>
+            )}
+
+            <label className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white/80">
+              <input
+                type="checkbox"
+                checked={editAtivo}
+                onChange={(event) => setEditAtivo(event.target.checked)}
+              />
+              Usuário ativo
+            </label>
+
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={salvando}
+                className="h-12 flex-1 rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {salvando ? "Salvando..." : "Salvar alterações"}
+              </button>
+
+              <button
+                type="button"
+                onClick={fecharEdicao}
+                className="h-12 rounded-2xl border border-white/15 px-5 text-sm font-semibold text-white/75 transition hover:bg-white/10 hover:text-white"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </section>
+      ) : null}
 
       <section className="grid gap-6 xl:grid-cols-[420px_1fr]">
         <form
@@ -352,7 +645,7 @@ export default function UsuariosClient() {
           ) : usuarios.length > 0 ? (
             <div className="overflow-hidden rounded-2xl border border-white/10">
               <div className="overflow-x-auto">
-                <table className="min-w-[900px] w-full text-left text-sm">
+                <table className="min-w-[980px] w-full text-left text-sm">
                   <thead className="bg-white/10 text-white/70">
                     <tr>
                       <th className="px-4 py-3">Nome</th>
@@ -360,6 +653,7 @@ export default function UsuariosClient() {
                       <th className="px-4 py-3">Acesso</th>
                       <th className="px-4 py-3">Status</th>
                       <th className="px-4 py-3">Último PIN</th>
+                      <th className="px-4 py-3 text-center">Ação</th>
                     </tr>
                   </thead>
 
@@ -402,6 +696,16 @@ export default function UsuariosClient() {
 
                         <td className="px-4 py-3 text-white/60">
                           {formatDateTime(usuario.ultimo_acesso_pin)}
+                        </td>
+
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            type="button"
+                            onClick={() => abrirEdicao(usuario)}
+                            className="inline-flex h-8 items-center justify-center rounded-full bg-[var(--fdl-cream)] px-4 text-xs font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                          >
+                            Editar
+                          </button>
                         </td>
                       </tr>
                     ))}
