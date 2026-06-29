@@ -9,6 +9,7 @@ type ResumoDashboard = {
   os_pendentes: number;
   os_em_andamento: number;
   os_concluidas: number;
+  os_aguardando_validacao: number;
 };
 
 type ProjetoDashboard = {
@@ -44,6 +45,23 @@ type RegistroDashboard = {
   total_arquivos: number;
 };
 
+type OsValidacaoDashboard = {
+  os_id: string;
+  projeto_id: string;
+  codigo_os: string | null;
+  cliente: string | null;
+  shopping: string | null;
+  uf: string | null;
+  temporada: string | null;
+  responsavel_comercial: string | null;
+  servico: string | null;
+  local: string | null;
+  equipe: string | null;
+  status: string | null;
+  status_validacao: string | null;
+  concluido_em: string | null;
+};
+
 type ProjetoOpcao = {
   projeto_id: string;
   cliente: string | null;
@@ -62,6 +80,7 @@ type DashboardData = {
   resumo: ResumoDashboard;
   projetos: ProjetoDashboard[];
   ultimos_registros: RegistroDashboard[];
+  oss_aguardando_validacao: OsValidacaoDashboard[];
   filtros: DashboardFiltros;
 };
 
@@ -172,9 +191,11 @@ const emptyDashboard: DashboardData = {
     os_pendentes: 0,
     os_em_andamento: 0,
     os_concluidas: 0,
+    os_aguardando_validacao: 0,
   },
   projetos: [],
   ultimos_registros: [],
+  oss_aguardando_validacao: [],
   filtros: {
     gestores_comerciais: [],
     projetos_opcoes: [],
@@ -385,6 +406,96 @@ export default function DashboardClient() {
             />
           </div>
         </div>
+      </section>
+
+
+      <section className="rounded-3xl border border-yellow-300/30 bg-yellow-300/10 p-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.24em] text-[var(--fdl-cream)]">
+              Fila de validação
+            </p>
+
+            <h2 className="mt-2 text-xl font-bold">OSs aguardando validação</h2>
+
+            <p className="mt-1 text-sm text-white/60">
+              OSs concluídas pelos montadores e pendentes de aprovação do gestor.
+            </p>
+          </div>
+
+          <span className="w-fit rounded-full bg-yellow-100 px-4 py-2 text-sm font-bold text-yellow-700">
+            {dados.resumo.os_aguardando_validacao} pendente(s)
+          </span>
+        </div>
+
+        {dados.oss_aguardando_validacao.length > 0 ? (
+          <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
+            <div className="overflow-x-auto">
+              <table className="min-w-[1050px] w-full text-left text-sm">
+                <thead className="bg-white/10 text-white/70">
+                  <tr>
+                    <th className="px-4 py-3">Projeto</th>
+                    <th className="px-4 py-3">OS</th>
+                    <th className="px-4 py-3">Local</th>
+                    <th className="px-4 py-3">Serviço</th>
+                    <th className="px-4 py-3">Equipe</th>
+                    <th className="px-4 py-3">Concluída em</th>
+                    <th className="px-4 py-3 text-center">Ação</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {dados.oss_aguardando_validacao.map((os) => (
+                    <tr key={os.os_id} className="border-t border-white/10">
+                      <td className="px-4 py-3">
+                        <p className="font-semibold text-white">
+                          {os.cliente || os.shopping || "Projeto sem nome"}
+                        </p>
+                        <p className="mt-1 text-xs text-white/45">
+                          {os.uf || "UF não informada"} · Gestor:{" "}
+                          {os.responsavel_comercial || "Não informado"}
+                        </p>
+                      </td>
+
+                      <td className="px-4 py-3 font-bold text-white">
+                        {os.codigo_os || "-"}
+                      </td>
+
+                      <td className="px-4 py-3 text-white/75">
+                        {os.local || "-"}
+                      </td>
+
+                      <td className="px-4 py-3 text-white/75">
+                        {os.servico || "-"}
+                      </td>
+
+                      <td className="px-4 py-3 text-white/75">
+                        {os.equipe || "-"}
+                      </td>
+
+                      <td className="px-4 py-3 text-white/60">
+                        {formatDateTime(os.concluido_em)}
+                      </td>
+
+                      <td className="px-4 py-3 text-center">
+                        <a
+                          href={`/projetos/${os.projeto_id}/os/${os.os_id}/validacao`}
+                          className="inline-flex h-9 items-center justify-center rounded-full bg-[var(--fdl-cream)] px-5 text-xs font-bold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                        >
+                          Validar OS
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-sm text-white/55">
+            Nenhuma OS aguardando validação para os filtros selecionados.
+          </div>
+        )}
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
