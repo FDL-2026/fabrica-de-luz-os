@@ -238,6 +238,7 @@ export default function ValidacaoOsClient({
   }
 
   const os = dados.os;
+  const osAprovada = os.status_validacao === "aprovada";
 
   return (
     <div className="space-y-6">
@@ -419,10 +420,21 @@ export default function ValidacaoOsClient({
                 value={observacao}
                 onChange={(event) => setObservacao(event.target.value)}
                 rows={5}
-                className="w-full resize-none rounded-2xl border border-white/10 bg-white/10 p-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
-                placeholder="Descreva o ajuste necessário ou uma observação da aprovação..."
+                disabled={osAprovada}
+                className="w-full resize-none rounded-2xl border border-white/10 bg-white/10 p-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)] disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder={
+                  osAprovada
+                    ? "OS já aprovada. Ações bloqueadas."
+                    : "Descreva o ajuste necessário ou uma observação da aprovação..."
+                }
               />
             </div>
+
+            {osAprovada ? (
+              <div className="mt-4 rounded-2xl border border-green-400/30 bg-green-500/10 p-4 text-sm text-green-100">
+                Esta OS já foi aprovada. As ações de validação foram bloqueadas.
+              </div>
+            ) : null}
 
             {erro ? (
               <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">
@@ -439,7 +451,7 @@ export default function ValidacaoOsClient({
             <div className="mt-5 space-y-3">
               <button
                 type="button"
-                disabled={Boolean(processando)}
+                disabled={Boolean(processando) || osAprovada}
                 onClick={() => executarAcao("aprovar")}
                 className="h-12 w-full rounded-2xl bg-green-100 text-sm font-semibold text-green-700 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -448,7 +460,7 @@ export default function ValidacaoOsClient({
 
               <button
                 type="button"
-                disabled={Boolean(processando)}
+                disabled={Boolean(processando) || osAprovada}
                 onClick={() => executarAcao("solicitar_ajuste")}
                 className="h-12 w-full rounded-2xl bg-red-100 text-sm font-semibold text-red-700 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -459,7 +471,7 @@ export default function ValidacaoOsClient({
 
               <button
                 type="button"
-                disabled={Boolean(processando)}
+                disabled={Boolean(processando) || osAprovada}
                 onClick={() => executarAcao("reabrir")}
                 className="h-12 w-full rounded-2xl border border-white/15 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
