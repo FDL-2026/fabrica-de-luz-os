@@ -18,6 +18,7 @@ type ProjetoDashboard = {
   uf: string | null;
   temporada: string | null;
   status: string | null;
+  responsavel_comercial: string | null;
   total_os: number;
   pendentes: number;
   em_andamento: number;
@@ -43,10 +44,25 @@ type RegistroDashboard = {
   total_arquivos: number;
 };
 
+type ProjetoOpcao = {
+  projeto_id: string;
+  cliente: string | null;
+  shopping: string | null;
+  uf: string | null;
+  temporada: string | null;
+  responsavel_comercial: string | null;
+};
+
+type DashboardFiltros = {
+  gestores_comerciais: string[];
+  projetos_opcoes: ProjetoOpcao[];
+};
+
 type DashboardData = {
   resumo: ResumoDashboard;
   projetos: ProjetoDashboard[];
   ultimos_registros: RegistroDashboard[];
+  filtros: DashboardFiltros;
 };
 
 function formatDateTime(date: string | null) {
@@ -137,6 +153,18 @@ function tipoRegistroClass(tipo: string | null) {
   }
 }
 
+function nomeProjeto(projeto: {
+  cliente: string | null;
+  shopping: string | null;
+  uf?: string | null;
+}) {
+  const nome = projeto.cliente || projeto.shopping || "Projeto sem nome";
+
+  if (!projeto.uf) return nome;
+
+  return `${nome} - ${projeto.uf}`;
+}
+
 const emptyDashboard: DashboardData = {
   resumo: {
     projetos_ativos: 0,
@@ -147,14 +175,20 @@ const emptyDashboard: DashboardData = {
   },
   projetos: [],
   ultimos_registros: [],
+  filtros: {
+    gestores_comerciais: [],
+    projetos_opcoes: [],
+  },
 };
 
 export default function DashboardClient() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [dados, setDados] = useState<DashboardData>(emptyDashboard);
+  const [gestorSelecionado, setGestorSelecionado] = useState("");
+  const [projetoSelecionado, setProjetoSelecionado] = useState("");
 
   const progressoGeral = useMemo(() => {
     const total =
@@ -167,12 +201,17 @@ export default function DashboardClient() {
     return Math.round((dados.resumo.os_concluidas / total) * 100);
   }, [dados]);
 
+  const filtrosAtivos = Boolean(gestorSelecionado || projetoSelecionado);
+
   useEffect(() => {
     async function carregarDashboard() {
       setCarregando(true);
       setErro("");
 
-      const { data, error } = await supabase.rpc("fdl_dashboard_gestao");
+      const { data, error } = await supabase.rpc("fdl_dashboard_gestao", {
+        p_gestor_comercial: gestorSelecionado || null,
+        p_projeto_id: projetoSelecionado || null,
+      });
 
       if (error) {
         setErro(error.message);
@@ -186,7 +225,7 @@ export default function DashboardClient() {
     }
 
     carregarDashboard();
-  }, [supabase]);
+  }, [gestorSelecionado, projetoSelecionado, supabase]);
 
   if (carregando) {
     return (
@@ -235,6 +274,70 @@ export default function DashboardClient() {
             </a>
           </div>
         </div>
+
+        <div className="mt-6 grid gap-4 rounded-3xl border border-white/10 bg-white/[0.04] p-4 lg:grid-cols-[1fr_1fr_auto]">
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-white">
+              Gestor Comercial
+            </label>
+
+            <select
+              value={gestorSelecionado}
+              onChange={(event) => setGestorSelecionado(event.target.value)}
+              className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+            >
+              <option className="text-black" value="">
+                Todos os gestores
+              </option>
+
+              {dados.filtros.gestores_comerciais.map((gestor) => (
+                <option key={gestor} className="text-black" value={gestor}>
+                  {gestor}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-white">
+              Projeto
+            </label>
+
+            <select
+              value={projetoSelecionado}
+              onChange={(event) => setProjetoSelecionado(event.target.value)}
+              className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+            >
+              <option className="text-black" value="">
+                Todos os projetos
+              </option>
+
+              {dados.filtros.projetos_opcoes.map((projeto) => (
+                <option
+                  key={projeto.projeto_id}
+                  className="text-black"
+                  value={projeto.projeto_id}
+                >
+                  {nomeProjeto(projeto)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-end">
+            <button
+              type="button"
+              disabled={!filtrosAtivos}
+              onClick={() => {
+                setGestorSelecionado("");
+                setProjetoSelecionado("");
+              }}
+              className="h-12 w-full rounded-2xl border border-white/15 px-5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 lg:w-auto"
+            >
+              Limpar filtros
+            </button>
+          </div>
+        </div>
       </header>
 
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -244,7 +347,7 @@ export default function DashboardClient() {
             {dados.resumo.projetos_ativos}
           </strong>
           <p className="mt-2 text-xs text-[#7d6488]">
-            {dados.resumo.total_projetos} projeto(s) no total
+            {dados.resumo.total_projetos} projeto(s) no filtro
           </p>
         </div>
 
@@ -317,6 +420,11 @@ export default function DashboardClient() {
                         </h3>
 
                         <p className="mt-2 text-sm text-white/50">
+                          Gestor Comercial:{" "}
+                          {projeto.responsavel_comercial || "Não informado"}
+                        </p>
+
+                        <p className="mt-1 text-sm text-white/50">
                           Último registro: {formatDateTime(projeto.ult_registro)}
                         </p>
                       </div>
@@ -371,7 +479,7 @@ export default function DashboardClient() {
               })
             ) : (
               <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
-                Nenhum projeto encontrado.
+                Nenhum projeto encontrado para os filtros selecionados.
               </div>
             )}
           </div>
@@ -447,7 +555,7 @@ export default function DashboardClient() {
               ))
             ) : (
               <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
-                Nenhum registro enviado ainda.
+                Nenhum registro encontrado para os filtros selecionados.
               </div>
             )}
           </div>
