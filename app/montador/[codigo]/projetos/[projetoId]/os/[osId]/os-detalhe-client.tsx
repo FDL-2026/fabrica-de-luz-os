@@ -42,6 +42,17 @@ type RegistroOs = {
   total_arquivos: number;
 };
 
+type ArquivoOs = {
+  arquivo_id: string;
+  registro_id: string;
+  tipo: string;
+  nome_arquivo: string | null;
+  mime_type: string | null;
+  tamanho_bytes: number | null;
+  url_visualizacao: string | null;
+  criado_em: string;
+};
+
 function formatDate(date: string | null) {
   if (!date) return "Não informado";
   return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
@@ -80,9 +91,27 @@ function formatTipoRegistro(tipo: string | null) {
     conclusao_os: "Conclusão da OS",
     pendencia: "Pendência",
     observacao: "Observação",
+    anexo: "Anexo",
   };
 
   return labels[tipo] ?? tipo.replace("_", " ");
+}
+
+function formatTipoArquivo(tipo: string | null) {
+  if (tipo === "video") return "Vídeo";
+  if (tipo === "foto") return "Foto";
+  if (tipo === "documento") return "Documento";
+  return "Arquivo";
+}
+
+function formatBytes(bytes: number | null) {
+  if (!bytes) return "Tamanho não informado";
+
+  if (bytes < 1024 * 1024) {
+    return `${Math.round(bytes / 1024)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function statusClass(status: string | null) {
@@ -117,6 +146,9 @@ function tipoRegistroClass(tipo: string | null) {
     case "inicio_os":
       return "bg-green-100 text-green-700";
 
+    case "anexo":
+      return "bg-blue-100 text-blue-700";
+
     default:
       return "bg-white/15 text-white/80";
   }
@@ -136,6 +168,9 @@ export default function OsDetalheClient({
   const [sucesso, setSucesso] = useState("");
   const [os, setOs] = useState<OsDetalhe | null>(null);
   const [registros, setRegistros] = useState<RegistroOs[]>([]);
+  const [arquivos, setArquivos] = useState<ArquivoOs[]>([]);
+  const [arquivoSelecionado, setArquivoSelecionado] = useState<File | null>(null);
+  const [enviandoArquivo, setEnviandoArquivo] = useState(false);
   const [usuarioId, setUsuarioId] = useState("");
   const [montadorNome, setMontadorNome] = useState("");
   const [observacao, setObservacao] = useState("");
@@ -157,6 +192,22 @@ export default function OsDetalheClient({
     }
 
     setRegistros((data ?? []) as RegistroOs[]);
+  }
+
+  async function carregarArquivos(usuarioIdMontador: string) {
+    const { data, error } = await supabase.rpc("listar_arquivos_os_montador", {
+      p_usuario_id: usuarioIdMontador,
+      p_projeto_id: projetoId,
+      p_os_id: osId,
+    });
+
+    if (error) {
+      setErro(error.message);
+      setArquivos([]);
+      return;
+    }
+
+    setArquivos((data ?? []) as ArquivoOs[]);
   }
 
   async function carregarOs(usuarioIdMontador: string) {
@@ -191,6 +242,7 @@ export default function OsDetalheClient({
     );
 
     await carregarRegistros(usuarioIdMontador);
+    await carregarArquivos(usuarioIdMontador);
 
     setCarregando(false);
   }
@@ -314,6 +366,41 @@ export default function OsDetalheClient({
     setSalvandoRegistro(false);
   }
 
+  async function enviarArquivo() {
+    if (!usuarioId || !arquivoSelecionado) return;
+
+    setErro("");
+    setSucesso("");
+    setEnviandoArquivo(true);
+
+    const formData = new FormData();
+    formData.append("usuarioId", usuarioId);
+    formData.append("projetoId", projetoId);
+    formData.append("osId", osId);
+    formData.append("file", arquivoSelecionado);
+
+    const response = await fetch("/api/montador/os/anexos/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      setErro(payload?.error ?? "Não foi possível enviar o arquivo.");
+      setEnviandoArquivo(false);
+      return;
+    }
+
+    setArquivoSelecionado(null);
+    setSucesso("Arquivo enviado com sucesso.");
+
+    await carregarArquivos(usuarioId);
+    await carregarRegistros(usuarioId);
+
+    setEnviandoArquivo(false);
+  }
+
   if (carregando) {
     return (
       <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 text-center text-white/60">
@@ -342,7 +429,10 @@ export default function OsDetalheClient({
   if (!os) return null;
 
   const podeIniciar = os.os_status === "pendente";
-  const podeConcluir = os.os_status !== "concluida";
+  const temAnexoObrigatorio = arquivos.some(
+    (arquivo) => arquivo.tipo === "foto" || arquivo.tipo === "video"
+  );
+  const podeConcluir = os.os_status !== "concluida" && temAnexoObrigatorio;
 
   return (
     <div className="space-y-6">
@@ -435,6 +525,80 @@ export default function OsDetalheClient({
       </section>
 
       <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+        <h2 className="text-xl font-bold">Anexos obrigatórios</h2>
+        <p className="mt-1 text-sm text-white/55">
+          Para concluir a OS, envie pelo menos uma foto ou vídeo da execução.
+        </p>
+
+        <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+          <input
+            type="file"
+            accept="image/*,video/*"
+            onChange={(event) =>
+              setArquivoSelecionado(event.target.files?.[0] ?? null)
+            }
+            className="block w-full text-sm text-white/70 file:mr-4 file:rounded-xl file:border-0 file:bg-[var(--fdl-cream)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[var(--fdl-purple-dark)]"
+          />
+
+          {arquivoSelecionado ? (
+            <p className="mt-3 text-xs text-white/50">
+              Selecionado: {arquivoSelecionado.name} ·{" "}
+              {formatBytes(arquivoSelecionado.size)}
+            </p>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={enviarArquivo}
+            disabled={!arquivoSelecionado || enviandoArquivo}
+            className="mt-4 h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {enviandoArquivo ? "Enviando arquivo..." : "Enviar foto/vídeo"}
+          </button>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          {arquivos.length > 0 ? (
+            arquivos.map((arquivo) => (
+              <article
+                key={arquivo.arquivo_id}
+                className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
+              >
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      {formatTipoArquivo(arquivo.tipo)} ·{" "}
+                      {arquivo.nome_arquivo || "Arquivo sem nome"}
+                    </p>
+                    <p className="mt-1 text-xs text-white/45">
+                      {formatBytes(arquivo.tamanho_bytes)} ·{" "}
+                      {formatDateTime(arquivo.criado_em)}
+                    </p>
+                  </div>
+
+                  {arquivo.url_visualizacao ? (
+                    <a
+                      href={arquivo.url_visualizacao}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
+                    >
+                      Abrir no Drive
+                    </a>
+                  ) : null}
+                </div>
+              </article>
+            ))
+          ) : (
+            <div className="rounded-2xl border border-yellow-400/25 bg-yellow-500/10 p-4 text-sm text-yellow-100">
+              Nenhuma foto ou vídeo enviado ainda. A conclusão da OS ficará
+              bloqueada até o envio de pelo menos um anexo.
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
         <h2 className="text-xl font-bold">Status da OS</h2>
         <p className="mt-1 text-sm text-white/55">
           Inicie ou conclua a OS conforme o andamento da execução.
@@ -487,6 +651,12 @@ export default function OsDetalheClient({
             {salvando ? "Salvando..." : "Concluir OS"}
           </button>
         </div>
+
+        {!temAnexoObrigatorio && os.os_status !== "concluida" ? (
+          <p className="mt-3 text-center text-xs text-yellow-100">
+            Para concluir a OS, envie pelo menos uma foto ou vídeo.
+          </p>
+        ) : null}
       </section>
 
       <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
