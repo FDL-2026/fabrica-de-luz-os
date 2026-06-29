@@ -224,6 +224,16 @@ export default function DashboardClient() {
 
   const filtrosAtivos = Boolean(gestorSelecionado || projetoSelecionado);
 
+  const projetosDisponiveisParaFiltro = useMemo(() => {
+    if (!gestorSelecionado) {
+      return dados.filtros.projetos_opcoes;
+    }
+
+    return dados.filtros.projetos_opcoes.filter(
+      (projeto) => projeto.responsavel_comercial === gestorSelecionado
+    );
+  }, [dados.filtros.projetos_opcoes, gestorSelecionado]);
+
   useEffect(() => {
     async function carregarDashboard() {
       setCarregando(true);
@@ -304,7 +314,10 @@ export default function DashboardClient() {
 
             <select
               value={gestorSelecionado}
-              onChange={(event) => setGestorSelecionado(event.target.value)}
+              onChange={(event) => {
+                setGestorSelecionado(event.target.value);
+                setProjetoSelecionado("");
+              }}
               className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
             >
               <option className="text-black" value="">
@@ -333,7 +346,7 @@ export default function DashboardClient() {
                 Todos os projetos
               </option>
 
-              {dados.filtros.projetos_opcoes.map((projeto) => (
+              {projetosDisponiveisParaFiltro.map((projeto) => (
                 <option
                   key={projeto.projeto_id}
                   className="text-black"
