@@ -1,5 +1,6 @@
 import Image from "next/image";
 import OsDetalheClient from "./os-detalhe-client";
+import AvisoAjusteMontador from "./aviso-ajuste-montador";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -28,6 +29,10 @@ export default async function MontadorOsPage({ params }: PageProps) {
             className="h-auto max-h-28 w-full max-w-md object-contain"
           />
         </div>
+
+        <AvisoAjusteMontador projetoId={projetoId} osId={osId} />
+
+
 
         <OsDetalheClient codigo={codigo} projetoId={projetoId} osId={osId} />
       </div>
