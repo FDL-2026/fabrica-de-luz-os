@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/require-user";
+import OsTableClient from "./os-table-client";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -455,112 +456,10 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
         )}
       </section>
 
-<section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-        <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-xl font-bold">Ordens de serviço</h2>
-            <p className="mt-1 text-sm text-white/55">
-              OSs vinculadas ao projeto.
-            </p>
-          </div>
-
-          <a
-            href={`/projetos/${projeto.id}/cronograma`}
-            className="inline-flex h-11 items-center justify-center rounded-full border border-white/15 px-5 text-sm font-semibold text-white transition hover:bg-white/10"
-          >
-            Abrir cronograma
-          </a>
-        </div>
-
-        <div className="overflow-hidden rounded-2xl border border-white/10">
-          <div className="overflow-x-auto">
-            <table className="min-w-[1100px] w-full text-left text-sm">
-              <thead className="bg-white/10 text-white/70">
-                <tr>
-                  <th className="px-4 py-3">OS</th>
-                  <th className="px-4 py-3">Local</th>
-                  <th className="px-4 py-3">Serviço</th>
-                  <th className="px-4 py-3">Equipe</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="w-[120px] px-4 py-3 text-center">Ações</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {(ordensServico ?? []).length > 0 ? (
-                  (ordensServico ?? []).map((os) => (
-                    <tr
-                      key={os.id}
-                      className="border-t border-white/10 transition hover:bg-white/[0.03]"
-                    >
-                      <td className="px-4 py-3 font-semibold text-white">
-                        {os.codigo_os}
-                      </td>
-
-                      <td className="px-4 py-3 text-white/75">
-                        {os.local || "Não informado"}
-                      </td>
-
-                      <td className="px-4 py-3 text-white/75">
-                        {os.servico || "Não informado"}
-                      </td>
-
-                      <td className="px-4 py-3 text-white/75">
-                        {os.equipe || "Não informada"}
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                            os.status === "concluida" || os.status === "concluido"
-                              ? "bg-green-100 text-green-700"
-                              : os.status === "em_andamento"
-                                ? "bg-blue-100 text-blue-700"
-                                : os.status === "pendente"
-                                  ? "bg-yellow-100 text-yellow-700"
-                                  : "bg-[var(--fdl-cream)] text-[var(--fdl-purple-dark)]"
-                          }`}
-                        >
-                          {formatStatus(os.status)}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex flex-wrap gap-2">
-<a
-                          href={`/projetos/${projeto.id}/os/${os.id}`}
-                          className="inline-flex h-8 w-[86px] items-center justify-center whitespace-nowrap rounded-full bg-[var(--fdl-lilac)] px-3 text-xs font-semibold leading-none text-[var(--fdl-purple-dark)] transition hover:bg-white"
-                        >
-                          Detalhes
-                        </a>
-
-                          {os.status === "aguardando_validacao" ? (
-                            <a
-                              href={`/projetos/${projeto.id}/os/${os.id}/validacao`}
-                              className="inline-flex h-8 w-[78px] items-center justify-center whitespace-nowrap rounded-full bg-[var(--fdl-cream)] px-3 text-xs font-semibold leading-none text-[var(--fdl-purple-dark)] transition hover:brightness-95"
-                            >
-                              Validar
-                            </a>
-                          ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-4 py-8 text-center text-sm text-white/50"
-                    >
-                      Nenhuma OS encontrada para este projeto.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+      <OsTableClient
+        projetoId={projeto.id}
+        ordensServico={ordensServicoSeguras}
+      />
 
         </section>
       </div>
