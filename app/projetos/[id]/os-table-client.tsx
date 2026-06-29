@@ -23,11 +23,6 @@ const statusOptions = [
   { value: "em_andamento", label: "Em andamento" },
   { value: "aguardando_validacao", label: "Aguardando validação" },
   { value: "concluida", label: "Concluída" },
-  { value: "concluido", label: "Concluído" },
-  { value: "cancelada", label: "Cancelada" },
-  { value: "cancelado", label: "Cancelado" },
-  { value: "bloqueada", label: "Bloqueada" },
-  { value: "atrasada", label: "Atrasada" },
 ];
 
 function formatStatus(status: string | null) {
@@ -37,12 +32,6 @@ function formatStatus(status: string | null) {
     aguardando_validacao: "Aguardando validação",
     concluida: "Concluída",
     concluido: "Concluído",
-    cancelada: "Cancelada",
-    cancelado: "Cancelado",
-    bloqueada: "Bloqueada",
-    atrasada: "Atrasada",
-    pausada: "Pausada",
-    pausado: "Pausado",
   };
 
   if (!status) return "Sem status";
@@ -63,68 +52,37 @@ function statusClass(status: string | null) {
     case "pendente":
       return "bg-yellow-100 text-yellow-700";
 
-    case "cancelada":
-    case "cancelado":
-    case "bloqueada":
-    case "atrasada":
-      return "bg-red-100 text-red-700";
-
     default:
       return "bg-[var(--fdl-cream)] text-[var(--fdl-purple-dark)]";
   }
 }
 
-function normalizar(value: string | null | undefined) {
-  return String(value ?? "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+function statusBateFiltro(statusOs: string | null, statusFiltro: string) {
+  if (!statusFiltro) return true;
+
+  if (statusFiltro === "concluida") {
+    return statusOs === "concluida" || statusOs === "concluido";
+  }
+
+  return statusOs === statusFiltro;
 }
 
 export default function OsTableClient({
   projetoId,
   ordensServico,
 }: OsTableClientProps) {
-  const [busca, setBusca] = useState("");
   const [statusFiltro, setStatusFiltro] = useState("");
-  const [equipeFiltro, setEquipeFiltro] = useState("");
-
-  const equipes = useMemo(() => {
-    return Array.from(
-      new Set(
-        ordensServico
-          .map((os) => os.equipe?.trim())
-          .filter((equipe): equipe is string => Boolean(equipe))
-      )
-    ).sort((a, b) => a.localeCompare(b, "pt-BR"));
-  }, [ordensServico]);
 
   const ordensFiltradas = useMemo(() => {
-    const termo = normalizar(busca);
+    return ordensServico.filter((os) =>
+      statusBateFiltro(os.status, statusFiltro)
+    );
+  }, [ordensServico, statusFiltro]);
 
-    return ordensServico.filter((os) => {
-      const codigo = os.codigo_cronograma || os.codigo_os || "";
-
-      const bateBusca =
-        !termo ||
-        normalizar(codigo).includes(termo) ||
-        normalizar(os.local).includes(termo) ||
-        normalizar(os.servico).includes(termo);
-
-      const bateStatus = !statusFiltro || os.status === statusFiltro;
-
-      const bateEquipe = !equipeFiltro || os.equipe === equipeFiltro;
-
-      return bateBusca && bateStatus && bateEquipe;
-    });
-  }, [busca, equipeFiltro, ordensServico, statusFiltro]);
-
-  const filtrosAtivos = Boolean(busca || statusFiltro || equipeFiltro);
+  const filtrosAtivos = Boolean(statusFiltro);
 
   function limparFiltros() {
-    setBusca("");
     setStatusFiltro("");
-    setEquipeFiltro("");
   }
 
   return (
@@ -133,7 +91,7 @@ export default function OsTableClient({
         <div>
           <h2 className="text-xl font-bold">Ordens de serviço</h2>
           <p className="mt-1 text-sm text-white/55">
-            Busque e filtre as OSs por status, equipe, local ou serviço.
+            Filtre as OSs pelo status atual da execução.
           </p>
         </div>
 
@@ -142,20 +100,7 @@ export default function OsTableClient({
         </span>
       </div>
 
-      <div className="mt-5 grid gap-4 rounded-3xl border border-white/10 bg-white/[0.04] p-4 lg:grid-cols-[1.2fr_0.8fr_0.8fr_auto]">
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-white">
-            Buscar
-          </label>
-
-          <input
-            value={busca}
-            onChange={(event) => setBusca(event.target.value)}
-            placeholder="Código, local ou serviço"
-            className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
-          />
-        </div>
-
+      <div className="mt-5 grid gap-4 rounded-3xl border border-white/10 bg-white/[0.04] p-4 md:grid-cols-[1fr_auto]">
         <div>
           <label className="mb-2 block text-sm font-semibold text-white">
             Status
@@ -174,34 +119,12 @@ export default function OsTableClient({
           </select>
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-white">
-            Equipe
-          </label>
-
-          <select
-            value={equipeFiltro}
-            onChange={(event) => setEquipeFiltro(event.target.value)}
-            className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
-          >
-            <option className="text-black" value="">
-              Todas as equipes
-            </option>
-
-            {equipes.map((equipe) => (
-              <option key={equipe} className="text-black" value={equipe}>
-                {equipe}
-              </option>
-            ))}
-          </select>
-        </div>
-
         <div className="flex items-end">
           <button
             type="button"
             disabled={!filtrosAtivos}
             onClick={limparFiltros}
-            className="h-12 w-full rounded-2xl border border-white/15 px-5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 lg:w-auto"
+            className="h-12 w-full rounded-2xl border border-white/15 px-5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 md:w-auto"
           >
             Limpar
           </button>
@@ -279,7 +202,7 @@ export default function OsTableClient({
         </div>
       ) : (
         <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
-          Nenhuma OS encontrada para os filtros selecionados.
+          Nenhuma OS encontrada para o status selecionado.
         </div>
       )}
     </section>
