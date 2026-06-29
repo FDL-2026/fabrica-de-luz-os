@@ -374,7 +374,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
 
         <div className="overflow-hidden rounded-2xl border border-white/10">
           <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
+            <table className="min-w-[1100px] w-full text-left text-sm">
               <thead className="bg-white/10 text-white/70">
                 <tr>
                   <th className="px-4 py-3">OS</th>
@@ -382,7 +382,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                   <th className="px-4 py-3">Serviço</th>
                   <th className="px-4 py-3">Equipe</th>
                   <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Detalhes</th>
+                  <th className="w-[120px] px-4 py-3 text-center">Detalhes</th>
                 </tr>
               </thead>
 
@@ -425,12 +425,12 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                         </span>
                       </td>
 
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-center">
                         <a
                           href={`/projetos/${projeto.id}/os/${os.id}`}
-                          className="inline-flex items-center justify-center rounded-full bg-[var(--fdl-lilac)] px-3 py-1 text-xs font-semibold text-[var(--fdl-purple-dark)] transition hover:bg-white"
+                          className="inline-flex h-8 w-[86px] items-center justify-center whitespace-nowrap rounded-full bg-[var(--fdl-lilac)] px-3 text-xs font-semibold leading-none text-[var(--fdl-purple-dark)] transition hover:bg-white"
                         >
-                          Ver detalhe
+                          Detalhes
                         </a>
                       </td>
                     </tr>
