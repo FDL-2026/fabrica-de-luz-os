@@ -124,6 +124,12 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
   const progresso =
     totalOS > 0 ? Math.round((osConcluidas / totalOS) * 100) : 0;
 
+
+  const ordensServicoSeguras = ordensServico ?? [];
+  const ordensAguardandoValidacao = ordensServicoSeguras.filter(
+    (os) => os.status === "aguardando_validacao"
+  );
+
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
       <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
@@ -373,6 +379,80 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
             Gerenciar equipe
           </a>
         </div>
+      </section>
+
+
+      <section className="rounded-3xl border border-yellow-300/30 bg-yellow-300/10 p-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.24em] text-[var(--fdl-cream)]">
+              Fila de validação
+            </p>
+
+            <h2 className="mt-2 text-xl font-bold">OSs aguardando validação</h2>
+
+            <p className="mt-1 text-sm text-white/60">
+              OSs concluídas pelo montador e pendentes de aprovação do gestor.
+            </p>
+          </div>
+
+          <span className="w-fit rounded-full bg-yellow-100 px-4 py-2 text-sm font-bold text-yellow-700">
+            {ordensAguardandoValidacao.length} pendente(s)
+          </span>
+        </div>
+
+        {ordensAguardandoValidacao.length > 0 ? (
+          <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
+            <div className="overflow-x-auto">
+              <table className="min-w-[900px] w-full text-left text-sm">
+                <thead className="bg-white/10 text-white/70">
+                  <tr>
+                    <th className="px-4 py-3">OS</th>
+                    <th className="px-4 py-3">Local</th>
+                    <th className="px-4 py-3">Serviço</th>
+                    <th className="px-4 py-3">Equipe</th>
+                    <th className="px-4 py-3 text-center">Ação</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {ordensAguardandoValidacao.map((os) => (
+                    <tr key={os.id} className="border-t border-white/10">
+                      <td className="px-4 py-3 font-bold text-white">
+                        {os.codigo_os}
+                      </td>
+
+                      <td className="px-4 py-3 text-white/75">
+                        {os.local || "-"}
+                      </td>
+
+                      <td className="px-4 py-3 text-white/75">
+                        {os.servico || "-"}
+                      </td>
+
+                      <td className="px-4 py-3 text-white/75">
+                        {os.equipe || "-"}
+                      </td>
+
+                      <td className="px-4 py-3 text-center">
+                        <a
+                          href={`/projetos/${projeto.id}/os/${os.id}/validacao`}
+                          className="inline-flex h-9 items-center justify-center rounded-full bg-[var(--fdl-cream)] px-5 text-xs font-bold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                        >
+                          Validar OS
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-sm text-white/55">
+            Nenhuma OS aguardando validação neste projeto.
+          </div>
+        )}
       </section>
 
 <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
