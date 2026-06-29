@@ -418,7 +418,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                       <td className="px-4 py-3">
                         <a
                           href={`/projetos/${projeto.id}/os/${os.id}`}
-                          className="inline-flex h-9 items-center justify-center rounded-full bg-[var(--fdl-cream)] px-4 text-xs font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                          className="inline-flex items-center justify-center rounded-full bg-[var(--fdl-lilac)] px-3 py-1 text-xs font-semibold text-[var(--fdl-purple-dark)] transition hover:bg-white"
                         >
                           Ver detalhe
                         </a>
