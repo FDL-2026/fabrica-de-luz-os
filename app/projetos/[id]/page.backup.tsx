@@ -354,93 +354,81 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
             </div>
           </section>
 
-          
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-        <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-xl font-bold">Ordens de serviço</h2>
-            <p className="mt-1 text-sm text-white/55">
-              OSs vinculadas ao projeto.
-            </p>
-          </div>
+          <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+            <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="text-xl font-semibold">Ordens de serviço</h2>
+                <p className="mt-1 text-sm text-white/50">
+                  OSs vinculadas ao projeto.
+                </p>
+              </div>
 
-          <a
-            href={`/projetos/${projeto.id}/cronograma`}
-            className="inline-flex h-11 items-center justify-center rounded-full border border-white/15 px-5 text-sm font-semibold text-white transition hover:bg-white/10"
-          >
-            Abrir cronograma
-          </a>
-        </div>
+              <a
+                href={`/projetos/${projeto.id}/cronograma`}
+                className="w-fit rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+              >
+                Abrir cronograma
+              </a>
+            </div>
 
-        <div className="overflow-hidden rounded-2xl border border-white/10">
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-white/10 text-white/70">
-                <tr>
-                  <th className="px-4 py-3">OS</th>
-                  <th className="px-4 py-3">Local</th>
-                  <th className="px-4 py-3">Serviço</th>
-                  <th className="px-4 py-3">Equipe</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Detalhes</th>
-                </tr>
-              </thead>
+            <div className="overflow-hidden rounded-2xl border border-white/10">
+              <table className="w-full border-collapse text-left text-sm">
+                <thead className="bg-white/10 text-white/70">
+                  <tr>
+                    <th className="px-4 py-3">OS</th>
+                    <th className="px-4 py-3">Local</th>
+                    <th className="px-4 py-3">Serviço</th>
+                    <th className="px-4 py-3">Equipe</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Detalhes</th>
+                  </tr>
+                </thead>
 
-              <tbody>
-                {(ordensServico ?? []).length > 0 ? (
-                  (ordensServico ?? []).map((os) => (
-                    <tr
-                      key={os.id}
-                      className="border-t border-white/10 transition hover:bg-white/[0.03]"
-                    >
-                      <td className="px-4 py-3 font-semibold text-white">
-                        {os.codigo_os}
-                      </td>
+                <tbody>
+                  {ordensServico && ordensServico.length > 0 ? (
+                    ordensServico.map((os) => (
+                      <tr key={os.id} className="border-t border-white/10">
+                        <td className="px-4 py-3 font-semibold">
+                          {os.codigo_os}
+                        </td>
 
-                      <td className="px-4 py-3 text-white/75">
-                        {os.local || "Não informado"}
-                      </td>
+                        <td className="px-4 py-3 text-white/70">
+                          {os.local || "Não informado"}
+                        </td>
 
-                      <td className="px-4 py-3 text-white/75">
-                        {os.servico || "Não informado"}
-                      </td>
+                        <td className="px-4 py-3 text-white/70">
+                          {os.servico}
+                        </td>
 
-                      <td className="px-4 py-3 text-white/75">
-                        {os.equipe || "Não informada"}
-                      </td>
+                        <td className="px-4 py-3 text-white/70">
+                          {os.equipe || "Não definida"}
+                        </td>
 
-                      <td className="px-4 py-3">
-                        <span className="inline-flex rounded-full bg-[var(--fdl-cream)] px-3 py-1 text-xs font-semibold text-[var(--fdl-purple-dark)]">
-                          {formatStatus(os.status)}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <a
-                          href={`/projetos/${projeto.id}/os/${os.id}`}
-                          className="inline-flex h-9 items-center justify-center rounded-full bg-[var(--fdl-cream)] px-4 text-xs font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
-                        >
-                          Ver detalhe
-                        </a>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClass(
+                              os.status
+                            )}`}
+                          >
+                            {formatStatus(os.status)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="px-4 py-8 text-center text-white/50"
+                      >
+                        Nenhuma OS cadastrada ainda.
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-4 py-8 text-center text-sm text-white/50"
-                    >
-                      Nenhuma OS encontrada para este projeto.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </section>
       </div>
     </main>
