@@ -221,6 +221,12 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
               >
                 Ver cronograma
               </a>
+          <a
+            href={`/projetos/${projeto.id}/acompanhamento`}
+            className="flex h-12 items-center justify-center rounded-2xl bg-[var(--fdl-cream)] px-5 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+          >
+            Acompanhamento operacional
+          </a>
             </div>
           </header>
 
