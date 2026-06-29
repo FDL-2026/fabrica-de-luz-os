@@ -62,6 +62,7 @@ function statusClass(status: string | null) {
 
     case "pausado":
     case "pendente":
+    case "aguardando_validacao":
       return "bg-yellow-100 text-yellow-700";
 
     case "concluido":
@@ -453,12 +454,14 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                           Detalhes
                         </a>
 
-                          <a
-                            href={`/projetos/${projeto.id}/os/${os.id}/validacao`}
-                            className="inline-flex h-8 w-[78px] items-center justify-center whitespace-nowrap rounded-full bg-[var(--fdl-cream)] px-3 text-xs font-semibold leading-none text-[var(--fdl-purple-dark)] transition hover:brightness-95"
-                          >
-                            Validar
-                          </a>
+                          {os.status === "aguardando_validacao" ? (
+                            <a
+                              href={`/projetos/${projeto.id}/os/${os.id}/validacao`}
+                              className="inline-flex h-8 w-[78px] items-center justify-center whitespace-nowrap rounded-full bg-[var(--fdl-cream)] px-3 text-xs font-semibold leading-none text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                            >
+                              Validar
+                            </a>
+                          ) : null}
                         </div>
                       </td>
                     </tr>
