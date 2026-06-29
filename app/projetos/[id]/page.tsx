@@ -401,7 +401,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                   <th className="px-4 py-3">Serviço</th>
                   <th className="px-4 py-3">Equipe</th>
                   <th className="px-4 py-3">Status</th>
-                  <th className="w-[120px] px-4 py-3 text-center">Detalhes</th>
+                  <th className="w-[120px] px-4 py-3 text-center">Ações</th>
                 </tr>
               </thead>
 
@@ -445,12 +445,21 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                       </td>
 
                       <td className="px-4 py-3 text-center">
-                        <a
+                        <div className="flex flex-wrap gap-2">
+<a
                           href={`/projetos/${projeto.id}/os/${os.id}`}
                           className="inline-flex h-8 w-[86px] items-center justify-center whitespace-nowrap rounded-full bg-[var(--fdl-lilac)] px-3 text-xs font-semibold leading-none text-[var(--fdl-purple-dark)] transition hover:bg-white"
                         >
                           Detalhes
                         </a>
+
+                          <a
+                            href={`/projetos/${projeto.id}/os/${os.id}/validacao`}
+                            className="inline-flex h-8 w-[78px] items-center justify-center whitespace-nowrap rounded-full bg-[var(--fdl-cream)] px-3 text-xs font-semibold leading-none text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                          >
+                            Validar
+                          </a>
+                        </div>
                       </td>
                     </tr>
                   ))
