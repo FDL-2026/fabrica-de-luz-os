@@ -169,7 +169,8 @@ export default function OsDetalheClient({
   const [os, setOs] = useState<OsDetalhe | null>(null);
   const [registros, setRegistros] = useState<RegistroOs[]>([]);
   const [arquivos, setArquivos] = useState<ArquivoOs[]>([]);
-  const [arquivoSelecionado, setArquivoSelecionado] = useState<File | null>(null);
+  const [arquivosSelecionados, setArquivosSelecionados] = useState<File[]>([]);
+  const [inputArquivosKey, setInputArquivosKey] = useState(0);
   const [enviandoArquivo, setEnviandoArquivo] = useState(false);
   const [usuarioId, setUsuarioId] = useState("");
   const [montadorNome, setMontadorNome] = useState("");
@@ -366,34 +367,54 @@ export default function OsDetalheClient({
     setSalvandoRegistro(false);
   }
 
-  async function enviarArquivo() {
-    if (!usuarioId || !arquivoSelecionado) return;
+  async function enviarArquivos() {
+    if (!usuarioId || arquivosSelecionados.length === 0) return;
 
     setErro("");
     setSucesso("");
     setEnviandoArquivo(true);
 
-    const formData = new FormData();
-    formData.append("usuarioId", usuarioId);
-    formData.append("projetoId", projetoId);
-    formData.append("osId", osId);
-    formData.append("file", arquivoSelecionado);
+    let enviados = 0;
 
-    const response = await fetch("/api/montador/os/anexos/upload", {
-      method: "POST",
-      body: formData,
-    });
+    for (const arquivo of arquivosSelecionados) {
+      const formData = new FormData();
+      formData.append("usuarioId", usuarioId);
+      formData.append("projetoId", projetoId);
+      formData.append("osId", osId);
+      formData.append("file", arquivo);
 
-    const payload = await response.json().catch(() => null);
+      const response = await fetch("/api/montador/os/anexos/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-    if (!response.ok) {
-      setErro(payload?.error ?? "Não foi possível enviar o arquivo.");
-      setEnviandoArquivo(false);
-      return;
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        setErro(
+          `Falha ao enviar "${arquivo.name}": ${
+            payload?.error ?? "Não foi possível enviar o arquivo."
+          }`
+        );
+
+        await carregarArquivos(usuarioId);
+        await carregarRegistros(usuarioId);
+
+        setEnviandoArquivo(false);
+        return;
+      }
+
+      enviados += 1;
     }
 
-    setArquivoSelecionado(null);
-    setSucesso("Arquivo enviado com sucesso.");
+    setArquivosSelecionados([]);
+    setInputArquivosKey((value) => value + 1);
+
+    setSucesso(
+      enviados === 1
+        ? "Arquivo enviado com sucesso."
+        : `${enviados} arquivos enviados com sucesso.`
+    );
 
     await carregarArquivos(usuarioId);
     await carregarRegistros(usuarioId);
@@ -532,28 +553,39 @@ export default function OsDetalheClient({
 
         <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
           <input
+            key={inputArquivosKey}
             type="file"
+            multiple
             accept="image/*,video/*"
             onChange={(event) =>
-              setArquivoSelecionado(event.target.files?.[0] ?? null)
+              setArquivosSelecionados(Array.from(event.target.files ?? []))
             }
             className="block w-full text-sm text-white/70 file:mr-4 file:rounded-xl file:border-0 file:bg-[var(--fdl-cream)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[var(--fdl-purple-dark)]"
           />
 
-          {arquivoSelecionado ? (
-            <p className="mt-3 text-xs text-white/50">
-              Selecionado: {arquivoSelecionado.name} ·{" "}
-              {formatBytes(arquivoSelecionado.size)}
-            </p>
+          {arquivosSelecionados.length > 0 ? (
+            <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+              <p className="text-xs font-semibold text-white/70">
+                {arquivosSelecionados.length} arquivo(s) selecionado(s):
+              </p>
+
+              <div className="mt-2 space-y-1">
+                {arquivosSelecionados.map((arquivo) => (
+                  <p key={`${arquivo.name}-${arquivo.size}`} className="text-xs text-white/45">
+                    {arquivo.name} · {formatBytes(arquivo.size)}
+                  </p>
+                ))}
+              </div>
+            </div>
           ) : null}
 
           <button
             type="button"
-            onClick={enviarArquivo}
-            disabled={!arquivoSelecionado || enviandoArquivo}
+            onClick={enviarArquivos}
+            disabled={arquivosSelecionados.length === 0 || enviandoArquivo}
             className="mt-4 h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {enviandoArquivo ? "Enviando arquivo..." : "Enviar foto/vídeo"}
+            {enviandoArquivo ? "Enviando arquivos..." : "Enviar fotos/vídeos"}
           </button>
         </div>
 
