@@ -410,7 +410,17 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                       </td>
 
                       <td className="px-4 py-3">
-                        <span className="inline-flex rounded-full bg-[var(--fdl-cream)] px-3 py-1 text-xs font-semibold text-[var(--fdl-purple-dark)]">
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                            os.status === "concluida" || os.status === "concluido"
+                              ? "bg-green-100 text-green-700"
+                              : os.status === "em_andamento"
+                                ? "bg-blue-100 text-blue-700"
+                                : os.status === "pendente"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-[var(--fdl-cream)] text-[var(--fdl-purple-dark)]"
+                          }`}
+                        >
                           {formatStatus(os.status)}
                         </span>
                       </td>
