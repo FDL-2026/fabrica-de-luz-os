@@ -259,10 +259,10 @@ export default function OsGestaoClient({
         </div>
 
         <a
-          href={`/projetos/${projetoId}/acompanhamento`}
+          href={`/projetos/${projetoId}`}
           className="block h-12 rounded-2xl bg-[var(--fdl-cream)] px-5 py-3 text-center text-sm font-semibold text-[var(--fdl-purple-dark)]"
         >
-          Voltar para acompanhamento
+          Voltar para o projeto
         </a>
       </div>
     );
@@ -272,10 +272,10 @@ export default function OsGestaoClient({
     <div className="space-y-6">
       <header className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
         <a
-          href={`/projetos/${projetoId}/acompanhamento`}
+          href={`/projetos/${projetoId}`}
           className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
         >
-          ← Voltar para acompanhamento
+          ← Voltar para o projeto
         </a>
 
         <p className="mt-6 text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
