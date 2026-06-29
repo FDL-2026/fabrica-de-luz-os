@@ -105,7 +105,9 @@ async function findFolder(
     "https://www.googleapis.com/drive/v3/files" +
     `?q=${encodeURIComponent(query)}` +
     "&fields=files(id,name)" +
-    "&pageSize=1";
+    "&pageSize=1" +
+    "&supportsAllDrives=true" +
+    "&includeItemsFromAllDrives=true";
 
   const data = await driveFetch<{ files: Array<{ id: string; name: string }> }>(
     accessToken,
@@ -122,7 +124,7 @@ async function createFolder(
 ) {
   const data = await driveFetch<{ id: string; name: string }>(
     accessToken,
-    "https://www.googleapis.com/drive/v3/files?fields=id,name",
+    "https://www.googleapis.com/drive/v3/files?supportsAllDrives=true&fields=id,name",
     {
       method: "POST",
       headers: {
@@ -186,7 +188,7 @@ async function uploadFileToDrive(params: {
     webViewLink?: string;
   }>(
     params.accessToken,
-    "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size,webViewLink",
+    "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id,name,mimeType,size,webViewLink",
     {
       method: "POST",
       headers: {
