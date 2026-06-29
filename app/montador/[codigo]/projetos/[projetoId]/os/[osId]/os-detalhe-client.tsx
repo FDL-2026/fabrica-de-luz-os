@@ -31,6 +31,17 @@ type OsDetalhe = {
   concluido_em: string | null;
 };
 
+type RegistroOs = {
+  registro_id: string;
+  tipo_registro: string;
+  status_informado: string | null;
+  descricao: string | null;
+  percentual_execucao: number | null;
+  criado_em: string;
+  usuario_nome: string | null;
+  total_arquivos: number;
+};
+
 function formatDate(date: string | null) {
   if (!date) return "Não informado";
   return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
@@ -60,6 +71,20 @@ function formatStatus(status: string | null) {
   return labels[status] ?? status.replace("_", " ");
 }
 
+function formatTipoRegistro(tipo: string | null) {
+  if (!tipo) return "Registro";
+
+  const labels: Record<string, string> = {
+    acompanhamento: "Acompanhamento",
+    inicio_os: "Início da OS",
+    conclusao_os: "Conclusão da OS",
+    pendencia: "Pendência",
+    observacao: "Observação",
+  };
+
+  return labels[tipo] ?? tipo.replace("_", " ");
+}
+
 function statusClass(status: string | null) {
   switch (status) {
     case "em_andamento":
@@ -81,6 +106,22 @@ function statusClass(status: string | null) {
   }
 }
 
+function tipoRegistroClass(tipo: string | null) {
+  switch (tipo) {
+    case "pendencia":
+      return "bg-red-100 text-red-700";
+
+    case "conclusao_os":
+      return "bg-[var(--fdl-cream)] text-[var(--fdl-purple-dark)]";
+
+    case "inicio_os":
+      return "bg-green-100 text-green-700";
+
+    default:
+      return "bg-white/15 text-white/80";
+  }
+}
+
 export default function OsDetalheClient({
   codigo,
   projetoId,
@@ -90,12 +131,33 @@ export default function OsDetalheClient({
 
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [salvandoRegistro, setSalvandoRegistro] = useState(false);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
   const [os, setOs] = useState<OsDetalhe | null>(null);
+  const [registros, setRegistros] = useState<RegistroOs[]>([]);
   const [usuarioId, setUsuarioId] = useState("");
   const [montadorNome, setMontadorNome] = useState("");
   const [observacao, setObservacao] = useState("");
+  const [tipoRegistro, setTipoRegistro] = useState("acompanhamento");
+  const [descricaoRegistro, setDescricaoRegistro] = useState("");
+  const [percentualRegistro, setPercentualRegistro] = useState(0);
+
+  async function carregarRegistros(usuarioIdMontador: string) {
+    const { data, error } = await supabase.rpc("listar_registros_os_montador", {
+      p_usuario_id: usuarioIdMontador,
+      p_projeto_id: projetoId,
+      p_os_id: osId,
+    });
+
+    if (error) {
+      setErro(error.message);
+      setRegistros([]);
+      return;
+    }
+
+    setRegistros((data ?? []) as RegistroOs[]);
+  }
 
   async function carregarOs(usuarioIdMontador: string) {
     const { data, error } = await supabase.rpc("obter_os_montador", {
@@ -122,6 +184,14 @@ export default function OsDetalheClient({
 
     setOs(resultado);
     setObservacao(resultado.observacao_montador ?? "");
+    setPercentualRegistro(
+      typeof resultado.progresso === "number"
+        ? Math.max(0, Math.min(100, Math.round(resultado.progresso)))
+        : 0
+    );
+
+    await carregarRegistros(usuarioIdMontador);
+
     setCarregando(false);
   }
 
@@ -203,6 +273,45 @@ export default function OsDetalheClient({
     );
 
     setSalvando(false);
+  }
+
+  async function salvarRegistro() {
+    if (!usuarioId || !os) return;
+
+    setErro("");
+    setSucesso("");
+    setSalvandoRegistro(true);
+
+    const { data, error } = await supabase.rpc("criar_registro_os_montador", {
+      p_usuario_id: usuarioId,
+      p_projeto_id: projetoId,
+      p_os_id: osId,
+      p_tipo_registro: tipoRegistro,
+      p_descricao: descricaoRegistro,
+      p_percentual_execucao: percentualRegistro,
+    });
+
+    if (error) {
+      setErro(error.message);
+      setSalvandoRegistro(false);
+      return;
+    }
+
+    const resultado = Array.isArray(data) ? data[0] : null;
+
+    if (!resultado) {
+      setErro("Não foi possível salvar o registro.");
+      setSalvandoRegistro(false);
+      return;
+    }
+
+    setDescricaoRegistro("");
+    setTipoRegistro("acompanhamento");
+    setSucesso("Registro salvo com sucesso.");
+
+    await carregarRegistros(usuarioId);
+
+    setSalvandoRegistro(false);
   }
 
   if (carregando) {
@@ -326,18 +435,23 @@ export default function OsDetalheClient({
       </section>
 
       <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+        <h2 className="text-xl font-bold">Status da OS</h2>
+        <p className="mt-1 text-sm text-white/55">
+          Inicie ou conclua a OS conforme o andamento da execução.
+        </p>
+
         <label
           htmlFor="observacao"
-          className="block text-sm font-semibold text-white"
+          className="mt-5 block text-sm font-semibold text-white"
         >
-          Observação do montador
+          Observação rápida para iniciar/concluir
         </label>
 
         <textarea
           id="observacao"
           value={observacao}
           onChange={(event) => setObservacao(event.target.value)}
-          rows={5}
+          rows={4}
           placeholder="Exemplo: OS iniciada sem pendências. Material conferido no local."
           className="mt-3 w-full rounded-2xl border border-white/10 bg-white/10 p-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)] focus:ring-4 focus:ring-[var(--fdl-cream)]/10"
         />
@@ -372,6 +486,125 @@ export default function OsDetalheClient({
           >
             {salvando ? "Salvando..." : "Concluir OS"}
           </button>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+        <h2 className="text-xl font-bold">Registro de execução</h2>
+        <p className="mt-1 text-sm text-white/55">
+          Use este campo para registrar andamento, pendências ou observações da
+          OS durante a montagem.
+        </p>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-[1fr_160px]">
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-white">
+              Tipo de registro
+            </label>
+
+            <select
+              value={tipoRegistro}
+              onChange={(event) => setTipoRegistro(event.target.value)}
+              className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+            >
+              <option className="text-black" value="acompanhamento">
+                Acompanhamento
+              </option>
+              <option className="text-black" value="pendencia">
+                Pendência
+              </option>
+              <option className="text-black" value="observacao">
+                Observação
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-white">
+              Percentual
+            </label>
+
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={percentualRegistro}
+              onChange={(event) =>
+                setPercentualRegistro(Number(event.target.value))
+              }
+              className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+            />
+          </div>
+        </div>
+
+        <textarea
+          value={descricaoRegistro}
+          onChange={(event) => setDescricaoRegistro(event.target.value)}
+          rows={5}
+          placeholder="Descreva o que foi executado, pendências encontradas, liberações necessárias ou qualquer ponto relevante."
+          className="mt-4 w-full rounded-2xl border border-white/10 bg-white/10 p-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)] focus:ring-4 focus:ring-[var(--fdl-cream)]/10"
+        />
+
+        <button
+          type="button"
+          onClick={salvarRegistro}
+          disabled={salvandoRegistro || !descricaoRegistro.trim()}
+          className="mt-4 h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {salvandoRegistro ? "Salvando registro..." : "Salvar registro"}
+        </button>
+      </section>
+
+      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+        <h2 className="text-xl font-bold">Histórico da OS</h2>
+        <p className="mt-1 text-sm text-white/55">
+          Registros criados durante a execução desta ordem de serviço.
+        </p>
+
+        <div className="mt-5 space-y-4">
+          {registros.length > 0 ? (
+            registros.map((registro) => (
+              <article
+                key={registro.registro_id}
+                className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+              >
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <span
+                      className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${tipoRegistroClass(
+                        registro.tipo_registro
+                      )}`}
+                    >
+                      {formatTipoRegistro(registro.tipo_registro)}
+                    </span>
+
+                    <p className="mt-3 text-sm text-white/45">
+                      {formatDateTime(registro.criado_em)} ·{" "}
+                      {registro.usuario_nome || "Usuário não identificado"}
+                    </p>
+                  </div>
+
+                  <span className="w-fit rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
+                    {registro.percentual_execucao ?? 0}%
+                  </span>
+                </div>
+
+                <p className="mt-4 text-sm leading-6 text-white/75">
+                  {registro.descricao || "Sem descrição informada."}
+                </p>
+
+                {registro.total_arquivos > 0 ? (
+                  <p className="mt-3 text-xs text-white/45">
+                    {registro.total_arquivos} arquivo(s) vinculado(s)
+                  </p>
+                ) : null}
+              </article>
+            ))
+          ) : (
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
+              Nenhum registro criado para esta OS ainda.
+            </div>
+          )}
         </div>
       </section>
     </div>
