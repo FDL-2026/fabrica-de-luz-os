@@ -112,8 +112,6 @@ export default function AcompanhamentoClient({
     const concluidas = ordens.filter(
       (os) => os.os_status === "concluida"
     ).length;
-    const comAnexo = ordens.filter((os) => os.total_fotos_videos > 0).length;
-    const semAnexo = ordens.filter((os) => os.total_fotos_videos === 0).length;
     const progresso = total > 0 ? Math.round((concluidas / total) * 100) : 0;
 
     return {
@@ -121,22 +119,12 @@ export default function AcompanhamentoClient({
       pendentes,
       andamento,
       concluidas,
-      comAnexo,
-      semAnexo,
       progresso,
     };
   }, [ordens]);
 
   const ordensFiltradas = useMemo(() => {
     if (filtro === "todos") return ordens;
-
-    if (filtro === "sem_anexo") {
-      return ordens.filter((os) => os.total_fotos_videos === 0);
-    }
-
-    if (filtro === "com_anexo") {
-      return ordens.filter((os) => os.total_fotos_videos > 0);
-    }
 
     return ordens.filter((os) => os.os_status === filtro);
   }, [filtro, ordens]);
@@ -252,7 +240,7 @@ export default function AcompanhamentoClient({
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
           <p className="text-sm text-[#7d6488]">Total</p>
           <strong className="mt-2 block text-4xl">{resumo.total}</strong>
@@ -272,16 +260,7 @@ export default function AcompanhamentoClient({
           <p className="text-sm text-[#7d6488]">Concluídas</p>
           <strong className="mt-2 block text-4xl">{resumo.concluidas}</strong>
         </div>
-
-        <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
-          <p className="text-sm text-[#7d6488]">Com anexos</p>
-          <strong className="mt-2 block text-4xl">{resumo.comAnexo}</strong>
-        </div>
-
-        <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
-          <p className="text-sm text-[#7d6488]">Sem anexos</p>
-          <strong className="mt-2 block text-4xl">{resumo.semAnexo}</strong>
-        </div>
+ 
       </section>
 
       <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
@@ -310,13 +289,7 @@ export default function AcompanhamentoClient({
             </option>
             <option className="text-black" value="concluida">
               Concluídas
-            </option>
-            <option className="text-black" value="com_anexo">
-              Com anexos
-            </option>
-            <option className="text-black" value="sem_anexo">
-              Sem anexos
-            </option>
+            </option> 
           </select>
         </div>
 
