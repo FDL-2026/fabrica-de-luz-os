@@ -161,20 +161,20 @@ function statusOperacionalLabel(status: string) {
   return labels[status] ?? status;
 }
 
-function chipClass(status: string) {
+function statusBadgeClass(status: string) {
   switch (status) {
     case "com_validacao":
-      return "bg-yellow-100 text-yellow-800";
+      return "fdl-ui-badge-yellow";
     case "em_andamento":
-      return "bg-blue-100 text-blue-800";
+      return "fdl-ui-badge-blue";
     case "com_pendencias":
-      return "bg-orange-100 text-orange-800";
+      return "fdl-ui-badge-orange";
     case "sem_registro":
-      return "bg-red-100 text-red-800";
+      return "fdl-ui-badge-red";
     case "concluido":
-      return "bg-green-100 text-green-800";
+      return "fdl-ui-badge-green";
     default:
-      return "bg-white/12 text-white/75";
+      return "fdl-ui-badge-muted";
   }
 }
 
@@ -193,18 +193,18 @@ function formatTipoRegistro(tipo: string | null) {
   return labels[tipo] ?? tipo.replaceAll("_", " ");
 }
 
-function registroChipClass(tipo: string | null) {
+function registroBadgeClass(tipo: string | null) {
   switch (tipo) {
     case "pendencia":
-      return "bg-red-100 text-red-800";
+      return "fdl-ui-badge-red";
     case "conclusao_os":
-      return "bg-green-100 text-green-800";
+      return "fdl-ui-badge-green";
     case "inicio_os":
-      return "bg-blue-100 text-blue-800";
+      return "fdl-ui-badge-blue";
     case "anexo":
-      return "bg-[var(--fdl-lilac)] text-[var(--fdl-purple-dark)]";
+      return "fdl-ui-badge-purple";
     default:
-      return "bg-white/12 text-white/75";
+      return "fdl-ui-badge-muted";
   }
 }
 
@@ -303,7 +303,7 @@ export default function DashboardClient() {
 
   if (carregando) {
     return (
-      <div className="fdl-dashboard-section text-center text-white/60">
+      <div className="fdl-ui-section text-center text-white/60">
         Carregando dashboard operacional...
       </div>
     );
@@ -314,42 +314,39 @@ export default function DashboardClient() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="fdl-dashboard-header p-6">
+    <div className="fdl-ui-dashboard space-y-6">
+      <header className="fdl-ui-panel fdl-ui-header">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="fdl-page-kicker">Dashboard operacional</p>
-            <h1 className="fdl-page-title">Central de controle</h1>
-            <p className="fdl-page-description">
+            <p className="fdl-ui-kicker">Dashboard operacional</p>
+            <h1 className="fdl-ui-title">Central de controle</h1>
+            <p className="fdl-ui-description">
               Acompanhe projetos, OSs, validações e movimentações da operação.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3 xl:justify-end">
-            <a
-              href="/projetos"
-              className="fdl-dashboard-action fdl-dashboard-action-secondary"
-            >
+          <div className="fdl-ui-actions xl:justify-end">
+            <a href="/projetos" className="fdl-ui-btn fdl-ui-btn-secondary">
               Ver projetos
             </a>
 
-            <a href="/importar" className="fdl-dashboard-action">
+            <a href="/importar" className="fdl-ui-btn fdl-ui-btn-primary">
               Importar cronograma
             </a>
           </div>
         </div>
 
-        <div className="mt-6 fdl-dashboard-filter">
-          <div className="fdl-dashboard-filter-grid">
+        <div className="fdl-ui-filter-box">
+          <div className="fdl-ui-filter-grid">
             <div>
-              <label className="fdl-dashboard-label">Gestor Comercial</label>
+              <label className="fdl-ui-label">Gestor Comercial</label>
               <select
                 value={gestorSelecionado}
                 onChange={(event) => {
                   setGestorSelecionado(event.target.value);
                   setProjetoSelecionado("");
                 }}
-                className="fdl-dashboard-select"
+                className="fdl-ui-select"
               >
                 <option value="">Todos os gestores</option>
 
@@ -362,11 +359,11 @@ export default function DashboardClient() {
             </div>
 
             <div>
-              <label className="fdl-dashboard-label">Projeto</label>
+              <label className="fdl-ui-label">Projeto</label>
               <select
                 value={projetoSelecionado}
                 onChange={(event) => setProjetoSelecionado(event.target.value)}
-                className="fdl-dashboard-select"
+                className="fdl-ui-select"
               >
                 <option value="">Todos os projetos</option>
 
@@ -379,11 +376,11 @@ export default function DashboardClient() {
             </div>
 
             <div>
-              <label className="fdl-dashboard-label">UF</label>
+              <label className="fdl-ui-label">UF</label>
               <select
                 value={ufSelecionada}
                 onChange={(event) => setUfSelecionada(event.target.value)}
-                className="fdl-dashboard-select"
+                className="fdl-ui-select"
               >
                 <option value="">Todas</option>
 
@@ -396,13 +393,13 @@ export default function DashboardClient() {
             </div>
 
             <div>
-              <label className="fdl-dashboard-label">Status operacional</label>
+              <label className="fdl-ui-label">Status operacional</label>
               <select
                 value={statusOperacionalSelecionado}
                 onChange={(event) =>
                   setStatusOperacionalSelecionado(event.target.value)
                 }
-                className="fdl-dashboard-select"
+                className="fdl-ui-select"
               >
                 {statusOperacionalOptions.map((status) => (
                   <option key={status.value} value={status.value}>
@@ -417,7 +414,7 @@ export default function DashboardClient() {
                 type="button"
                 disabled={!filtrosAtivos}
                 onClick={limparFiltros}
-                className="fdl-dashboard-action fdl-dashboard-action-neutral w-full disabled:cursor-not-allowed disabled:opacity-40 xl:w-auto"
+                className="fdl-ui-btn fdl-ui-btn-ghost w-full xl:w-auto"
               >
                 Limpar
               </button>
@@ -426,58 +423,53 @@ export default function DashboardClient() {
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-        <div className="fdl-dashboard-summary-card">
-          <p className="text-sm font-semibold text-[#7d6488]">
-            Projetos ativos
-          </p>
-          <strong className="mt-2 block text-4xl">
+      <section className="fdl-ui-kpi-grid">
+        <div className="fdl-ui-kpi">
+          <p className="fdl-ui-kpi-label">Projetos ativos</p>
+          <strong className="fdl-ui-kpi-value">
             {dados.resumo.projetos_ativos}
           </strong>
-          <p className="mt-2 text-xs text-[#7d6488]">
+          <p className="fdl-ui-kpi-help">
             {dados.resumo.total_projetos} projeto(s) no filtro
           </p>
         </div>
 
-        <div className="fdl-dashboard-summary-card">
-          <p className="text-sm font-semibold text-[#7d6488]">
-            OSs pendentes
-          </p>
-          <strong className="mt-2 block text-4xl">
+        <div className="fdl-ui-kpi">
+          <p className="fdl-ui-kpi-label">OSs pendentes</p>
+          <strong className="fdl-ui-kpi-value">
             {dados.resumo.os_pendentes}
           </strong>
-          <p className="mt-2 text-xs text-[#7d6488]">aguardando execução</p>
+          <p className="fdl-ui-kpi-help">Aguardando execução</p>
         </div>
 
-        <div className="fdl-dashboard-summary-card">
-          <p className="text-sm font-semibold text-[#7d6488]">Em andamento</p>
-          <strong className="mt-2 block text-4xl">
+        <div className="fdl-ui-kpi">
+          <p className="fdl-ui-kpi-label">Em andamento</p>
+          <strong className="fdl-ui-kpi-value">
             {dados.resumo.os_em_andamento}
           </strong>
-          <p className="mt-2 text-xs text-[#7d6488]">em execução</p>
+          <p className="fdl-ui-kpi-help">Em execução</p>
         </div>
 
-        <div className="fdl-dashboard-summary-card">
-          <p className="text-sm font-semibold text-[#7d6488]">Validação</p>
-          <strong className="mt-2 block text-4xl">
+        <div className="fdl-ui-kpi">
+          <p className="fdl-ui-kpi-label">Validação</p>
+          <strong className="fdl-ui-kpi-value">
             {dados.resumo.os_aguardando_validacao}
           </strong>
-          <p className="mt-2 text-xs text-[#7d6488]">aguardando gestor</p>
+          <p className="fdl-ui-kpi-help">Aguardando gestor</p>
         </div>
 
-        <div className="fdl-dashboard-summary-card">
-          <p className="text-sm font-semibold text-[#7d6488]">Concluídas</p>
-          <strong className="mt-2 block text-4xl">
+        <div className="fdl-ui-kpi">
+          <p className="fdl-ui-kpi-label">Concluídas</p>
+          <strong className="fdl-ui-kpi-value">
             {dados.resumo.os_concluidas}
           </strong>
-          <p className="mt-2 text-xs text-[#7d6488]">aprovadas/finalizadas</p>
+          <p className="fdl-ui-kpi-help">Aprovadas/finalizadas</p>
         </div>
 
-        <div className="fdl-dashboard-summary-card">
-          <p className="text-sm font-semibold text-[#7d6488]">
-            Progresso geral
-          </p>
-          <strong className="mt-2 block text-4xl">{progressoGeral}%</strong>
+        <div className="fdl-ui-kpi">
+          <p className="fdl-ui-kpi-label">Progresso geral</p>
+          <strong className="fdl-ui-kpi-value">{progressoGeral}%</strong>
+
           <div className="mt-4 h-2 rounded-full bg-[#eee7f3]">
             <div
               className="h-2 rounded-full bg-[var(--fdl-purple)]"
@@ -487,27 +479,25 @@ export default function DashboardClient() {
         </div>
       </section>
 
-      <section className="fdl-dashboard-section fdl-dashboard-section-warning">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+      <section className="fdl-ui-section fdl-ui-section-warning">
+        <div className="fdl-ui-section-head">
           <div>
-            <p className="fdl-page-kicker">Fila de validação</p>
-            <h2 className="mt-2 text-xl font-black">
-              OSs aguardando validação
-            </h2>
-            <p className="mt-1 text-sm text-white/60">
+            <p className="fdl-ui-kicker">Fila de validação</p>
+            <h2 className="fdl-ui-section-title">OSs aguardando validação</h2>
+            <p className="fdl-ui-section-desc">
               OSs concluídas pelos montadores e pendentes de aprovação do gestor.
             </p>
           </div>
 
-          <span className="fdl-dashboard-chip bg-yellow-100 text-yellow-800">
+          <span className="fdl-ui-badge fdl-ui-badge-yellow">
             {dados.resumo.os_aguardando_validacao} pendente(s)
           </span>
         </div>
 
         {dados.oss_aguardando_validacao.length > 0 ? (
-          <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
-            <div className="overflow-x-auto">
-              <table className="min-w-[1050px] fdl-dashboard-table">
+          <div className="fdl-ui-table-wrap">
+            <div className="fdl-ui-table-scroll">
+              <table className="min-w-[1050px] fdl-ui-table">
                 <thead>
                   <tr>
                     <th>Projeto</th>
@@ -524,30 +514,30 @@ export default function DashboardClient() {
                   {dados.oss_aguardando_validacao.map((os) => (
                     <tr key={os.os_id}>
                       <td>
-                        <p className="font-bold text-white">
+                        <p className="fdl-ui-table-primary">
                           {os.cliente || os.shopping || "Projeto sem nome"}
                         </p>
-                        <p className="mt-1 text-xs text-white/45">
+                        <p className="fdl-ui-table-secondary">
                           {os.uf || "UF não informada"} · Gestor:{" "}
                           {os.responsavel_comercial || "Não informado"}
                         </p>
                       </td>
 
-                      <td className="font-black text-white">
+                      <td className="fdl-ui-table-primary">
                         {os.codigo_os || "-"}
                       </td>
 
-                      <td className="text-white/75">{os.local || "-"}</td>
-                      <td className="text-white/75">{os.servico || "-"}</td>
-                      <td className="text-white/75">{os.equipe || "-"}</td>
-                      <td className="text-white/60">
+                      <td className="text-white/74">{os.local || "-"}</td>
+                      <td className="text-white/74">{os.servico || "-"}</td>
+                      <td className="text-white/74">{os.equipe || "-"}</td>
+                      <td className="text-white/58">
                         {formatDateTime(os.concluido_em)}
                       </td>
 
                       <td className="text-right">
                         <a
                           href={`/projetos/${os.projeto_id}/os/${os.os_id}/validacao`}
-                          className="fdl-dashboard-action"
+                          className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-primary"
                         >
                           Validar OS
                         </a>
@@ -559,30 +549,30 @@ export default function DashboardClient() {
             </div>
           </div>
         ) : (
-          <div className="mt-5 fdl-dashboard-empty">
+          <div className="fdl-ui-empty">
             Nenhuma OS aguardando validação para os filtros selecionados.
           </div>
         )}
       </section>
 
-      <section className="fdl-dashboard-section">
-        <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+      <section className="fdl-ui-section">
+        <div className="fdl-ui-section-head mb-5">
           <div>
-            <h2 className="text-xl font-black">Tabela geral de projetos</h2>
-            <p className="mt-1 text-sm text-white/55">
+            <h2 className="fdl-ui-section-title">Tabela geral de projetos</h2>
+            <p className="fdl-ui-section-desc">
               Visão compacta para acompanhamento de grande volume de projetos.
             </p>
           </div>
 
-          <span className="fdl-dashboard-chip bg-white/12 text-white/75">
+          <span className="fdl-ui-badge fdl-ui-badge-muted">
             {projetosTabela.length} de {dados.projetos.length} projeto(s)
           </span>
         </div>
 
         {projetosTabela.length > 0 ? (
-          <div className="overflow-hidden rounded-2xl border border-white/10">
-            <div className="overflow-x-auto">
-              <table className="min-w-[1280px] fdl-dashboard-table">
+          <div className="fdl-ui-table-wrap mt-0">
+            <div className="fdl-ui-table-scroll">
+              <table className="min-w-[1280px] fdl-ui-table">
                 <thead>
                   <tr>
                     <th>Projeto</th>
@@ -609,12 +599,12 @@ export default function DashboardClient() {
                     return (
                       <tr key={projeto.projeto_id}>
                         <td>
-                          <p className="font-bold text-white">
+                          <p className="fdl-ui-table-primary">
                             {projeto.cliente ||
                               projeto.shopping ||
                               "Projeto sem nome"}
                           </p>
-                          <p className="mt-1 text-xs text-white/45">
+                          <p className="fdl-ui-table-secondary">
                             Temporada {projeto.temporada || "não informada"}
                           </p>
                         </td>
@@ -649,9 +639,9 @@ export default function DashboardClient() {
 
                         <td>
                           <div className="flex min-w-[135px] items-center gap-3">
-                            <div className="h-2 flex-1 rounded-full bg-white/10">
+                            <div className="fdl-ui-progress">
                               <div
-                                className="h-2 rounded-full bg-[var(--fdl-cream)]"
+                                className="fdl-ui-progress-fill"
                                 style={{ width: `${progresso}%` }}
                               />
                             </div>
@@ -663,7 +653,7 @@ export default function DashboardClient() {
 
                         <td>
                           <span
-                            className={`fdl-dashboard-chip ${chipClass(
+                            className={`fdl-ui-badge ${statusBadgeClass(
                               statusOperacional
                             )}`}
                           >
@@ -671,14 +661,14 @@ export default function DashboardClient() {
                           </span>
                         </td>
 
-                        <td className="text-white/60">
+                        <td className="text-white/58">
                           {formatDateTime(projeto.ult_registro)}
                         </td>
 
                         <td className="text-right">
                           <a
                             href={`/projetos/${projeto.projeto_id}`}
-                            className="fdl-dashboard-action fdl-dashboard-action-secondary"
+                            className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary"
                           >
                             Abrir
                           </a>
@@ -691,16 +681,16 @@ export default function DashboardClient() {
             </div>
           </div>
         ) : (
-          <div className="fdl-dashboard-empty">
+          <div className="fdl-ui-empty">
             Nenhum projeto encontrado para os filtros selecionados.
           </div>
         )}
       </section>
 
-      <section className="fdl-dashboard-section">
+      <section className="fdl-ui-section">
         <div className="mb-5">
-          <h2 className="text-xl font-black">Últimos registros</h2>
-          <p className="mt-1 text-sm text-white/55">
+          <h2 className="fdl-ui-section-title">Últimos registros</h2>
+          <p className="fdl-ui-section-desc">
             Últimas atualizações enviadas pelos montadores.
           </p>
         </div>
@@ -715,7 +705,7 @@ export default function DashboardClient() {
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
                     <span
-                      className={`fdl-dashboard-chip ${registroChipClass(
+                      className={`fdl-ui-badge ${registroBadgeClass(
                         registro.tipo_registro
                       )}`}
                     >
@@ -733,7 +723,7 @@ export default function DashboardClient() {
                     </p>
                   </div>
 
-                  <span className="fdl-dashboard-chip bg-white/12 text-white/75">
+                  <span className="fdl-ui-badge fdl-ui-badge-muted">
                     {registro.percentual_execucao ?? 0}%
                   </span>
                 </div>
@@ -750,14 +740,14 @@ export default function DashboardClient() {
                   {registro.os_id ? (
                     <a
                       href={`/projetos/${registro.projeto_id}/os/${registro.os_id}`}
-                      className="fdl-dashboard-action fdl-dashboard-action-secondary"
+                      className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary"
                     >
                       Ver OS
                     </a>
                   ) : (
                     <a
                       href={`/projetos/${registro.projeto_id}`}
-                      className="fdl-dashboard-action fdl-dashboard-action-secondary"
+                      className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary"
                     >
                       Ver projeto
                     </a>
@@ -766,7 +756,7 @@ export default function DashboardClient() {
               </article>
             ))
           ) : (
-            <div className="fdl-dashboard-empty xl:col-span-2">
+            <div className="fdl-ui-empty xl:col-span-2">
               Nenhum registro encontrado para os filtros selecionados.
             </div>
           )}
