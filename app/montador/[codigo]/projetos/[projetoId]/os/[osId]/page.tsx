@@ -18,7 +18,7 @@ export default async function MontadorOsPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
-      <div className="mx-auto min-h-screen w-full max-w-4xl px-5 py-8">
+<div className="mx-auto min-h-screen w-full max-w-4xl px-5 py-8">
         <div className="mb-8 flex justify-center">
           <Image
             src="/brand/H_TAGLINE_SF_ROXO.png"

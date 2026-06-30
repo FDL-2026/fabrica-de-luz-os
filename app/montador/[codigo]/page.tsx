@@ -15,7 +15,7 @@ export default async function MontadorPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
-      <div className="flex min-h-screen items-center justify-center px-5 py-10">
+<div className="flex min-h-screen items-center justify-center px-5 py-10">
         <section className="w-full max-w-md">
           <div className="mb-8 flex justify-center">
             <Image
