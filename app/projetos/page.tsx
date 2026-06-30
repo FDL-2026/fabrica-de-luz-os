@@ -151,30 +151,30 @@ export default async function ProjetosPage() {
           </header>
 
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
-              <p className="text-sm text-[#7d6488]">Total de projetos</p>
-              <strong className="mt-3 block text-4xl">{totalProjetos}</strong>
-              <span className="mt-2 block text-sm text-[#7d6488]">
+            <div className="fdl-projects-kpi-card">
+              <p className="fdl-projects-kpi-label">Total de projetos</p>
+              <strong className="fdl-projects-kpi-value">{totalProjetos}</strong>
+              <span className="fdl-projects-kpi-help">
                 visíveis para seu perfil
               </span>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
-              <p className="text-sm text-[#7d6488]">Em montagem</p>
-              <strong className="mt-3 block text-4xl">
+            <div className="fdl-projects-kpi-card">
+              <p className="fdl-projects-kpi-label">Em montagem</p>
+              <strong className="fdl-projects-kpi-value">
                 {projetosEmMontagem}
               </strong>
-              <span className="mt-2 block text-sm text-green-600">
+              <span className="fdl-projects-kpi-help fdl-projects-kpi-success">
                 projetos em execução
               </span>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
-              <p className="text-sm text-[#7d6488]">Planejamento</p>
-              <strong className="mt-3 block text-4xl">
+            <div className="fdl-projects-kpi-card">
+              <p className="fdl-projects-kpi-label">Planejamento</p>
+              <strong className="fdl-projects-kpi-value">
                 {projetosPlanejamento}
               </strong>
-              <span className="mt-2 block text-sm text-[#7d6488]">
+              <span className="fdl-projects-kpi-help">
                 aguardando início
               </span>
             </div>

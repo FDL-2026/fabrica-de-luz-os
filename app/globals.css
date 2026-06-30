@@ -3112,3 +3112,107 @@ label:has(input[type="file"]):hover {
     table-layout: auto !important;
   }
 }
+
+
+/* FDL PROJECTS LIST POLISH 2026 */
+/* Refinamento visual da listagem geral de projetos */
+
+/* KPIs superiores da tela /projetos */
+.fdl-projects-kpi-card {
+  min-height: 148px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  border-radius: 26px !important;
+  border: 1px solid rgba(255, 255, 255, 0.115) !important;
+  background: rgba(255, 255, 255, 0.068) !important;
+  padding: 20px !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+.fdl-projects-kpi-card:hover {
+  background: rgba(255, 255, 255, 0.082) !important;
+}
+
+.fdl-projects-kpi-label {
+  color: rgba(255, 255, 255, 0.58) !important;
+  font-size: 0.72rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.13em !important;
+  text-transform: uppercase !important;
+}
+
+.fdl-projects-kpi-value {
+  margin-top: 12px !important;
+  display: block !important;
+  color: #ffffff !important;
+  font-size: clamp(2rem, 4vw, 2.75rem) !important;
+  line-height: 1 !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.fdl-projects-kpi-help {
+  margin-top: 12px !important;
+  display: block !important;
+  color: rgba(255, 255, 255, 0.54) !important;
+  font-size: 0.84rem !important;
+  line-height: 1.4 !important;
+}
+
+.fdl-projects-kpi-success {
+  color: #bbf7d0 !important;
+  font-weight: 850 !important;
+}
+
+.fdl-projects-kpi-warning {
+  color: #fde68a !important;
+  font-weight: 850 !important;
+}
+
+/* Cards de projeto */
+.fdl-project-card,
+a.fdl-project-card,
+.fdl-form-card:has(a[href*="/projetos/"]) {
+  border-radius: 28px !important;
+}
+
+/* Padronização de botões dentro dos cards de projeto */
+a[href*="/projetos/"].fdl-action-link,
+.fdl-project-card a,
+.fdl-form-card a {
+  text-decoration: none !important;
+}
+
+/* Botão principal “Ver projeto” quando estiver com fundo creme */
+a[href*="/projetos/"]:not([href*="cronograma"]) {
+  text-decoration: none !important;
+}
+
+/* Melhor leitura dos blocos internos dos cards */
+.fdl-form-card div[class*="bg-white/"] {
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+/* Respiro entre título e grade */
+.fdl-projects-section-title {
+  color: #ffffff !important;
+  font-size: 1.25rem !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.03em !important;
+}
+
+@media (max-width: 768px) {
+  .fdl-projects-kpi-card {
+    min-height: 124px !important;
+    padding: 17px !important;
+  }
+
+  .fdl-projects-kpi-value {
+    font-size: 2.15rem !important;
+  }
+}
