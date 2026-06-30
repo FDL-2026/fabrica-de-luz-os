@@ -4203,3 +4203,65 @@ main:has(.fdl-mobile-card) a[href*="/montador/"][class*="bg-[var(--fdl-cream)]"]
     padding: 18px !important;
   }
 }
+
+
+/* FDL DASHBOARD COMPACT POLISH 2026 */
+/* Ajuste fino para deixar o dashboard mais compacto e operacional */
+
+.fdl-ui-dashboard {
+  gap: 18px !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-panel {
+  padding: 26px !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-header {
+  gap: 16px !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-title {
+  margin-top: 6px !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-description {
+  margin-top: 8px !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-filter-box {
+  margin-top: 18px !important;
+  padding: 14px !important;
+  border-radius: 22px !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-select {
+  min-height: 42px !important;
+  height: 42px !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-kpi {
+  min-height: 124px !important;
+  padding: 18px !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-kpi-value {
+  margin-top: 8px !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-kpi-help {
+  margin-top: 8px !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-validation-card {
+  margin-top: 6px !important;
+}
+
+@media (max-width: 768px) {
+  .fdl-ui-dashboard .fdl-ui-panel {
+    padding: 20px !important;
+  }
+
+  .fdl-ui-dashboard .fdl-ui-kpi {
+    min-height: 112px !important;
+  }
+}
