@@ -2027,3 +2027,102 @@ select.fdl-field option,
     justify-content: flex-start !important;
   }
 }
+
+
+/* FDL SOLID SURFACES OVERRIDE 2026 */
+/* Remove efeitos de luz/radial dos cards e deixa o visual mais sólido e operacional */
+
+.fdl-form-card,
+.fdl-ui-form-panel,
+.fdl-ui-panel,
+.fdl-ui-section,
+.fdl-ui-page-block,
+.fdl-soft-card,
+.fdl-mobile-card,
+.fdl-ui-dashboard .fdl-ui-panel,
+.fdl-ui-dashboard .fdl-ui-kpi,
+.fdl-ui-dashboard .fdl-ui-filter-box,
+.fdl-form-section,
+.fdl-ui-meta-card,
+.fdl-mobile-list-item {
+  background: rgba(255, 255, 255, 0.065) !important;
+  border: 1px solid rgba(255, 255, 255, 0.115) !important;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+/* Remove brilhos decorativos da dashboard */
+.fdl-ui-dashboard .fdl-ui-panel::before,
+.fdl-ui-dashboard .fdl-ui-panel::after,
+.fdl-ui-dashboard .fdl-ui-kpi::before,
+.fdl-ui-dashboard .fdl-ui-kpi::after,
+.fdl-ui-validation-card::before,
+.fdl-ui-validation-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Mantém os KPIs sólidos e mais limpos */
+.fdl-ui-dashboard .fdl-ui-kpi {
+  background: rgba(255, 255, 255, 0.068) !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-kpi:hover {
+  background: rgba(255, 255, 255, 0.082) !important;
+}
+
+/* Filtros com superfície sólida */
+.fdl-ui-dashboard .fdl-ui-filter-box,
+.fdl-ui-project-toolbar {
+  background: rgba(255, 255, 255, 0.058) !important;
+}
+
+/* Card de validação em âmbar sólido, estilo alerta operacional */
+.fdl-ui-validation-card,
+.fdl-ui-dashboard .fdl-ui-validation-card {
+  border: 1px solid rgba(245, 158, 11, 0.42) !important;
+  background: rgba(146, 64, 14, 0.34) !important;
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+.fdl-ui-validation-kicker,
+.fdl-ui-dashboard .fdl-ui-validation-kicker {
+  color: #fde68a !important;
+}
+
+.fdl-ui-validation-title,
+.fdl-ui-dashboard .fdl-ui-validation-title {
+  color: #ffffff !important;
+}
+
+.fdl-ui-validation-desc,
+.fdl-ui-dashboard .fdl-ui-validation-desc {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.fdl-ui-validation-count,
+.fdl-ui-dashboard .fdl-ui-validation-count {
+  background: #fde68a !important;
+  color: #451a03 !important;
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
+  box-shadow: none !important;
+}
+
+/* Tabelas dentro do card de validação com leitura melhor */
+.fdl-ui-validation-card .fdl-ui-table-wrap {
+  border-color: rgba(245, 158, 11, 0.28) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+.fdl-ui-validation-card .fdl-ui-table thead {
+  background: rgba(255, 255, 255, 0.075) !important;
+}
+
+.fdl-ui-validation-card .fdl-ui-empty {
+  border-color: rgba(245, 158, 11, 0.28) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: rgba(255, 255, 255, 0.68) !important;
+}
