@@ -3457,3 +3457,47 @@ section h2,
     font-size: 2rem !important;
   }
 }
+
+
+/* FDL OS ACTION COLUMN ALIGNMENT 2026 */
+/* Alinha o cabeçalho Ações com os botões da tabela Ordens de serviço */
+
+.fdl-ui-page-block .fdl-ui-table th:last-child,
+.fdl-ui-page-block .fdl-ui-table td:last-child {
+  width: 210px !important;
+  min-width: 210px !important;
+  max-width: 210px !important;
+  text-align: center !important;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+}
+
+.fdl-ui-page-block .fdl-ui-table-actions {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.fdl-ui-page-block .fdl-ui-table-actions .fdl-ui-btn {
+  min-width: 82px !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+/* Quando houver apenas um botão, ele também fica centralizado */
+.fdl-ui-page-block .fdl-ui-table-actions .fdl-ui-btn:only-child {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Em telas menores, mantém legível */
+@media (max-width: 900px) {
+  .fdl-ui-page-block .fdl-ui-table th:last-child,
+  .fdl-ui-page-block .fdl-ui-table td:last-child {
+    width: 190px !important;
+    min-width: 190px !important;
+    max-width: 190px !important;
+  }
+}
