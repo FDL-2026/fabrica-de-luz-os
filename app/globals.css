@@ -3216,3 +3216,57 @@ a[href*="/projetos/"]:not([href*="cronograma"]) {
     font-size: 2.15rem !important;
   }
 }
+
+
+/* FDL PROJECTS KPI TEXT FIX 2026 */
+/* Corrige alinhamento dos textos auxiliares dos cards da tela /projetos */
+
+.fdl-projects-kpi-card {
+  min-height: 136px !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+}
+
+.fdl-projects-kpi-label {
+  margin-bottom: 14px !important;
+}
+
+.fdl-projects-kpi-value {
+  margin-top: 0 !important;
+  margin-bottom: 8px !important;
+}
+
+.fdl-projects-kpi-help {
+  margin-top: 0 !important;
+  display: block !important;
+  color: rgba(255, 255, 255, 0.58) !important;
+  font-size: 0.86rem !important;
+  font-weight: 650 !important;
+  line-height: 1.35 !important;
+}
+
+/* Mantém indicação sem parecer desalinhada ou gritante */
+.fdl-projects-kpi-success {
+  color: #bbf7d0 !important;
+  font-weight: 750 !important;
+}
+
+.fdl-projects-kpi-warning {
+  color: rgba(255, 255, 255, 0.58) !important;
+  font-weight: 650 !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .fdl-projects-kpi-card {
+    min-height: 118px !important;
+  }
+
+  .fdl-projects-kpi-label {
+    margin-bottom: 10px !important;
+  }
+
+  .fdl-projects-kpi-value {
+    margin-bottom: 6px !important;
+  }
+}
