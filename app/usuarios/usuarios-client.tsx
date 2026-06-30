@@ -619,13 +619,13 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
             </label>
 
             {erro ? (
-              <div className="fdl-alert fdl-alert-error">
+              <div className="fdl-ui-alert fdl-ui-alert-error">
                 {erro}
               </div>
             ) : null}
 
             {sucesso ? (
-              <div className="fdl-alert fdl-alert-success">
+              <div className="fdl-ui-alert fdl-ui-alert-success">
                 {sucesso}
               </div>
             ) : null}
@@ -653,9 +653,9 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
               Carregando usuários...
             </div>
           ) : usuarios.length > 0 ? (
-            <div className="fdl-table-wrap">
-              <div className="overflow-x-auto">
-                <table className="min-w-[980px] w-full text-left text-sm fdl-data-table">
+            <div className="fdl-ui-table-wrap">
+              <div className="fdl-ui-table-scroll">
+                <table className="min-w-[980px] fdl-ui-table">
                   <thead className="bg-white/10 text-white/70">
                     <tr>
                       <th className="px-4 py-3">Nome</th>

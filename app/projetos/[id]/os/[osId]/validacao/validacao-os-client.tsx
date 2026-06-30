@@ -227,7 +227,7 @@ export default function ValidacaoOsClient({
 
   if (!dados.os) {
     return (
-      <div className="fdl-alert fdl-alert-error">
+      <div className="fdl-ui-alert fdl-ui-alert-error">
         OS não encontrada ou sem permissão de acesso.
       </div>
     );

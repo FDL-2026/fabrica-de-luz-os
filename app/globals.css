@@ -871,3 +871,168 @@ body {
   background: rgba(255, 255, 255, 0.13);
   color: rgba(255, 255, 255, 0.76);
 }
+
+
+/* FDL UI ADMIN FORMS 2026 */
+.fdl-ui-form-panel {
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.105);
+  background:
+    radial-gradient(circle at top right, rgba(237, 224, 177, 0.08), transparent 30%),
+    rgba(255, 255, 255, 0.052);
+  padding: 24px;
+}
+
+.fdl-ui-form-grid {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .fdl-ui-form-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fdl-ui-form-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.fdl-ui-field {
+  width: 100%;
+  height: 46px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.105);
+  color: #ffffff;
+  padding: 0 14px;
+  font-size: 0.88rem;
+  font-weight: 650;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.fdl-ui-field:focus {
+  border-color: var(--fdl-cream);
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 0 4px rgba(237, 224, 177, 0.10);
+}
+
+.fdl-ui-field::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.fdl-ui-field:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.fdl-ui-textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.105);
+  color: #ffffff;
+  padding: 14px;
+  font-size: 0.88rem;
+  font-weight: 650;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.fdl-ui-textarea:focus {
+  border-color: var(--fdl-cream);
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 0 4px rgba(237, 224, 177, 0.10);
+}
+
+.fdl-ui-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.fdl-ui-alert {
+  border-radius: 18px;
+  border: 1px solid transparent;
+  padding: 14px 16px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.fdl-ui-alert-error {
+  border-color: rgba(248, 113, 113, 0.34);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+}
+
+.fdl-ui-alert-success {
+  border-color: rgba(74, 222, 128, 0.30);
+  background: rgba(34, 197, 94, 0.12);
+  color: #bbf7d0;
+}
+
+.fdl-ui-alert-warning {
+  border-color: rgba(250, 204, 21, 0.32);
+  background: rgba(250, 204, 21, 0.12);
+  color: #fef3c7;
+}
+
+.fdl-ui-upload-box {
+  border-radius: 24px;
+  border: 1px dashed rgba(237, 224, 177, 0.42);
+  background: rgba(237, 224, 177, 0.07);
+  padding: 24px;
+}
+
+.fdl-ui-upload-box:hover {
+  border-color: rgba(237, 224, 177, 0.72);
+  background: rgba(237, 224, 177, 0.10);
+}
+
+.fdl-ui-meta-grid {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .fdl-ui-meta-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.fdl-ui-meta-card {
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.055);
+  padding: 16px;
+}
+
+.fdl-ui-meta-label {
+  font-size: 0.72rem;
+  font-weight: 850;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.fdl-ui-meta-value {
+  margin-top: 5px;
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.fdl-ui-divider {
+  height: 1px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.09);
+}
