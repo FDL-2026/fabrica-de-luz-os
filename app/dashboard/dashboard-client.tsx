@@ -23,8 +23,26 @@ type ProjetoDashboard = {
   total_os: number;
   pendentes: number;
   em_andamento: number;
+  aguardando_validacao: number;
   concluidas: number;
   ult_registro: string | null;
+};
+
+type OsValidacaoDashboard = {
+  os_id: string;
+  projeto_id: string;
+  codigo_os: string | null;
+  cliente: string | null;
+  shopping: string | null;
+  uf: string | null;
+  temporada: string | null;
+  responsavel_comercial: string | null;
+  servico: string | null;
+  local: string | null;
+  equipe: string | null;
+  status: string | null;
+  status_validacao: string | null;
+  concluido_em: string | null;
 };
 
 type RegistroDashboard = {
@@ -45,23 +63,6 @@ type RegistroDashboard = {
   total_arquivos: number;
 };
 
-type OsValidacaoDashboard = {
-  os_id: string;
-  projeto_id: string;
-  codigo_os: string | null;
-  cliente: string | null;
-  shopping: string | null;
-  uf: string | null;
-  temporada: string | null;
-  responsavel_comercial: string | null;
-  servico: string | null;
-  local: string | null;
-  equipe: string | null;
-  status: string | null;
-  status_validacao: string | null;
-  concluido_em: string | null;
-};
-
 type ProjetoOpcao = {
   projeto_id: string;
   cliente: string | null;
@@ -79,10 +80,37 @@ type DashboardFiltros = {
 type DashboardData = {
   resumo: ResumoDashboard;
   projetos: ProjetoDashboard[];
-  ultimos_registros: RegistroDashboard[];
   oss_aguardando_validacao: OsValidacaoDashboard[];
+  ultimos_registros: RegistroDashboard[];
   filtros: DashboardFiltros;
 };
+
+const emptyDashboard: DashboardData = {
+  resumo: {
+    projetos_ativos: 0,
+    total_projetos: 0,
+    os_pendentes: 0,
+    os_em_andamento: 0,
+    os_concluidas: 0,
+    os_aguardando_validacao: 0,
+  },
+  projetos: [],
+  oss_aguardando_validacao: [],
+  ultimos_registros: [],
+  filtros: {
+    gestores_comerciais: [],
+    projetos_opcoes: [],
+  },
+};
+
+const statusOperacionalOptions = [
+  { value: "", label: "Todos" },
+  { value: "com_validacao", label: "Com validação pendente" },
+  { value: "em_andamento", label: "Com OS em andamento" },
+  { value: "com_pendencias", label: "Com OS pendente" },
+  { value: "sem_registro", label: "Sem movimentação" },
+  { value: "concluido", label: "Concluído" },
+];
 
 function formatDateTime(date: string | null) {
   if (!date) return "Sem registro";
@@ -91,26 +119,6 @@ function formatDateTime(date: string | null) {
     dateStyle: "short",
     timeStyle: "short",
   });
-}
-
-function formatStatus(status: string | null) {
-  if (!status) return "Sem status";
-
-  const labels: Record<string, string> = {
-    planejamento: "Planejamento",
-    em_montagem: "Em montagem",
-    pausado: "Pausado",
-    concluido: "Concluído",
-    concluida: "Concluída",
-    cancelado: "Cancelado",
-    cancelada: "Cancelada",
-    pendente: "Pendente",
-    em_andamento: "Em andamento",
-    bloqueada: "Bloqueada",
-    atrasada: "Atrasada",
-  };
-
-  return labels[status] ?? status.replace("_", " ");
 }
 
 function formatTipoRegistro(tipo: string | null) {
@@ -125,32 +133,7 @@ function formatTipoRegistro(tipo: string | null) {
     anexo: "Anexo",
   };
 
-  return labels[tipo] ?? tipo.replace("_", " ");
-}
-
-function statusClass(status: string | null) {
-  switch (status) {
-    case "em_andamento":
-    case "em_montagem":
-      return "bg-blue-100 text-blue-700";
-
-    case "pendente":
-    case "planejamento":
-      return "bg-yellow-100 text-yellow-700";
-
-    case "concluida":
-    case "concluido":
-      return "bg-green-100 text-green-700";
-
-    case "bloqueada":
-    case "atrasada":
-    case "cancelada":
-    case "cancelado":
-      return "bg-red-100 text-red-700";
-
-    default:
-      return "bg-white/20 text-white";
-  }
+  return labels[tipo] ?? tipo.replaceAll("_", " ");
 }
 
 function tipoRegistroClass(tipo: string | null) {
@@ -184,23 +167,59 @@ function nomeProjeto(projeto: {
   return `${nome} - ${projeto.uf}`;
 }
 
-const emptyDashboard: DashboardData = {
-  resumo: {
-    projetos_ativos: 0,
-    total_projetos: 0,
-    os_pendentes: 0,
-    os_em_andamento: 0,
-    os_concluidas: 0,
-    os_aguardando_validacao: 0,
-  },
-  projetos: [],
-  ultimos_registros: [],
-  oss_aguardando_validacao: [],
-  filtros: {
-    gestores_comerciais: [],
-    projetos_opcoes: [],
-  },
-};
+function progressoProjeto(projeto: ProjetoDashboard) {
+  if (!projeto.total_os) return 0;
+
+  return Math.round((projeto.concluidas / projeto.total_os) * 100);
+}
+
+function statusOperacionalProjeto(projeto: ProjetoDashboard) {
+  if (projeto.aguardando_validacao > 0) return "com_validacao";
+  if (projeto.em_andamento > 0) return "em_andamento";
+  if (projeto.pendentes > 0) return "com_pendencias";
+  if (!projeto.ult_registro) return "sem_registro";
+
+  if (projeto.total_os > 0 && projeto.concluidas >= projeto.total_os) {
+    return "concluido";
+  }
+
+  return "em_acompanhamento";
+}
+
+function statusOperacionalLabel(status: string) {
+  const labels: Record<string, string> = {
+    com_validacao: "Validação pendente",
+    em_andamento: "Em andamento",
+    com_pendencias: "Com pendências",
+    sem_registro: "Sem movimentação",
+    concluido: "Concluído",
+    em_acompanhamento: "Em acompanhamento",
+  };
+
+  return labels[status] ?? status;
+}
+
+function statusOperacionalClass(status: string) {
+  switch (status) {
+    case "com_validacao":
+      return "bg-yellow-100 text-yellow-700";
+
+    case "em_andamento":
+      return "bg-blue-100 text-blue-700";
+
+    case "com_pendencias":
+      return "bg-orange-100 text-orange-700";
+
+    case "concluido":
+      return "bg-green-100 text-green-700";
+
+    case "sem_registro":
+      return "bg-red-100 text-red-700";
+
+    default:
+      return "bg-white/15 text-white/75";
+  }
+}
 
 export default function DashboardClient() {
   const supabase = useMemo(() => createClient(), []);
@@ -210,19 +229,21 @@ export default function DashboardClient() {
   const [dados, setDados] = useState<DashboardData>(emptyDashboard);
   const [gestorSelecionado, setGestorSelecionado] = useState("");
   const [projetoSelecionado, setProjetoSelecionado] = useState("");
+  const [ufSelecionada, setUfSelecionada] = useState("");
+  const [statusOperacionalSelecionado, setStatusOperacionalSelecionado] =
+    useState("");
 
   const progressoGeral = useMemo(() => {
     const total =
       dados.resumo.os_pendentes +
       dados.resumo.os_em_andamento +
+      dados.resumo.os_aguardando_validacao +
       dados.resumo.os_concluidas;
 
     if (total === 0) return 0;
 
     return Math.round((dados.resumo.os_concluidas / total) * 100);
   }, [dados]);
-
-  const filtrosAtivos = Boolean(gestorSelecionado || projetoSelecionado);
 
   const projetosDisponiveisParaFiltro = useMemo(() => {
     if (!gestorSelecionado) {
@@ -233,6 +254,35 @@ export default function DashboardClient() {
       (projeto) => projeto.responsavel_comercial === gestorSelecionado
     );
   }, [dados.filtros.projetos_opcoes, gestorSelecionado]);
+
+  const ufsDisponiveis = useMemo(() => {
+    return Array.from(
+      new Set(
+        dados.projetos
+          .map((projeto) => projeto.uf?.trim())
+          .filter((uf): uf is string => Boolean(uf))
+      )
+    ).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [dados.projetos]);
+
+  const projetosTabela = useMemo(() => {
+    return dados.projetos.filter((projeto) => {
+      const bateUf = !ufSelecionada || projeto.uf === ufSelecionada;
+
+      const bateStatus =
+        !statusOperacionalSelecionado ||
+        statusOperacionalProjeto(projeto) === statusOperacionalSelecionado;
+
+      return bateUf && bateStatus;
+    });
+  }, [dados.projetos, statusOperacionalSelecionado, ufSelecionada]);
+
+  const filtrosAtivos = Boolean(
+    gestorSelecionado ||
+      projetoSelecionado ||
+      ufSelecionada ||
+      statusOperacionalSelecionado
+  );
 
   useEffect(() => {
     async function carregarDashboard() {
@@ -257,6 +307,13 @@ export default function DashboardClient() {
 
     carregarDashboard();
   }, [gestorSelecionado, projetoSelecionado, supabase]);
+
+  function limparFiltros() {
+    setGestorSelecionado("");
+    setProjetoSelecionado("");
+    setUfSelecionada("");
+    setStatusOperacionalSelecionado("");
+  }
 
   if (carregando) {
     return (
@@ -283,9 +340,9 @@ export default function DashboardClient() {
 
         <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Visão geral da montagem</h1>
+            <h1 className="text-3xl font-bold">Central de controle</h1>
             <p className="mt-2 text-sm text-white/60">
-              Acompanhe projetos, OSs e registros enviados pelos montadores.
+              Acompanhe projetos, OSs, validações e movimentações da operação.
             </p>
           </div>
 
@@ -306,7 +363,7 @@ export default function DashboardClient() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 rounded-3xl border border-white/10 bg-white/[0.04] p-4 lg:grid-cols-[1fr_1fr_auto]">
+        <div className="mt-6 grid gap-4 rounded-3xl border border-white/10 bg-white/[0.04] p-4 xl:grid-cols-[1fr_1fr_0.6fr_0.9fr_auto]">
           <div>
             <label className="mb-2 block text-sm font-semibold text-white">
               Gestor Comercial
@@ -358,23 +415,66 @@ export default function DashboardClient() {
             </select>
           </div>
 
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-white">
+              UF
+            </label>
+
+            <select
+              value={ufSelecionada}
+              onChange={(event) => setUfSelecionada(event.target.value)}
+              className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+            >
+              <option className="text-black" value="">
+                Todas
+              </option>
+
+              {ufsDisponiveis.map((uf) => (
+                <option key={uf} className="text-black" value={uf}>
+                  {uf}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-white">
+              Status operacional
+            </label>
+
+            <select
+              value={statusOperacionalSelecionado}
+              onChange={(event) =>
+                setStatusOperacionalSelecionado(event.target.value)
+              }
+              className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+            >
+              {statusOperacionalOptions.map((status) => (
+                <option
+                  key={status.value}
+                  className="text-black"
+                  value={status.value}
+                >
+                  {status.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="flex items-end">
             <button
               type="button"
               disabled={!filtrosAtivos}
-              onClick={() => {
-                setGestorSelecionado("");
-                setProjetoSelecionado("");
-              }}
-              className="h-12 w-full rounded-2xl border border-white/15 px-5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 lg:w-auto"
+              onClick={limparFiltros}
+              className="h-12 w-full rounded-2xl border border-white/15 px-5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 xl:w-auto"
             >
-              Limpar filtros
+              Limpar
             </button>
           </div>
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
         <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
           <p className="text-sm text-[#7d6488]">Projetos ativos</p>
           <strong className="mt-2 block text-4xl">
@@ -402,11 +502,19 @@ export default function DashboardClient() {
         </div>
 
         <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
+          <p className="text-sm text-[#7d6488]">Validação</p>
+          <strong className="mt-2 block text-4xl">
+            {dados.resumo.os_aguardando_validacao}
+          </strong>
+          <p className="mt-2 text-xs text-[#7d6488]">aguardando gestor</p>
+        </div>
+
+        <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
           <p className="text-sm text-[#7d6488]">Concluídas</p>
           <strong className="mt-2 block text-4xl">
             {dados.resumo.os_concluidas}
           </strong>
-          <p className="mt-2 text-xs text-[#7d6488]">finalizadas com evidência</p>
+          <p className="mt-2 text-xs text-[#7d6488]">aprovadas/finalizadas</p>
         </div>
 
         <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
@@ -420,7 +528,6 @@ export default function DashboardClient() {
           </div>
         </div>
       </section>
-
 
       <section className="rounded-3xl border border-yellow-300/30 bg-yellow-300/10 p-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -511,178 +618,214 @@ export default function DashboardClient() {
         )}
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-          <div className="mb-5">
-            <h2 className="text-xl font-bold">Projetos em acompanhamento</h2>
+      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+        <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h2 className="text-xl font-bold">Tabela geral de projetos</h2>
             <p className="mt-1 text-sm text-white/55">
-              Projetos ordenados por maior volume de OSs pendentes.
+              Visão compacta para acompanhamento de grande volume de projetos.
             </p>
           </div>
 
-          <div className="space-y-4">
-            {dados.projetos.length > 0 ? (
-              dados.projetos.map((projeto) => {
-                const total = projeto.total_os || 0;
-                const progresso =
-                  total > 0 ? Math.round((projeto.concluidas / total) * 100) : 0;
-
-                return (
-                  <article
-                    key={projeto.projeto_id}
-                    className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
-                  >
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
-                          {projeto.uf || "UF"} · Temporada{" "}
-                          {projeto.temporada || "não informada"}
-                        </p>
-
-                        <h3 className="mt-2 text-lg font-bold text-white">
-                          {projeto.cliente || projeto.shopping || "Projeto sem nome"}
-                        </h3>
-
-                        <p className="mt-2 text-sm text-white/50">
-                          Gestor Comercial:{" "}
-                          {projeto.responsavel_comercial || "Não informado"}
-                        </p>
-
-                        <p className="mt-1 text-sm text-white/50">
-                          Último registro: {formatDateTime(projeto.ult_registro)}
-                        </p>
-                      </div>
-
-                      <span
-                        className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${statusClass(
-                          projeto.status
-                        )}`}
-                      >
-                        {formatStatus(projeto.status)}
-                      </span>
-                    </div>
-
-                    <div className="mt-4 grid gap-3 text-sm md:grid-cols-4">
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                        <p className="text-white/40">Total OSs</p>
-                        <p className="mt-1 font-semibold text-white">
-                          {projeto.total_os}
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                        <p className="text-white/40">Pendentes</p>
-                        <p className="mt-1 font-semibold text-white">
-                          {projeto.pendentes}
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                        <p className="text-white/40">Andamento</p>
-                        <p className="mt-1 font-semibold text-white">
-                          {projeto.em_andamento}
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                        <p className="text-white/40">Progresso</p>
-                        <p className="mt-1 font-semibold text-white">
-                          {progresso}%
-                        </p>
-                      </div>
-                    </div>
-
-                    <a
-                      href={`/projetos/${projeto.projeto_id}`}
-                      className="mt-4 flex h-11 w-full items-center justify-center rounded-full bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
-                    >
-                      Abrir projeto
-                    </a>
-                  </article>
-                );
-              })
-            ) : (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
-                Nenhum projeto encontrado para os filtros selecionados.
-              </div>
-            )}
-          </div>
+          <span className="w-fit rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white/80">
+            {projetosTabela.length} de {dados.projetos.length} projeto(s)
+          </span>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-          <div className="mb-5">
-            <h2 className="text-xl font-bold">Últimos registros</h2>
-            <p className="mt-1 text-sm text-white/55">
-              Últimas atualizações enviadas pelos montadores.
-            </p>
-          </div>
+        {projetosTabela.length > 0 ? (
+          <div className="overflow-hidden rounded-2xl border border-white/10">
+            <div className="overflow-x-auto">
+              <table className="min-w-[1280px] w-full text-left text-sm">
+                <thead className="bg-white/10 text-white/70">
+                  <tr>
+                    <th className="px-4 py-3">Projeto</th>
+                    <th className="px-4 py-3">UF</th>
+                    <th className="px-4 py-3">Gestor Comercial</th>
+                    <th className="px-4 py-3 text-center">Total</th>
+                    <th className="px-4 py-3 text-center">Pend.</th>
+                    <th className="px-4 py-3 text-center">And.</th>
+                    <th className="px-4 py-3 text-center">Val.</th>
+                    <th className="px-4 py-3 text-center">Conc.</th>
+                    <th className="px-4 py-3">Progresso</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Último registro</th>
+                    <th className="px-4 py-3 text-center">Ação</th>
+                  </tr>
+                </thead>
 
-          <div className="space-y-4">
-            {dados.ultimos_registros.length > 0 ? (
-              dados.ultimos_registros.map((registro) => (
-                <article
-                  key={registro.registro_id}
-                  className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
-                >
-                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                    <div>
-                      <span
-                        className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${tipoRegistroClass(
-                          registro.tipo_registro
-                        )}`}
+                <tbody>
+                  {projetosTabela.map((projeto) => {
+                    const progresso = progressoProjeto(projeto);
+                    const statusOperacional =
+                      statusOperacionalProjeto(projeto);
+
+                    return (
+                      <tr
+                        key={projeto.projeto_id}
+                        className="border-t border-white/10"
                       >
-                        {formatTipoRegistro(registro.tipo_registro)}
-                      </span>
+                        <td className="px-4 py-3">
+                          <p className="font-semibold text-white">
+                            {projeto.cliente ||
+                              projeto.shopping ||
+                              "Projeto sem nome"}
+                          </p>
+                          <p className="mt-1 text-xs text-white/45">
+                            Temporada {projeto.temporada || "não informada"}
+                          </p>
+                        </td>
 
-                      <h3 className="mt-3 text-sm font-bold text-white">
-                        {registro.cliente || registro.shopping} · OS{" "}
-                        {registro.codigo_os || "sem código"}
-                      </h3>
+                        <td className="px-4 py-3 font-semibold text-white/75">
+                          {projeto.uf || "-"}
+                        </td>
 
-                      <p className="mt-1 text-xs text-white/45">
-                        {formatDateTime(registro.criado_em)} ·{" "}
-                        {registro.usuario_nome || "Usuário não identificado"}
-                      </p>
-                    </div>
+                        <td className="px-4 py-3 text-white/70">
+                          {projeto.responsavel_comercial || "Não informado"}
+                        </td>
 
-                    <span className="w-fit rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
-                      {registro.percentual_execucao ?? 0}%
+                        <td className="px-4 py-3 text-center font-bold text-white">
+                          {projeto.total_os}
+                        </td>
+
+                        <td className="px-4 py-3 text-center text-yellow-100">
+                          {projeto.pendentes}
+                        </td>
+
+                        <td className="px-4 py-3 text-center text-blue-100">
+                          {projeto.em_andamento}
+                        </td>
+
+                        <td className="px-4 py-3 text-center text-yellow-100">
+                          {projeto.aguardando_validacao}
+                        </td>
+
+                        <td className="px-4 py-3 text-center text-green-100">
+                          {projeto.concluidas}
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <div className="flex min-w-[130px] items-center gap-3">
+                            <div className="h-2 flex-1 rounded-full bg-white/10">
+                              <div
+                                className="h-2 rounded-full bg-[var(--fdl-cream)]"
+                                style={{ width: `${progresso}%` }}
+                              />
+                            </div>
+                            <span className="w-10 text-xs font-bold text-white">
+                              {progresso}%
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${statusOperacionalClass(
+                              statusOperacional
+                            )}`}
+                          >
+                            {statusOperacionalLabel(statusOperacional)}
+                          </span>
+                        </td>
+
+                        <td className="px-4 py-3 text-white/60">
+                          {formatDateTime(projeto.ult_registro)}
+                        </td>
+
+                        <td className="px-4 py-3 text-center">
+                          <a
+                            href={`/projetos/${projeto.projeto_id}`}
+                            className="inline-flex h-8 items-center justify-center rounded-full bg-[var(--fdl-lilac)] px-4 text-xs font-semibold text-[var(--fdl-purple-dark)] transition hover:bg-white"
+                          >
+                            Abrir
+                          </a>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
+            Nenhum projeto encontrado para os filtros selecionados.
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+        <div className="mb-5">
+          <h2 className="text-xl font-bold">Últimos registros</h2>
+          <p className="mt-1 text-sm text-white/55">
+            Últimas atualizações enviadas pelos montadores.
+          </p>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          {dados.ultimos_registros.length > 0 ? (
+            dados.ultimos_registros.map((registro) => (
+              <article
+                key={registro.registro_id}
+                className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+              >
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <span
+                      className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${tipoRegistroClass(
+                        registro.tipo_registro
+                      )}`}
+                    >
+                      {formatTipoRegistro(registro.tipo_registro)}
                     </span>
+
+                    <h3 className="mt-3 text-sm font-bold text-white">
+                      {registro.cliente || registro.shopping} · OS{" "}
+                      {registro.codigo_os || "sem código"}
+                    </h3>
+
+                    <p className="mt-1 text-xs text-white/45">
+                      {formatDateTime(registro.criado_em)} ·{" "}
+                      {registro.usuario_nome || "Usuário não identificado"}
+                    </p>
                   </div>
 
-                  <p className="mt-4 line-clamp-3 text-sm leading-6 text-white/70">
-                    {registro.descricao || "Sem descrição informada."}
+                  <span className="w-fit rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
+                    {registro.percentual_execucao ?? 0}%
+                  </span>
+                </div>
+
+                <p className="mt-4 line-clamp-3 text-sm leading-6 text-white/70">
+                  {registro.descricao || "Sem descrição informada."}
+                </p>
+
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs text-white/45">
+                    {registro.total_arquivos} arquivo(s) vinculado(s)
                   </p>
 
-                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-xs text-white/45">
-                      {registro.total_arquivos} arquivo(s) vinculado(s)
-                    </p>
-
-                    {registro.os_id ? (
-                      <a
-                        href={`/projetos/${registro.projeto_id}/os/${registro.os_id}`}
-                        className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
-                      >
-                        Ver OS
-                      </a>
-                    ) : (
-                      <a
-                        href={`/projetos/${registro.projeto_id}`}
-                        className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
-                      >
-                        Ver projeto
-                      </a>
-                    )}
-                  </div>
-                </article>
-              ))
-            ) : (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
-                Nenhum registro encontrado para os filtros selecionados.
-              </div>
-            )}
-          </div>
+                  {registro.os_id ? (
+                    <a
+                      href={`/projetos/${registro.projeto_id}/os/${registro.os_id}`}
+                      className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
+                    >
+                      Ver OS
+                    </a>
+                  ) : (
+                    <a
+                      href={`/projetos/${registro.projeto_id}`}
+                      className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
+                    >
+                      Ver projeto
+                    </a>
+                  )}
+                </div>
+              </article>
+            ))
+          ) : (
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50 xl:col-span-2">
+              Nenhum registro encontrado para os filtros selecionados.
+            </div>
+          )}
         </div>
       </section>
     </div>
