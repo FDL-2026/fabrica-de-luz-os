@@ -2419,3 +2419,46 @@ select.fdl-field option,
     min-height: 40px !important;
   }
 }
+
+
+/* FDL PROJECT SECTION SPACING 2026 */
+/* Dá respiro vertical entre os blocos principais da página do projeto */
+
+.fdl-form-card + .fdl-form-card,
+.fdl-form-card + .fdl-ui-validation-card,
+.fdl-ui-validation-card + .fdl-ui-page-block,
+.fdl-ui-page-block + .fdl-ui-page-block {
+  margin-top: 28px !important;
+}
+
+/* Quando uma seção grande vem logo depois do grid de dados/cronograma */
+section.mt-8 + .fdl-form-card {
+  margin-top: 28px !important;
+}
+
+/* Respiro extra específico entre Equipe, Fila de Validação e Ordens de Serviço */
+.fdl-ui-validation-card {
+  margin-top: 28px !important;
+  margin-bottom: 28px !important;
+}
+
+.fdl-ui-page-block {
+  margin-top: 28px !important;
+}
+
+/* No mobile, reduz um pouco para não alongar demais */
+@media (max-width: 768px) {
+  .fdl-form-card + .fdl-form-card,
+  .fdl-form-card + .fdl-ui-validation-card,
+  .fdl-ui-validation-card + .fdl-ui-page-block,
+  .fdl-ui-page-block + .fdl-ui-page-block,
+  section.mt-8 + .fdl-form-card,
+  .fdl-ui-validation-card,
+  .fdl-ui-page-block {
+    margin-top: 20px !important;
+  }
+
+  .fdl-ui-validation-card {
+    margin-bottom: 20px !important;
+  }
+}
