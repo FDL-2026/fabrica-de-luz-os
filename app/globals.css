@@ -2126,3 +2126,78 @@ select.fdl-field option,
   background: rgba(255, 255, 255, 0.045) !important;
   color: rgba(255, 255, 255, 0.68) !important;
 }
+
+
+/* FDL VALIDATION AMBER REFINEMENT 2026 */
+/* Ajusta a fila de validação para um âmbar sólido, menos vermelho e mais operacional */
+
+.fdl-ui-validation-card,
+.fdl-ui-dashboard .fdl-ui-validation-card {
+  border: 1px solid rgba(245, 158, 11, 0.46) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(92, 52, 14, 0.92),
+    rgba(69, 38, 12, 0.94)
+  ) !important;
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+.fdl-ui-validation-kicker,
+.fdl-ui-dashboard .fdl-ui-validation-kicker {
+  color: #fde68a !important;
+}
+
+.fdl-ui-validation-title,
+.fdl-ui-dashboard .fdl-ui-validation-title {
+  color: #ffffff !important;
+}
+
+.fdl-ui-validation-desc,
+.fdl-ui-dashboard .fdl-ui-validation-desc {
+  color: rgba(255, 255, 255, 0.76) !important;
+}
+
+.fdl-ui-validation-count,
+.fdl-ui-dashboard .fdl-ui-validation-count {
+  background: #fde68a !important;
+  color: #3b1b04 !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: none !important;
+}
+
+/* Tabela dentro do card âmbar */
+.fdl-ui-validation-card .fdl-ui-table-wrap {
+  border-color: rgba(245, 158, 11, 0.32) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+.fdl-ui-validation-card .fdl-ui-table thead {
+  background: rgba(253, 230, 138, 0.13) !important;
+}
+
+.fdl-ui-validation-card .fdl-ui-table th {
+  color: rgba(255, 255, 255, 0.84) !important;
+}
+
+.fdl-ui-validation-card .fdl-ui-table td {
+  border-top-color: rgba(245, 158, 11, 0.22) !important;
+}
+
+.fdl-ui-validation-card .fdl-ui-table tbody tr:hover {
+  background: rgba(253, 230, 138, 0.075) !important;
+}
+
+/* Botão dentro da fila de validação */
+.fdl-ui-validation-card .fdl-ui-btn-primary {
+  background: #fde68a !important;
+  color: #3b1b04 !important;
+}
+
+.fdl-ui-validation-card .fdl-ui-btn-secondary,
+.fdl-ui-validation-card .fdl-ui-btn-ghost {
+  border-color: rgba(253, 230, 138, 0.28) !important;
+  background: rgba(253, 230, 138, 0.12) !important;
+  color: #fde68a !important;
+}
