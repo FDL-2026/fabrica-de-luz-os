@@ -105,9 +105,9 @@ const emptyDashboard: DashboardData = {
 
 const statusOperacionalOptions = [
   { value: "", label: "Todos" },
-  { value: "com_validacao", label: "Com validação pendente" },
-  { value: "em_andamento", label: "Com OS em andamento" },
-  { value: "com_pendencias", label: "Com OS pendente" },
+  { value: "com_validacao", label: "Validação pendente" },
+  { value: "em_andamento", label: "Em andamento" },
+  { value: "com_pendencias", label: "Com pendências" },
   { value: "sem_registro", label: "Sem movimentação" },
   { value: "concluido", label: "Concluído" },
 ];
@@ -121,55 +121,17 @@ function formatDateTime(date: string | null) {
   });
 }
 
-function formatTipoRegistro(tipo: string | null) {
-  if (!tipo) return "Registro";
-
-  const labels: Record<string, string> = {
-    acompanhamento: "Acompanhamento",
-    inicio_os: "Início da OS",
-    conclusao_os: "Conclusão da OS",
-    pendencia: "Pendência",
-    observacao: "Observação",
-    anexo: "Anexo",
-  };
-
-  return labels[tipo] ?? tipo.replaceAll("_", " ");
-}
-
-function tipoRegistroClass(tipo: string | null) {
-  switch (tipo) {
-    case "pendencia":
-      return "fdl-chip-red";
-
-    case "conclusao_os":
-      return "fdl-chip-green";
-
-    case "inicio_os":
-      return "fdl-chip-blue";
-
-    case "anexo":
-      return "fdl-chip-purple";
-
-    default:
-      return "fdl-chip-muted";
-  }
-}
-
 function nomeProjeto(projeto: {
   cliente: string | null;
   shopping: string | null;
   uf?: string | null;
 }) {
   const nome = projeto.cliente || projeto.shopping || "Projeto sem nome";
-
-  if (!projeto.uf) return nome;
-
-  return `${nome} - ${projeto.uf}`;
+  return projeto.uf ? `${nome} - ${projeto.uf}` : nome;
 }
 
 function progressoProjeto(projeto: ProjetoDashboard) {
   if (!projeto.total_os) return 0;
-
   return Math.round((projeto.concluidas / projeto.total_os) * 100);
 }
 
@@ -199,25 +161,50 @@ function statusOperacionalLabel(status: string) {
   return labels[status] ?? status;
 }
 
-function statusOperacionalClass(status: string) {
+function chipClass(status: string) {
   switch (status) {
     case "com_validacao":
-      return "fdl-chip-yellow";
-
+      return "bg-yellow-100 text-yellow-800";
     case "em_andamento":
-      return "fdl-chip-blue";
-
+      return "bg-blue-100 text-blue-800";
     case "com_pendencias":
-      return "fdl-chip-orange";
-
-    case "concluido":
-      return "fdl-chip-green";
-
+      return "bg-orange-100 text-orange-800";
     case "sem_registro":
-      return "fdl-chip-red";
-
+      return "bg-red-100 text-red-800";
+    case "concluido":
+      return "bg-green-100 text-green-800";
     default:
-      return "fdl-chip-muted";
+      return "bg-white/12 text-white/75";
+  }
+}
+
+function formatTipoRegistro(tipo: string | null) {
+  if (!tipo) return "Registro";
+
+  const labels: Record<string, string> = {
+    acompanhamento: "Acompanhamento",
+    inicio_os: "Início da OS",
+    conclusao_os: "Conclusão da OS",
+    pendencia: "Pendência",
+    observacao: "Observação",
+    anexo: "Anexo",
+  };
+
+  return labels[tipo] ?? tipo.replaceAll("_", " ");
+}
+
+function registroChipClass(tipo: string | null) {
+  switch (tipo) {
+    case "pendencia":
+      return "bg-red-100 text-red-800";
+    case "conclusao_os":
+      return "bg-green-100 text-green-800";
+    case "inicio_os":
+      return "bg-blue-100 text-blue-800";
+    case "anexo":
+      return "bg-[var(--fdl-lilac)] text-[var(--fdl-purple-dark)]";
+    default:
+      return "bg-white/12 text-white/75";
   }
 }
 
@@ -227,6 +214,7 @@ export default function DashboardClient() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [dados, setDados] = useState<DashboardData>(emptyDashboard);
+
   const [gestorSelecionado, setGestorSelecionado] = useState("");
   const [projetoSelecionado, setProjetoSelecionado] = useState("");
   const [ufSelecionada, setUfSelecionada] = useState("");
@@ -246,9 +234,7 @@ export default function DashboardClient() {
   }, [dados]);
 
   const projetosDisponiveisParaFiltro = useMemo(() => {
-    if (!gestorSelecionado) {
-      return dados.filtros.projetos_opcoes;
-    }
+    if (!gestorSelecionado) return dados.filtros.projetos_opcoes;
 
     return dados.filtros.projetos_opcoes.filter(
       (projeto) => projeto.responsavel_comercial === gestorSelecionado
@@ -317,160 +303,134 @@ export default function DashboardClient() {
 
   if (carregando) {
     return (
-      <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 text-center text-white/60">
+      <div className="fdl-dashboard-section text-center text-white/60">
         Carregando dashboard operacional...
       </div>
     );
   }
 
   if (erro) {
-    return (
-      <div className="fdl-alert fdl-alert-error">
-        {erro}
-      </div>
-    );
+    return <div className="fdl-alert fdl-alert-error">{erro}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <header className="fdl-form-card p-6">
-        <p className="text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
-          Dashboard operacional
-        </p>
-
-        <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <header className="fdl-dashboard-header p-6">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Central de controle</h1>
-            <p className="mt-2 text-sm text-white/60">
+            <p className="fdl-page-kicker">Dashboard operacional</p>
+            <h1 className="fdl-page-title">Central de controle</h1>
+            <p className="fdl-page-description">
               Acompanhe projetos, OSs, validações e movimentações da operação.
             </p>
           </div>
 
-          <div className="fdl-header-actions">
+          <div className="flex flex-wrap gap-3 xl:justify-end">
             <a
               href="/projetos"
-              className="fdl-action-link fdl-action-link-secondary">Ver projetos</a>
+              className="fdl-dashboard-action fdl-dashboard-action-secondary"
+            >
+              Ver projetos
+            </a>
 
-            <a
-              href="/importar"
-              className="fdl-action-link">Importar cronograma</a>
+            <a href="/importar" className="fdl-dashboard-action">
+              Importar cronograma
+            </a>
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 rounded-3xl border border-white/10 bg-white/[0.04] p-4 xl:grid-cols-[1fr_1fr_0.6fr_0.9fr_auto]">
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-white">
-              Gestor Comercial
-            </label>
+        <div className="mt-6 fdl-dashboard-filter">
+          <div className="fdl-dashboard-filter-grid">
+            <div>
+              <label className="fdl-dashboard-label">Gestor Comercial</label>
+              <select
+                value={gestorSelecionado}
+                onChange={(event) => {
+                  setGestorSelecionado(event.target.value);
+                  setProjetoSelecionado("");
+                }}
+                className="fdl-dashboard-select"
+              >
+                <option value="">Todos os gestores</option>
 
-            <select
-              value={gestorSelecionado}
-              onChange={(event) => {
-                setGestorSelecionado(event.target.value);
-                setProjetoSelecionado("");
-              }}
-              className="fdl-field"
-            >
-              <option className="text-black" value="">
-                Todos os gestores
-              </option>
+                {dados.filtros.gestores_comerciais.map((gestor) => (
+                  <option key={gestor} value={gestor}>
+                    {gestor}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              {dados.filtros.gestores_comerciais.map((gestor) => (
-                <option key={gestor} className="text-black" value={gestor}>
-                  {gestor}
-                </option>
-              ))}
-            </select>
-          </div>
+            <div>
+              <label className="fdl-dashboard-label">Projeto</label>
+              <select
+                value={projetoSelecionado}
+                onChange={(event) => setProjetoSelecionado(event.target.value)}
+                className="fdl-dashboard-select"
+              >
+                <option value="">Todos os projetos</option>
 
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-white">
-              Projeto
-            </label>
+                {projetosDisponiveisParaFiltro.map((projeto) => (
+                  <option key={projeto.projeto_id} value={projeto.projeto_id}>
+                    {nomeProjeto(projeto)}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <select
-              value={projetoSelecionado}
-              onChange={(event) => setProjetoSelecionado(event.target.value)}
-              className="fdl-field"
-            >
-              <option className="text-black" value="">
-                Todos os projetos
-              </option>
+            <div>
+              <label className="fdl-dashboard-label">UF</label>
+              <select
+                value={ufSelecionada}
+                onChange={(event) => setUfSelecionada(event.target.value)}
+                className="fdl-dashboard-select"
+              >
+                <option value="">Todas</option>
 
-              {projetosDisponiveisParaFiltro.map((projeto) => (
-                <option
-                  key={projeto.projeto_id}
-                  className="text-black"
-                  value={projeto.projeto_id}
-                >
-                  {nomeProjeto(projeto)}
-                </option>
-              ))}
-            </select>
-          </div>
+                {ufsDisponiveis.map((uf) => (
+                  <option key={uf} value={uf}>
+                    {uf}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-white">
-              UF
-            </label>
+            <div>
+              <label className="fdl-dashboard-label">Status operacional</label>
+              <select
+                value={statusOperacionalSelecionado}
+                onChange={(event) =>
+                  setStatusOperacionalSelecionado(event.target.value)
+                }
+                className="fdl-dashboard-select"
+              >
+                {statusOperacionalOptions.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <select
-              value={ufSelecionada}
-              onChange={(event) => setUfSelecionada(event.target.value)}
-              className="fdl-field"
-            >
-              <option className="text-black" value="">
-                Todas
-              </option>
-
-              {ufsDisponiveis.map((uf) => (
-                <option key={uf} className="text-black" value={uf}>
-                  {uf}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-white">
-              Status operacional
-            </label>
-
-            <select
-              value={statusOperacionalSelecionado}
-              onChange={(event) =>
-                setStatusOperacionalSelecionado(event.target.value)
-              }
-              className="fdl-field"
-            >
-              {statusOperacionalOptions.map((status) => (
-                <option
-                  key={status.value}
-                  className="text-black"
-                  value={status.value}
-                >
-                  {status.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-end">
-            <button
-              type="button"
-              disabled={!filtrosAtivos}
-              onClick={limparFiltros}
-              className="fdl-btn fdl-btn-md fdl-btn-neutral w-full disabled:cursor-not-allowed disabled:opacity-40 xl:w-auto"
-            >
-              Limpar
-            </button>
+            <div className="flex items-end">
+              <button
+                type="button"
+                disabled={!filtrosAtivos}
+                onClick={limparFiltros}
+                className="fdl-dashboard-action fdl-dashboard-action-neutral w-full disabled:cursor-not-allowed disabled:opacity-40 xl:w-auto"
+              >
+                Limpar
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-        <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
-          <p className="text-sm text-[#7d6488]">Projetos ativos</p>
+        <div className="fdl-dashboard-summary-card">
+          <p className="text-sm font-semibold text-[#7d6488]">
+            Projetos ativos
+          </p>
           <strong className="mt-2 block text-4xl">
             {dados.resumo.projetos_ativos}
           </strong>
@@ -479,40 +439,44 @@ export default function DashboardClient() {
           </p>
         </div>
 
-        <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
-          <p className="text-sm text-[#7d6488]">OSs pendentes</p>
+        <div className="fdl-dashboard-summary-card">
+          <p className="text-sm font-semibold text-[#7d6488]">
+            OSs pendentes
+          </p>
           <strong className="mt-2 block text-4xl">
             {dados.resumo.os_pendentes}
           </strong>
           <p className="mt-2 text-xs text-[#7d6488]">aguardando execução</p>
         </div>
 
-        <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
-          <p className="text-sm text-[#7d6488]">Em andamento</p>
+        <div className="fdl-dashboard-summary-card">
+          <p className="text-sm font-semibold text-[#7d6488]">Em andamento</p>
           <strong className="mt-2 block text-4xl">
             {dados.resumo.os_em_andamento}
           </strong>
           <p className="mt-2 text-xs text-[#7d6488]">em execução</p>
         </div>
 
-        <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
-          <p className="text-sm text-[#7d6488]">Validação</p>
+        <div className="fdl-dashboard-summary-card">
+          <p className="text-sm font-semibold text-[#7d6488]">Validação</p>
           <strong className="mt-2 block text-4xl">
             {dados.resumo.os_aguardando_validacao}
           </strong>
           <p className="mt-2 text-xs text-[#7d6488]">aguardando gestor</p>
         </div>
 
-        <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
-          <p className="text-sm text-[#7d6488]">Concluídas</p>
+        <div className="fdl-dashboard-summary-card">
+          <p className="text-sm font-semibold text-[#7d6488]">Concluídas</p>
           <strong className="mt-2 block text-4xl">
             {dados.resumo.os_concluidas}
           </strong>
           <p className="mt-2 text-xs text-[#7d6488]">aprovadas/finalizadas</p>
         </div>
 
-        <div className="rounded-3xl bg-white p-5 text-[var(--fdl-text-dark)]">
-          <p className="text-sm text-[#7d6488]">Progresso geral</p>
+        <div className="fdl-dashboard-summary-card">
+          <p className="text-sm font-semibold text-[#7d6488]">
+            Progresso geral
+          </p>
           <strong className="mt-2 block text-4xl">{progressoGeral}%</strong>
           <div className="mt-4 h-2 rounded-full bg-[#eee7f3]">
             <div
@@ -523,46 +487,44 @@ export default function DashboardClient() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-yellow-300/30 bg-yellow-300/10 p-6">
+      <section className="fdl-dashboard-section fdl-dashboard-section-warning">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.24em] text-[var(--fdl-cream)]">
-              Fila de validação
-            </p>
-
-            <h2 className="mt-2 text-xl font-bold">OSs aguardando validação</h2>
-
-            <p className="fdl-section-subtitle">
+            <p className="fdl-page-kicker">Fila de validação</p>
+            <h2 className="mt-2 text-xl font-black">
+              OSs aguardando validação
+            </h2>
+            <p className="mt-1 text-sm text-white/60">
               OSs concluídas pelos montadores e pendentes de aprovação do gestor.
             </p>
           </div>
 
-          <span className="w-fit rounded-full bg-yellow-100 px-4 py-2 text-sm font-bold text-yellow-700">
+          <span className="fdl-dashboard-chip bg-yellow-100 text-yellow-800">
             {dados.resumo.os_aguardando_validacao} pendente(s)
           </span>
         </div>
 
         {dados.oss_aguardando_validacao.length > 0 ? (
-          <div className="mt-5 fdl-table-wrap">
+          <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
             <div className="overflow-x-auto">
-              <table className="min-w-[1050px] w-full text-left text-sm fdl-data-table">
-                <thead className="bg-white/10 text-white/70">
+              <table className="min-w-[1050px] fdl-dashboard-table">
+                <thead>
                   <tr>
-                    <th className="px-4 py-3">Projeto</th>
-                    <th className="px-4 py-3">OS</th>
-                    <th className="px-4 py-3">Local</th>
-                    <th className="px-4 py-3">Serviço</th>
-                    <th className="px-4 py-3">Equipe</th>
-                    <th className="px-4 py-3">Concluída em</th>
-                    <th className="px-4 py-3 text-center">Ação</th>
+                    <th>Projeto</th>
+                    <th>OS</th>
+                    <th>Local</th>
+                    <th>Serviço</th>
+                    <th>Equipe</th>
+                    <th>Concluída em</th>
+                    <th className="text-right">Ação</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {dados.oss_aguardando_validacao.map((os) => (
-                    <tr key={os.os_id} className="border-t border-white/10">
-                      <td className="px-4 py-3">
-                        <p className="font-semibold text-white">
+                    <tr key={os.os_id}>
+                      <td>
+                        <p className="font-bold text-white">
                           {os.cliente || os.shopping || "Projeto sem nome"}
                         </p>
                         <p className="mt-1 text-xs text-white/45">
@@ -571,30 +533,24 @@ export default function DashboardClient() {
                         </p>
                       </td>
 
-                      <td className="px-4 py-3 font-bold text-white">
+                      <td className="font-black text-white">
                         {os.codigo_os || "-"}
                       </td>
 
-                      <td className="px-4 py-3 text-white/75">
-                        {os.local || "-"}
-                      </td>
-
-                      <td className="px-4 py-3 text-white/75">
-                        {os.servico || "-"}
-                      </td>
-
-                      <td className="px-4 py-3 text-white/75">
-                        {os.equipe || "-"}
-                      </td>
-
-                      <td className="px-4 py-3 text-white/60">
+                      <td className="text-white/75">{os.local || "-"}</td>
+                      <td className="text-white/75">{os.servico || "-"}</td>
+                      <td className="text-white/75">{os.equipe || "-"}</td>
+                      <td className="text-white/60">
                         {formatDateTime(os.concluido_em)}
                       </td>
 
-                      <td className="px-4 py-3 text-center">
+                      <td className="text-right">
                         <a
                           href={`/projetos/${os.projeto_id}/os/${os.os_id}/validacao`}
-                          className="fdl-action-link">Validar OS</a>
+                          className="fdl-dashboard-action"
+                        >
+                          Validar OS
+                        </a>
                       </td>
                     </tr>
                   ))}
@@ -603,44 +559,44 @@ export default function DashboardClient() {
             </div>
           </div>
         ) : (
-          <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-sm text-white/55">
+          <div className="mt-5 fdl-dashboard-empty">
             Nenhuma OS aguardando validação para os filtros selecionados.
           </div>
         )}
       </section>
 
-      <section className="fdl-form-card p-6">
+      <section className="fdl-dashboard-section">
         <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <h2 className="fdl-section-title">Tabela geral de projetos</h2>
-            <p className="fdl-section-subtitle">
+            <h2 className="text-xl font-black">Tabela geral de projetos</h2>
+            <p className="mt-1 text-sm text-white/55">
               Visão compacta para acompanhamento de grande volume de projetos.
             </p>
           </div>
 
-          <span className="w-fit rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white/80">
+          <span className="fdl-dashboard-chip bg-white/12 text-white/75">
             {projetosTabela.length} de {dados.projetos.length} projeto(s)
           </span>
         </div>
 
         {projetosTabela.length > 0 ? (
-          <div className="fdl-table-wrap">
+          <div className="overflow-hidden rounded-2xl border border-white/10">
             <div className="overflow-x-auto">
-              <table className="min-w-[1280px] w-full text-left text-sm fdl-data-table">
-                <thead className="bg-white/10 text-white/70">
+              <table className="min-w-[1280px] fdl-dashboard-table">
+                <thead>
                   <tr>
-                    <th className="px-4 py-3">Projeto</th>
-                    <th className="px-4 py-3">UF</th>
-                    <th className="px-4 py-3">Gestor Comercial</th>
-                    <th className="px-4 py-3 text-center">Total</th>
-                    <th className="px-4 py-3 text-center">Pend.</th>
-                    <th className="px-4 py-3 text-center">And.</th>
-                    <th className="px-4 py-3 text-center">Val.</th>
-                    <th className="px-4 py-3 text-center">Conc.</th>
-                    <th className="px-4 py-3">Progresso</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Último registro</th>
-                    <th className="px-4 py-3 text-center">Ação</th>
+                    <th>Projeto</th>
+                    <th>UF</th>
+                    <th>Gestor Comercial</th>
+                    <th className="text-center">Total</th>
+                    <th className="text-center">Pend.</th>
+                    <th className="text-center">And.</th>
+                    <th className="text-center">Val.</th>
+                    <th className="text-center">Conc.</th>
+                    <th>Progresso</th>
+                    <th>Status</th>
+                    <th>Último registro</th>
+                    <th className="text-right">Ação</th>
                   </tr>
                 </thead>
 
@@ -651,12 +607,9 @@ export default function DashboardClient() {
                       statusOperacionalProjeto(projeto);
 
                     return (
-                      <tr
-                        key={projeto.projeto_id}
-                        className="border-t border-white/10"
-                      >
-                        <td className="px-4 py-3">
-                          <p className="font-semibold text-white">
+                      <tr key={projeto.projeto_id}>
+                        <td>
+                          <p className="font-bold text-white">
                             {projeto.cliente ||
                               projeto.shopping ||
                               "Projeto sem nome"}
@@ -666,64 +619,69 @@ export default function DashboardClient() {
                           </p>
                         </td>
 
-                        <td className="px-4 py-3 font-semibold text-white/75">
+                        <td className="font-bold text-white/80">
                           {projeto.uf || "-"}
                         </td>
 
-                        <td className="px-4 py-3 text-white/70">
+                        <td className="text-white/70">
                           {projeto.responsavel_comercial || "Não informado"}
                         </td>
 
-                        <td className="px-4 py-3 text-center font-bold text-white">
+                        <td className="text-center font-black text-white">
                           {projeto.total_os}
                         </td>
 
-                        <td className="px-4 py-3 text-center text-yellow-100">
+                        <td className="text-center text-yellow-100">
                           {projeto.pendentes}
                         </td>
 
-                        <td className="px-4 py-3 text-center text-blue-100">
+                        <td className="text-center text-blue-100">
                           {projeto.em_andamento}
                         </td>
 
-                        <td className="px-4 py-3 text-center text-yellow-100">
+                        <td className="text-center text-yellow-100">
                           {projeto.aguardando_validacao}
                         </td>
 
-                        <td className="px-4 py-3 text-center text-green-100">
+                        <td className="text-center text-green-100">
                           {projeto.concluidas}
                         </td>
 
-                        <td className="px-4 py-3">
-                          <div className="flex min-w-[130px] items-center gap-3">
+                        <td>
+                          <div className="flex min-w-[135px] items-center gap-3">
                             <div className="h-2 flex-1 rounded-full bg-white/10">
                               <div
                                 className="h-2 rounded-full bg-[var(--fdl-cream)]"
                                 style={{ width: `${progresso}%` }}
                               />
                             </div>
-                            <span className="w-10 text-xs font-bold text-white">
+                            <span className="w-10 text-xs font-black text-white">
                               {progresso}%
                             </span>
                           </div>
                         </td>
 
-                        <td className="px-4 py-3">
+                        <td>
                           <span
-                            className={`fdl-chip ${statusOperacionalClass(statusOperacional)}`}
+                            className={`fdl-dashboard-chip ${chipClass(
+                              statusOperacional
+                            )}`}
                           >
                             {statusOperacionalLabel(statusOperacional)}
                           </span>
                         </td>
 
-                        <td className="px-4 py-3 text-white/60">
+                        <td className="text-white/60">
                           {formatDateTime(projeto.ult_registro)}
                         </td>
 
-                        <td className="px-4 py-3 text-center">
+                        <td className="text-right">
                           <a
                             href={`/projetos/${projeto.projeto_id}`}
-                            className="fdl-action-link">Abrir</a>
+                            className="fdl-dashboard-action fdl-dashboard-action-secondary"
+                          >
+                            Abrir
+                          </a>
                         </td>
                       </tr>
                     );
@@ -733,16 +691,16 @@ export default function DashboardClient() {
             </div>
           </div>
         ) : (
-          <div className="fdl-empty-state">
+          <div className="fdl-dashboard-empty">
             Nenhum projeto encontrado para os filtros selecionados.
           </div>
         )}
       </section>
 
-      <section className="fdl-form-card p-6">
+      <section className="fdl-dashboard-section">
         <div className="mb-5">
-          <h2 className="fdl-section-title">Últimos registros</h2>
-          <p className="fdl-section-subtitle">
+          <h2 className="text-xl font-black">Últimos registros</h2>
+          <p className="mt-1 text-sm text-white/55">
             Últimas atualizações enviadas pelos montadores.
           </p>
         </div>
@@ -752,12 +710,12 @@ export default function DashboardClient() {
             dados.ultimos_registros.map((registro) => (
               <article
                 key={registro.registro_id}
-                className="fdl-form-section p-5"
+                className="rounded-3xl border border-white/10 bg-white/[0.045] p-5"
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
                     <span
-                      className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${tipoRegistroClass(
+                      className={`fdl-dashboard-chip ${registroChipClass(
                         registro.tipo_registro
                       )}`}
                     >
@@ -775,7 +733,7 @@ export default function DashboardClient() {
                     </p>
                   </div>
 
-                  <span className="w-fit rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
+                  <span className="fdl-dashboard-chip bg-white/12 text-white/75">
                     {registro.percentual_execucao ?? 0}%
                   </span>
                 </div>
@@ -792,14 +750,14 @@ export default function DashboardClient() {
                   {registro.os_id ? (
                     <a
                       href={`/projetos/${registro.projeto_id}/os/${registro.os_id}`}
-                      className="fdl-link text-sm"
+                      className="fdl-dashboard-action fdl-dashboard-action-secondary"
                     >
                       Ver OS
                     </a>
                   ) : (
                     <a
                       href={`/projetos/${registro.projeto_id}`}
-                      className="fdl-link text-sm"
+                      className="fdl-dashboard-action fdl-dashboard-action-secondary"
                     >
                       Ver projeto
                     </a>
@@ -808,7 +766,7 @@ export default function DashboardClient() {
               </article>
             ))
           ) : (
-            <div className="fdl-empty-state xl:col-span-2">
+            <div className="fdl-dashboard-empty xl:col-span-2">
               Nenhum registro encontrado para os filtros selecionados.
             </div>
           )}
