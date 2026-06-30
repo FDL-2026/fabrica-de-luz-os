@@ -171,7 +171,10 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
 
             <Link
               href="/importar"
-              className="fdl-action-link">Importar cronograma</Link>
+              className="block rounded-2xl px-4 py-3 text-white/70 hover:bg-white/10 hover:text-white"
+            >
+              Importar cronograma
+            </Link>
           </nav>
 
           <div className="mt-10 rounded-3xl border border-white/10 bg-white/10 p-4">
