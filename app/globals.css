@@ -4091,3 +4091,115 @@ main:has(.fdl-mobile-card) a[href*="/montador/"][class*="bg-[var(--fdl-cream)]"]
     min-height: 52px !important;
   }
 }
+
+
+/* FDL MONTADOR READABILITY BOOST 2026 */
+/* Aumenta conforto de leitura da área do montador sem alterar fluxo */
+
+.fdl-montador-main .fdl-montador-container {
+  width: min(100%, 1040px) !important;
+}
+
+/* Quando for tela de login/PIN/projetos do montador, evita ficar miniatura no desktop */
+.fdl-montador-main .fdl-montador-container > div {
+  width: 100% !important;
+}
+
+.fdl-montador-main form,
+.fdl-montador-main section,
+.fdl-montador-main article {
+  width: 100% !important;
+}
+
+/* Cards um pouco mais espaçosos */
+.fdl-montador-main .rounded-3xl,
+.fdl-montador-main section,
+.fdl-montador-main form,
+.fdl-montador-main article {
+  font-size: 0.95rem !important;
+}
+
+/* Títulos mais legíveis */
+.fdl-montador-main h1 {
+  font-size: clamp(2rem, 4vw, 2.6rem) !important;
+}
+
+.fdl-montador-main h2 {
+  font-size: clamp(1.35rem, 3vw, 1.75rem) !important;
+}
+
+/* Textos auxiliares */
+.fdl-montador-main p,
+.fdl-montador-main span,
+.fdl-montador-main label {
+  font-size: 0.92rem !important;
+}
+
+/* Kicker continua menor, mas legível */
+.fdl-montador-main p[class*="uppercase"] {
+  font-size: 0.72rem !important;
+}
+
+/* Campos e botões mais confortáveis */
+.fdl-montador-main input,
+.fdl-montador-main select,
+.fdl-montador-main textarea {
+  min-height: 54px !important;
+  font-size: 0.95rem !important;
+}
+
+.fdl-montador-main button,
+.fdl-montador-main a[class*="bg-[var(--fdl-cream)]"] {
+  min-height: 54px !important;
+  font-size: 0.95rem !important;
+}
+
+/* Tela de OS: cards com mais respiro */
+.fdl-montador-main:has(textarea) section,
+.fdl-montador-main:has(textarea) form,
+.fdl-montador-main:has(textarea) article {
+  padding: 24px !important;
+}
+
+/* Upload de anexos mais evidente */
+.fdl-montador-main input[type="file"] {
+  min-height: 48px !important;
+  padding: 10px !important;
+}
+
+/* Histórico da OS: cards mais legíveis */
+.fdl-montador-main:has(textarea) article,
+.fdl-montador-main:has(textarea) li,
+.fdl-montador-main:has(textarea) div[class*="rounded-2xl"] {
+  line-height: 1.55 !important;
+}
+
+/* Em desktop, a tela de execução da OS pode respirar mais */
+@media (min-width: 900px) {
+  .fdl-montador-main:has(textarea) .fdl-montador-container {
+    max-width: 980px !important;
+  }
+}
+
+/* Em mobile real, mantém confortável sem exagerar */
+@media (max-width: 640px) {
+  .fdl-montador-main h1 {
+    font-size: 1.85rem !important;
+  }
+
+  .fdl-montador-main h2 {
+    font-size: 1.32rem !important;
+  }
+
+  .fdl-montador-main p,
+  .fdl-montador-main span,
+  .fdl-montador-main label {
+    font-size: 0.88rem !important;
+  }
+
+  .fdl-montador-main:has(textarea) section,
+  .fdl-montador-main:has(textarea) form,
+  .fdl-montador-main:has(textarea) article {
+    padding: 18px !important;
+  }
+}

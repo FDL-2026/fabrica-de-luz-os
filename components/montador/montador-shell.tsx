@@ -9,10 +9,10 @@ type MontadorShellProps = {
 };
 
 const widths = {
-  sm: "max-w-[520px]",
-  md: "max-w-[680px]",
-  lg: "max-w-[860px]",
-  xl: "max-w-[860px]",
+  sm: "max-w-[620px]",
+  md: "max-w-[760px]",
+  lg: "max-w-[980px]",
+  xl: "max-w-[1040px]",
 };
 
 export default function MontadorShell({
