@@ -58,7 +58,7 @@ type PayloadValidacao = {
   registros: RegistroOs[];
 };
 
-type AcaoValidacao = "aprovar" | "solicitar_ajuste" | "reabrir";
+type AcaoValidacao = "aprovar" | "solicitar_ajuste";
 
 function formatStatus(status: string | null) {
   const labels: Record<string, string> = {
@@ -184,9 +184,7 @@ export default function ValidacaoOsClient({
     const confirmar = window.confirm(
       acao === "aprovar"
         ? "Aprovar esta OS?"
-        : acao === "solicitar_ajuste"
-          ? "Solicitar ajuste para esta OS?"
-          : "Reabrir esta OS?"
+        : "Solicitar ajuste para esta OS?"
     );
 
     if (!confirmar) return;
@@ -209,9 +207,7 @@ export default function ValidacaoOsClient({
     setSucesso(
       acao === "aprovar"
         ? "OS aprovada com sucesso."
-        : acao === "solicitar_ajuste"
-          ? "Ajuste solicitado com sucesso."
-          : "OS reaberta com sucesso."
+        : "Ajuste solicitado com sucesso."
     );
 
     setObservacao("");
@@ -469,14 +465,7 @@ export default function ValidacaoOsClient({
                   : "Solicitar ajuste"}
               </button>
 
-              <button
-                type="button"
-                disabled={Boolean(processando) || osAprovada}
-                onClick={() => executarAcao("reabrir")}
-                className="h-12 w-full rounded-2xl border border-white/15 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {processando === "reabrir" ? "Reabrindo..." : "Reabrir OS"}
-              </button>
+
             </div>
           </section>
 
