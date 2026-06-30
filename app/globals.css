@@ -1036,3 +1036,85 @@ body {
   width: 100%;
   background: rgba(255, 255, 255, 0.09);
 }
+
+
+/* FDL UI VALIDATION HIGHLIGHT 2026 */
+.fdl-ui-validation-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(237, 224, 177, 0.46);
+  background:
+    radial-gradient(circle at top right, rgba(237, 224, 177, 0.22), transparent 34%),
+    linear-gradient(135deg, rgba(237, 224, 177, 0.18), rgba(255, 255, 255, 0.055) 42%, rgba(237, 224, 177, 0.09));
+  padding: 24px;
+  box-shadow:
+    0 20px 52px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(237, 224, 177, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+.fdl-ui-validation-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--fdl-cream);
+  opacity: 0.95;
+}
+
+.fdl-ui-validation-card::after {
+  content: "";
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 190px;
+  height: 190px;
+  border-radius: 999px;
+  background: rgba(237, 224, 177, 0.18);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.fdl-ui-validation-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.fdl-ui-validation-kicker {
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fdl-cream);
+}
+
+.fdl-ui-validation-title {
+  margin-top: 6px;
+  font-size: 1.35rem;
+  font-weight: 950;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+}
+
+.fdl-ui-validation-desc {
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.fdl-ui-validation-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  border-radius: 999px;
+  background: var(--fdl-cream);
+  color: var(--fdl-purple-dark);
+  padding: 8px 14px;
+  font-size: 0.78rem;
+  font-weight: 950;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 12px 24px rgba(237, 224, 177, 0.16);
+}

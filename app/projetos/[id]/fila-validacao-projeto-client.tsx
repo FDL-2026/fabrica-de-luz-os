@@ -51,17 +51,17 @@ export default function FilaValidacaoProjetoClient({
   }
 
   return (
-    <section className="fdl-ui-section fdl-ui-section-warning">
+    <section className="fdl-ui-validation-card">
       <div className="fdl-ui-section-head">
         <div>
-          <p className="fdl-ui-kicker">Fila de validação</p>
-          <h2 className="fdl-ui-section-title">OSs aguardando validação</h2>
-          <p className="fdl-ui-section-desc">
+          <p className="fdl-ui-validation-kicker">Fila de validação</p>
+          <h2 className="fdl-ui-validation-title">OSs aguardando validação</h2>
+          <p className="fdl-ui-validation-desc">
             OSs concluídas pelo montador e pendentes de aprovação do gestor.
           </p>
         </div>
 
-        <span className="fdl-ui-badge fdl-ui-badge-yellow">
+        <span className="fdl-ui-validation-count">
           {ordensAguardandoValidacao.length} pendente(s)
         </span>
       </div>

@@ -479,17 +479,17 @@ export default function DashboardClient() {
         </div>
       </section>
 
-      <section className="fdl-ui-section fdl-ui-section-warning">
+      <section className="fdl-ui-validation-card">
         <div className="fdl-ui-section-head">
           <div>
-            <p className="fdl-ui-kicker">Fila de validação</p>
-            <h2 className="fdl-ui-section-title">OSs aguardando validação</h2>
-            <p className="fdl-ui-section-desc">
+            <p className="fdl-ui-validation-kicker">Fila de validação</p>
+            <h2 className="fdl-ui-validation-title">OSs aguardando validação</h2>
+            <p className="fdl-ui-validation-desc">
               OSs concluídas pelos montadores e pendentes de aprovação do gestor.
             </p>
           </div>
 
-          <span className="fdl-ui-badge fdl-ui-badge-yellow">
+          <span className="fdl-ui-validation-count">
             {dados.resumo.os_aguardando_validacao} pendente(s)
           </span>
         </div>
