@@ -2312,3 +2312,110 @@ select.fdl-field option,
     font-size: 2.15rem !important;
   }
 }
+
+
+/* FDL OS TABLE POLISH 2026 */
+/* Ajuste fino da seção Ordens de serviço */
+
+.fdl-ui-page-block {
+  border-radius: 28px !important;
+}
+
+/* Toolbar/filtro da tabela de OS */
+.fdl-ui-page-block .fdl-ui-project-toolbar {
+  border-radius: 22px !important;
+  padding: 15px !important;
+  background: rgba(255, 255, 255, 0.052) !important;
+}
+
+.fdl-ui-page-block .fdl-ui-project-toolbar-grid {
+  align-items: end !important;
+  gap: 12px !important;
+}
+
+.fdl-ui-page-block .fdl-ui-select {
+  height: 44px !important;
+  min-height: 44px !important;
+}
+
+/* Tabela de OS mais compacta e operacional */
+.fdl-ui-page-block .fdl-ui-table-wrap {
+  border-radius: 22px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+}
+
+.fdl-ui-page-block .fdl-ui-table thead {
+  background: rgba(255, 255, 255, 0.095) !important;
+}
+
+.fdl-ui-page-block .fdl-ui-table th {
+  padding-top: 13px !important;
+  padding-bottom: 13px !important;
+  font-size: 0.68rem !important;
+  letter-spacing: 0.08em !important;
+}
+
+.fdl-ui-page-block .fdl-ui-table td {
+  padding-top: 13px !important;
+  padding-bottom: 13px !important;
+}
+
+.fdl-ui-page-block .fdl-ui-table tbody tr {
+  transition: background 140ms ease !important;
+}
+
+.fdl-ui-page-block .fdl-ui-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+/* Código da OS com mais destaque, mas sem exagero */
+.fdl-ui-page-block .fdl-ui-table-primary {
+  font-weight: 950 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* Ações da tabela */
+.fdl-ui-page-block .fdl-ui-table-actions {
+  justify-content: flex-end !important;
+  gap: 8px !important;
+}
+
+.fdl-ui-page-block .fdl-ui-table-actions .fdl-ui-btn {
+  min-height: 38px !important;
+  padding-inline: 15px !important;
+  font-size: 0.76rem !important;
+}
+
+/* Botão limpar quando desabilitado */
+.fdl-ui-page-block .fdl-ui-project-toolbar .fdl-ui-btn:disabled {
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: rgba(255, 255, 255, 0.34) !important;
+  opacity: 1 !important;
+}
+
+/* Badges da tabela */
+.fdl-ui-page-block .fdl-ui-badge {
+  padding: 6px 10px !important;
+  font-size: 0.68rem !important;
+  font-weight: 950 !important;
+}
+
+/* Melhor responsividade da tabela */
+@media (max-width: 768px) {
+  .fdl-ui-page-block {
+    border-radius: 22px !important;
+  }
+
+  .fdl-ui-page-block .fdl-ui-project-toolbar {
+    padding: 14px !important;
+  }
+
+  .fdl-ui-page-block .fdl-ui-table-actions {
+    justify-content: flex-start !important;
+  }
+
+  .fdl-ui-page-block .fdl-ui-table-actions .fdl-ui-btn {
+    min-height: 40px !important;
+  }
+}
