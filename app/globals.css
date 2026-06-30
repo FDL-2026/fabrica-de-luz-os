@@ -2599,3 +2599,83 @@ label:has(input[type="file"]):hover {
     border-radius: 22px !important;
   }
 }
+
+
+/* FDL USERS LAYOUT FIX 2026 */
+/* Ajusta tela de usuários: alinhamento dos cards e tabela sem rolagem lateral excessiva */
+
+.fdl-users-table {
+  table-layout: auto !important;
+}
+
+.fdl-users-table th,
+.fdl-users-table td {
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+
+/* Nome pode ocupar mais espaço */
+.fdl-users-table th:first-child,
+.fdl-users-table td:first-child {
+  min-width: 220px !important;
+  width: 28% !important;
+}
+
+/* Perfil */
+.fdl-users-table th:nth-child(2),
+.fdl-users-table td:nth-child(2) {
+  min-width: 150px !important;
+}
+
+/* Acesso, status e último PIN mais compactos */
+.fdl-users-table th:nth-child(3),
+.fdl-users-table td:nth-child(3),
+.fdl-users-table th:nth-child(4),
+.fdl-users-table td:nth-child(4) {
+  width: 96px !important;
+  white-space: nowrap !important;
+}
+
+.fdl-users-table th:nth-child(5),
+.fdl-users-table td:nth-child(5) {
+  min-width: 130px !important;
+  white-space: nowrap !important;
+}
+
+/* Ação */
+.fdl-users-table th:last-child,
+.fdl-users-table td:last-child {
+  width: 92px !important;
+  text-align: right !important;
+  white-space: nowrap !important;
+}
+
+/* Evita que o card de usuários pareça desalinhado */
+.fdl-users-table {
+  margin-top: 0 !important;
+}
+
+/* Card da tabela com melhor encaixe */
+.fdl-form-card:has(.fdl-users-table) {
+  align-self: start !important;
+  padding-bottom: 18px !important;
+}
+
+/* Remove excesso visual do scroll quando não precisa */
+.fdl-form-card:has(.fdl-users-table) .fdl-ui-table-scroll {
+  overflow-x: auto !important;
+}
+
+/* Em telas grandes, tenta caber sem rolagem horizontal */
+@media (min-width: 1280px) {
+  .fdl-users-table {
+    min-width: 100% !important;
+  }
+}
+
+/* Em telas menores, mantém rolagem interna controlada */
+@media (max-width: 1279px) {
+  .fdl-users-table {
+    min-width: 760px !important;
+  }
+}

@@ -655,7 +655,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
           ) : usuarios.length > 0 ? (
             <div className="fdl-ui-table-wrap">
               <div className="fdl-ui-table-scroll">
-                <table className="min-w-[980px] fdl-ui-table">
+                <table className="w-full min-w-[760px] fdl-ui-table fdl-users-table">
                   <thead className="bg-white/10 text-white/70">
                     <tr>
                       <th className="px-4 py-3">Nome</th>
