@@ -3042,3 +3042,73 @@ label:has(input[type="file"]):hover {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
+
+
+/* FDL USERS ACTION FINAL ALIGNMENT 2026 */
+/* Correção final da coluna Ação da tabela de usuários */
+
+.fdl-users-list-card {
+  margin-top: 0 !important;
+  align-self: start !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.fdl-users-table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed !important;
+}
+
+.fdl-users-table .fdl-users-action-cell {
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+.fdl-users-edit-btn {
+  display: inline-flex !important;
+  width: 72px !important;
+  min-width: 72px !important;
+  max-width: 72px !important;
+  height: 34px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  background: var(--fdl-cream) !important;
+  color: var(--fdl-purple-dark) !important;
+  padding: 0 !important;
+  font-size: 0.76rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  transition: filter 160ms ease, transform 160ms ease !important;
+}
+
+.fdl-users-edit-btn:hover {
+  filter: brightness(0.96) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Cancela qualquer regra antiga que jogava a última coluna para a direita */
+.fdl-users-list-card .fdl-users-table th:last-child,
+.fdl-users-list-card .fdl-users-table td:last-child {
+  text-align: center !important;
+}
+
+/* Mantém rolagem interna apenas em telas menores */
+@media (max-width: 1180px) {
+  .fdl-users-list-card .fdl-ui-table-scroll {
+    overflow-x: auto !important;
+  }
+
+  .fdl-users-table {
+    min-width: 760px !important;
+    table-layout: auto !important;
+  }
+}
