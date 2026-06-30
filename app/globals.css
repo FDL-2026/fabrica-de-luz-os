@@ -3270,3 +3270,109 @@ a[href*="/projetos/"]:not([href*="cronograma"]) {
     margin-bottom: 6px !important;
   }
 }
+
+
+/* FDL DASHBOARD TYPOGRAPHY SOFTENING 2026 */
+/* Reduz peso visual da dashboard: menos bold, títulos menores e leitura mais leve */
+
+.fdl-ui-dashboard .fdl-ui-title {
+  font-size: clamp(1.85rem, 3.2vw, 3rem) !important;
+  line-height: 1.03 !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-kicker {
+  font-size: 0.68rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.18em !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-description {
+  font-size: 0.94rem !important;
+  line-height: 1.55 !important;
+  font-weight: 500 !important;
+  color: rgba(255, 255, 255, 0.62) !important;
+}
+
+/* KPIs menos agressivos */
+.fdl-ui-dashboard .fdl-ui-kpi-label {
+  font-size: 0.68rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.11em !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-kpi-value {
+  font-size: clamp(1.75rem, 3.2vw, 2.35rem) !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-kpi-help {
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+/* Títulos de seções mais sóbrios */
+.fdl-ui-dashboard .fdl-ui-section-title,
+.fdl-ui-dashboard .fdl-ui-validation-title {
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem) !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-section-desc,
+.fdl-ui-dashboard .fdl-ui-validation-desc {
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+}
+
+/* Card de validação menos pesado */
+.fdl-ui-dashboard .fdl-ui-validation-kicker {
+  font-size: 0.68rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.16em !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-validation-count {
+  font-size: 0.78rem !important;
+  font-weight: 850 !important;
+}
+
+/* Tabela mais refinada */
+.fdl-ui-dashboard .fdl-ui-table th {
+  font-size: 0.66rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.07em !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-table td {
+  font-size: 0.88rem !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-table-primary {
+  font-weight: 800 !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-btn {
+  font-weight: 800 !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .fdl-ui-dashboard .fdl-ui-title {
+    font-size: 2rem !important;
+    line-height: 1.05 !important;
+  }
+
+  .fdl-ui-dashboard .fdl-ui-kpi-value {
+    font-size: 2rem !important;
+  }
+
+  .fdl-ui-dashboard .fdl-ui-section-title,
+  .fdl-ui-dashboard .fdl-ui-validation-title {
+    font-size: 1.35rem !important;
+  }
+}
