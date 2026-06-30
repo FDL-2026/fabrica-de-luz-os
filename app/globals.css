@@ -3376,3 +3376,84 @@ a[href*="/projetos/"]:not([href*="cronograma"]) {
     font-size: 1.35rem !important;
   }
 }
+
+
+/* FDL PROJECTS PAGE FINAL POLISH 2026 */
+/* Ajuste fino da tela /projetos para ficar mais sóbria e consistente */
+
+/* KPIs da tela de projetos mais leves */
+.fdl-projects-kpi-card {
+  min-height: 132px !important;
+  padding: 18px 20px !important;
+}
+
+.fdl-projects-kpi-label {
+  margin-bottom: 12px !important;
+  font-size: 0.68rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.11em !important;
+}
+
+.fdl-projects-kpi-value {
+  margin-bottom: 6px !important;
+  font-size: clamp(1.85rem, 3.1vw, 2.35rem) !important;
+  font-weight: 850 !important;
+}
+
+.fdl-projects-kpi-help {
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  color: rgba(255, 255, 255, 0.56) !important;
+}
+
+.fdl-projects-kpi-success {
+  color: #bbf7d0 !important;
+  font-weight: 650 !important;
+}
+
+.fdl-projects-kpi-warning {
+  color: rgba(255, 255, 255, 0.56) !important;
+  font-weight: 500 !important;
+}
+
+/* Título da seção Projetos cadastrados */
+section h2,
+.fdl-projects-section-title {
+  letter-spacing: -0.03em !important;
+}
+
+/* Cards da listagem de projetos */
+.fdl-form-card:has(a[href*="/projetos/"]) {
+  border-radius: 26px !important;
+  background: rgba(255, 255, 255, 0.058) !important;
+}
+
+.fdl-form-card:has(a[href*="/projetos/"]):hover {
+  background: rgba(255, 255, 255, 0.072) !important;
+}
+
+/* Bloco de datas dentro dos cards de projeto */
+.fdl-form-card:has(a[href*="/projetos/"]) div[class*="bg-white/"] {
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+/* Botões dos cards de projeto */
+.fdl-form-card:has(a[href*="/projetos/"]) a {
+  font-weight: 800 !important;
+}
+
+.fdl-form-card:has(a[href*="/projetos/"]) a[href*="/projetos/"]:not([href*="cronograma"]) {
+  min-height: 42px !important;
+}
+
+@media (max-width: 768px) {
+  .fdl-projects-kpi-card {
+    min-height: 116px !important;
+    padding: 16px !important;
+  }
+
+  .fdl-projects-kpi-value {
+    font-size: 2rem !important;
+  }
+}
