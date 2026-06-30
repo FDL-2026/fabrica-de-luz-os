@@ -1,5 +1,6 @@
 import Image from "next/image";
 import OsClient from "./os-client";
+import AjustesPendentesMontador from "./ajustes-pendentes-montador";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -27,6 +28,10 @@ export default async function MontadorProjetoPage({ params }: PageProps) {
             className="h-auto max-h-28 w-full max-w-md object-contain"
           />
         </div>
+
+        <AjustesPendentesMontador codigo={codigo} projetoId={projetoId} />
+
+
 
         <OsClient codigo={codigo} projetoId={projetoId} />
       </div>
