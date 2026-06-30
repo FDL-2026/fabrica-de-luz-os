@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type OrdemServico = {
   id: string;
@@ -71,7 +72,22 @@ export default function OsTableClient({
   projetoId,
   ordensServico,
 }: OsTableClientProps) {
+  const supabase = useMemo(() => createClient(), []);
+
   const [statusFiltro, setStatusFiltro] = useState("");
+  const [podeValidarProjeto, setPodeValidarProjeto] = useState(false);
+
+  useEffect(() => {
+    async function carregarPermissaoValidacao() {
+      const { data } = await supabase.rpc("fdl_usuario_pode_validar_projeto", {
+        p_projeto_id: projetoId,
+      });
+
+      setPodeValidarProjeto(Boolean(data));
+    }
+
+    carregarPermissaoValidacao();
+  }, [projetoId, supabase]);
 
   const ordensFiltradas = useMemo(() => {
     return ordensServico.filter((os) =>
@@ -184,7 +200,7 @@ export default function OsTableClient({
                           Detalhes
                         </a>
 
-                        {os.status === "aguardando_validacao" ? (
+                        {podeValidarProjeto && os.status === "aguardando_validacao" ? (
                           <a
                             href={`/projetos/${projetoId}/os/${os.id}/validacao`}
                             className="inline-flex h-8 w-[78px] items-center justify-center whitespace-nowrap rounded-full bg-[var(--fdl-cream)] px-3 text-xs font-semibold leading-none text-[var(--fdl-purple-dark)] transition hover:brightness-95"
