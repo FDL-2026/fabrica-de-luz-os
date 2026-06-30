@@ -3715,3 +3715,172 @@ section h2,
     table-layout: auto !important;
   }
 }
+
+
+/* FDL MONTADOR EXPERIENCE POLISH 2026 */
+/* Ajustes visuais da experiência mobile do montador */
+
+/* Reduz espaços exagerados e melhora leitura no fluxo do montador */
+main:has(.fdl-mobile-card),
+main:has(.fdl-mobile-shell) {
+  background: var(--fdl-purple-dark) !important;
+}
+
+/* Logo mais equilibrada */
+main:has(.fdl-mobile-card) header,
+main:has(.fdl-mobile-shell) header {
+  margin-bottom: 24px !important;
+}
+
+/* Cards do montador */
+.fdl-mobile-card,
+main:has(.fdl-mobile-card) section.rounded-3xl,
+main:has(.fdl-mobile-card) form.rounded-3xl,
+main:has(.fdl-mobile-card) div.rounded-3xl {
+  border-radius: 26px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.065) !important;
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+/* Card principal do PIN mais compacto */
+main:has(input[inputmode="numeric"]) section.rounded-3xl,
+main:has(input[inputMode="numeric"]) section.rounded-3xl {
+  padding: 22px !important;
+}
+
+/* Kicker/título do montador menos pesado */
+main:has(.fdl-mobile-card) p[class*="uppercase"],
+main:has(.fdl-mobile-card) .fdl-mobile-kicker {
+  color: var(--fdl-cream) !important;
+  font-size: 0.68rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.18em !important;
+}
+
+/* Títulos mais sóbrios */
+main:has(.fdl-mobile-card) h1,
+main:has(.fdl-mobile-card) h2,
+main:has(.fdl-mobile-card) .fdl-mobile-title {
+  font-weight: 850 !important;
+  letter-spacing: -0.035em !important;
+}
+
+/* Textos auxiliares */
+main:has(.fdl-mobile-card) p {
+  line-height: 1.55 !important;
+}
+
+/* Inputs do montador */
+main:has(.fdl-mobile-card) input,
+main:has(.fdl-mobile-card) select,
+main:has(.fdl-mobile-card) textarea,
+.fdl-mobile-field,
+.fdl-mobile-textarea {
+  min-height: 48px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  background: rgba(255,255,255,0.10) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+main:has(.fdl-mobile-card) input:focus,
+main:has(.fdl-mobile-card) select:focus,
+main:has(.fdl-mobile-card) textarea:focus,
+.fdl-mobile-field:focus,
+.fdl-mobile-textarea:focus {
+  border-color: var(--fdl-cream) !important;
+  box-shadow: 0 0 0 4px rgba(237, 224, 177, 0.10) !important;
+}
+
+/* Botões principais do montador */
+main:has(.fdl-mobile-card) button,
+main:has(.fdl-mobile-card) a[class*="bg-[var(--fdl-cream)]"],
+.fdl-mobile-btn {
+  min-height: 50px !important;
+  border-radius: 18px !important;
+  font-weight: 850 !important;
+}
+
+/* Botão creme com mais presença */
+main:has(.fdl-mobile-card) button[class*="fdl-cream"],
+main:has(.fdl-mobile-card) a[class*="fdl-cream"],
+.fdl-mobile-btn-primary {
+  background: var(--fdl-cream) !important;
+  color: var(--fdl-purple-dark) !important;
+}
+
+/* Card de acesso liberado */
+main:has(.fdl-mobile-card) div[class*="border-green"],
+main:has(.fdl-mobile-card) section[class*="border-green"] {
+  border-color: rgba(74, 222, 128, 0.36) !important;
+  background: rgba(21, 128, 61, 0.16) !important;
+}
+
+/* Cards internos dentro do projeto do montador */
+main:has(.fdl-mobile-card) div[class*="bg-white/[0.04]"],
+main:has(.fdl-mobile-card) div[class*="bg-white/[0.05]"],
+main:has(.fdl-mobile-card) div[class*="bg-white/[0.06]"] {
+  border-color: rgba(255,255,255,0.10) !important;
+  background: rgba(255,255,255,0.045) !important;
+}
+
+/* Status/badges no montador */
+main:has(.fdl-mobile-card) span[class*="rounded-full"] {
+  font-weight: 850 !important;
+}
+
+/* Botões de projeto no montador */
+main:has(.fdl-mobile-card) a[href*="/montador/"][class*="bg-[var(--fdl-cream)]"] {
+  width: 100% !important;
+  min-height: 52px !important;
+  border-radius: 18px !important;
+  font-size: 0.94rem !important;
+}
+
+/* Mobile real */
+@media (max-width: 640px) {
+  main:has(.fdl-mobile-card) {
+    min-height: 100dvh !important;
+  }
+
+  main:has(.fdl-mobile-card) > div {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    padding-top: 22px !important;
+    padding-bottom: 22px !important;
+  }
+
+  main:has(.fdl-mobile-card) header {
+    margin-bottom: 20px !important;
+  }
+
+  main:has(.fdl-mobile-card) header img {
+    max-width: 220px !important;
+  }
+
+  .fdl-mobile-card,
+  main:has(.fdl-mobile-card) section.rounded-3xl,
+  main:has(.fdl-mobile-card) form.rounded-3xl,
+  main:has(.fdl-mobile-card) div.rounded-3xl {
+    border-radius: 22px !important;
+  }
+
+  main:has(.fdl-mobile-card) h1 {
+    font-size: 1.75rem !important;
+    line-height: 1.08 !important;
+  }
+
+  main:has(.fdl-mobile-card) h2 {
+    font-size: 1.25rem !important;
+    line-height: 1.15 !important;
+  }
+
+  main:has(.fdl-mobile-card) button,
+  main:has(.fdl-mobile-card) a[class*="bg-[var(--fdl-cream)]"] {
+    width: 100% !important;
+  }
+}
