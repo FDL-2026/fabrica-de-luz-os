@@ -2462,3 +2462,140 @@ section.mt-8 + .fdl-form-card {
     margin-bottom: 20px !important;
   }
 }
+
+
+/* FDL ADMIN USERS IMPORT POLISH 2026 */
+/* Refinamento das telas de Usuários e Importação */
+
+/* Evita que cards/tabelas forcem rolagem horizontal na página */
+.fdl-form-card,
+.fdl-ui-table-wrap,
+.fdl-ui-table-scroll {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.fdl-ui-table-scroll {
+  overflow-x: auto !important;
+  overscroll-behavior-x: contain !important;
+}
+
+/* Deixa a tabela rolar dentro do próprio card, não na página inteira */
+.fdl-ui-table-wrap {
+  overflow: hidden !important;
+}
+
+/* Melhora o scrollbar interno das tabelas */
+.fdl-ui-table-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.fdl-ui-table-scroll::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.045);
+  border-radius: 999px;
+}
+
+.fdl-ui-table-scroll::-webkit-scrollbar-thumb {
+  background: rgba(237,224,177,0.36);
+  border-radius: 999px;
+}
+
+.fdl-ui-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(237,224,177,0.52);
+}
+
+/* Tela de usuários: formulário e listagem */
+.fdl-form-card:has(.fdl-ui-table-wrap) {
+  overflow: hidden !important;
+}
+
+.fdl-form-card:has(.fdl-ui-table-wrap) .fdl-ui-table {
+  min-width: 920px !important;
+}
+
+.fdl-form-card:has(.fdl-ui-table-wrap) .fdl-ui-table th,
+.fdl-form-card:has(.fdl-ui-table-wrap) .fdl-ui-table td {
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+
+/* Ações em tabelas administrativas */
+.fdl-form-card:has(.fdl-ui-table-wrap) .fdl-ui-table td:last-child,
+.fdl-form-card:has(.fdl-ui-table-wrap) .fdl-ui-table th:last-child {
+  text-align: right !important;
+  white-space: nowrap !important;
+}
+
+.fdl-form-card:has(.fdl-ui-table-wrap) .fdl-ui-btn,
+.fdl-form-card:has(.fdl-ui-table-wrap) button {
+  white-space: nowrap !important;
+}
+
+/* Cabeçalhos de cards administrativos */
+.fdl-form-card > h2,
+.fdl-form-card h2 {
+  color: #ffffff !important;
+  letter-spacing: -0.025em !important;
+}
+
+/* Inputs, selects e campos administrativos mais consistentes */
+.fdl-form-card label {
+  color: rgba(255,255,255,0.88) !important;
+  font-weight: 850 !important;
+}
+
+.fdl-form-card input,
+.fdl-form-card select,
+.fdl-form-card textarea {
+  max-width: 100% !important;
+}
+
+/* Botões dentro de formulários administrativos */
+.fdl-form-card button[type="submit"],
+.fdl-form-card button:not([type]) {
+  border-radius: 999px !important;
+}
+
+/* Tela de importação */
+.fdl-ui-upload-box,
+.fdl-upload-area,
+label:has(input[type="file"]) {
+  border-radius: 28px !important;
+  border: 1px dashed rgba(237,224,177,0.26) !important;
+  background: rgba(255,255,255,0.052) !important;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease !important;
+}
+
+.fdl-ui-upload-box:hover,
+.fdl-upload-area:hover,
+label:has(input[type="file"]):hover {
+  border-color: rgba(237,224,177,0.48) !important;
+  background: rgba(255,255,255,0.072) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Cards explicativos da importação */
+.fdl-form-card ul,
+.fdl-form-card ol {
+  color: rgba(255,255,255,0.72) !important;
+}
+
+/* Reduz risco de estourar largura em páginas administrativas */
+@media (min-width: 1024px) {
+  .fdl-form-card:has(.fdl-ui-table-wrap) {
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .fdl-form-card:has(.fdl-ui-table-wrap) .fdl-ui-table {
+    min-width: 760px !important;
+  }
+
+  .fdl-form-card {
+    border-radius: 22px !important;
+  }
+}
