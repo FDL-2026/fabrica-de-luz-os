@@ -3501,3 +3501,217 @@ section h2,
     max-width: 190px !important;
   }
 }
+
+
+/* FDL TABLE ACTION COLUMN STANDARD 2026 */
+/* Padrão único para colunas Ação/Ações em todas as tabelas do sistema */
+
+/* Última coluna das tabelas operacionais sempre centralizada */
+.fdl-ui-table th:last-child,
+.fdl-ui-table td:last-child,
+.fdl-dashboard-table th:last-child,
+.fdl-dashboard-table td:last-child,
+.fdl-data-table th:last-child,
+.fdl-data-table td:last-child {
+  text-align: center !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+}
+
+/* Remove qualquer alinhamento anterior para direita */
+.fdl-ui-table td:last-child,
+.fdl-dashboard-table td:last-child,
+.fdl-data-table td:last-child {
+  justify-content: center !important;
+}
+
+/* Wrapper padrão de ações */
+.fdl-ui-table-actions,
+.fdl-table-actions,
+.fdl-actions-cell {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Botões dentro de colunas de ação */
+.fdl-ui-table td:last-child a,
+.fdl-ui-table td:last-child button,
+.fdl-dashboard-table td:last-child a,
+.fdl-dashboard-table td:last-child button,
+.fdl-data-table td:last-child a,
+.fdl-data-table td:last-child button,
+.fdl-ui-table-actions a,
+.fdl-ui-table-actions button {
+  display: inline-flex !important;
+  min-height: 36px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  white-space: nowrap !important;
+}
+
+/* Tabelas com grupo de dois botões: Detalhes + Validar */
+.fdl-ui-page-block .fdl-ui-table th:last-child,
+.fdl-ui-page-block .fdl-ui-table td:last-child {
+  width: 190px !important;
+  min-width: 190px !important;
+  max-width: 190px !important;
+}
+
+.fdl-ui-page-block .fdl-ui-table-actions {
+  justify-content: center !important;
+}
+
+.fdl-ui-page-block .fdl-ui-table-actions .fdl-ui-btn {
+  min-width: 78px !important;
+}
+
+/* Tabelas de validação com botão único */
+.fdl-ui-validation-card .fdl-ui-table th:last-child,
+.fdl-ui-validation-card .fdl-ui-table td:last-child {
+  width: 132px !important;
+  min-width: 132px !important;
+  max-width: 132px !important;
+}
+
+.fdl-ui-validation-card .fdl-ui-table td:last-child a,
+.fdl-ui-validation-card .fdl-ui-table td:last-child button {
+  min-width: 104px !important;
+}
+
+/* Tabela geral da dashboard */
+.fdl-ui-dashboard .fdl-ui-table th:last-child,
+.fdl-ui-dashboard .fdl-ui-table td:last-child {
+  text-align: center !important;
+}
+
+.fdl-ui-dashboard .fdl-ui-table td:last-child a,
+.fdl-ui-dashboard .fdl-ui-table td:last-child button {
+  min-width: 72px !important;
+}
+
+/* Tabela de usuários */
+.fdl-users-table th:last-child,
+.fdl-users-table td:last-child,
+.fdl-users-table .fdl-users-action-cell {
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.fdl-users-edit-btn,
+.fdl-users-table td:last-child button,
+.fdl-users-table td:last-child a {
+  width: 72px !important;
+  min-width: 72px !important;
+  max-width: 72px !important;
+  height: 34px !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  justify-content: center !important;
+}
+
+/* Mantém o padrão também em telas menores */
+@media (max-width: 900px) {
+  .fdl-ui-page-block .fdl-ui-table th:last-child,
+  .fdl-ui-page-block .fdl-ui-table td:last-child {
+    width: 180px !important;
+    min-width: 180px !important;
+    max-width: 180px !important;
+  }
+
+  .fdl-ui-validation-card .fdl-ui-table th:last-child,
+  .fdl-ui-validation-card .fdl-ui-table td:last-child {
+    width: 124px !important;
+    min-width: 124px !important;
+    max-width: 124px !important;
+  }
+}
+
+
+/* FDL USERS TABLE SPECIFIC STANDARD 2026 */
+/* Padrão específico da tabela de usuários */
+
+.fdl-users-list-card {
+  margin-top: 0 !important;
+  align-self: start !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.fdl-users-list-card .fdl-ui-table-wrap,
+.fdl-users-list-card .fdl-ui-table-scroll {
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+}
+
+.fdl-users-table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed !important;
+}
+
+.fdl-users-table .fdl-users-action-cell,
+.fdl-users-table th:last-child,
+.fdl-users-table td:last-child {
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+.fdl-users-edit-btn {
+  display: inline-flex !important;
+  width: 72px !important;
+  min-width: 72px !important;
+  max-width: 72px !important;
+  height: 34px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  background: var(--fdl-cream) !important;
+  color: var(--fdl-purple-dark) !important;
+  padding: 0 !important;
+  font-size: 0.76rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.fdl-users-edit-btn:hover {
+  filter: brightness(0.96) !important;
+}
+
+.fdl-users-table td:last-child button,
+.fdl-users-table td:last-child a {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+@media (max-width: 1180px) {
+  .fdl-users-list-card .fdl-ui-table-scroll {
+    overflow-x: auto !important;
+  }
+
+  .fdl-users-table {
+    min-width: 760px !important;
+    table-layout: auto !important;
+  }
+}

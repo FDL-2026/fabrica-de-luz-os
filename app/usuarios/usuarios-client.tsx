@@ -640,7 +640,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
           </div>
         </form>
 
-        <section className="fdl-form-card p-6">
+        <section className="fdl-form-card fdl-users-list-card min-w-0 p-6">
           <div className="mb-5">
             <h2 className="fdl-section-title">Usuários cadastrados</h2>
             <p className="fdl-section-subtitle">
@@ -671,7 +671,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
                       <th className="px-4 py-3">Acesso</th>
                       <th className="px-4 py-3">Status</th>
                       <th className="px-4 py-3">Último PIN</th>
-                      <th className="w-[96px] px-2 py-3 text-center">Ação</th>
+                      <th className="fdl-users-action-cell px-2 py-3 text-center">Ação</th>
                     </tr>
                   </thead>
 
@@ -716,11 +716,11 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
                           {formatDateTime(usuario.ultimo_acesso_pin)}
                         </td>
 
-                        <td className="w-[96px] px-2 py-3 text-center align-middle">
+                        <td className="fdl-users-action-cell px-2 py-3 text-center align-middle">
                           <button
                             type="button"
                             onClick={() => abrirEdicao(usuario)}
-                            className="inline-flex h-8 items-center justify-center rounded-full bg-[var(--fdl-cream)] px-4 text-xs font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                            className="fdl-users-edit-btn"
                           >
                             Editar
                           </button>
