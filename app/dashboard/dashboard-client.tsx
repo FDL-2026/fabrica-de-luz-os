@@ -139,19 +139,19 @@ function formatTipoRegistro(tipo: string | null) {
 function tipoRegistroClass(tipo: string | null) {
   switch (tipo) {
     case "pendencia":
-      return "bg-red-100 text-red-700";
+      return "fdl-chip-red";
 
     case "conclusao_os":
-      return "bg-green-100 text-green-700";
+      return "fdl-chip-green";
 
     case "inicio_os":
-      return "bg-blue-100 text-blue-700";
+      return "fdl-chip-blue";
 
     case "anexo":
-      return "bg-[var(--fdl-lilac)] text-[var(--fdl-purple-dark)]";
+      return "fdl-chip-purple";
 
     default:
-      return "bg-white/15 text-white/80";
+      return "fdl-chip-muted";
   }
 }
 
@@ -202,22 +202,22 @@ function statusOperacionalLabel(status: string) {
 function statusOperacionalClass(status: string) {
   switch (status) {
     case "com_validacao":
-      return "bg-yellow-100 text-yellow-700";
+      return "fdl-chip-yellow";
 
     case "em_andamento":
-      return "bg-blue-100 text-blue-700";
+      return "fdl-chip-blue";
 
     case "com_pendencias":
-      return "bg-orange-100 text-orange-700";
+      return "fdl-chip-orange";
 
     case "concluido":
-      return "bg-green-100 text-green-700";
+      return "fdl-chip-green";
 
     case "sem_registro":
-      return "bg-red-100 text-red-700";
+      return "fdl-chip-red";
 
     default:
-      return "bg-white/15 text-white/75";
+      return "fdl-chip-muted";
   }
 }
 
@@ -349,14 +349,14 @@ export default function DashboardClient() {
           <div className="flex flex-wrap gap-3">
             <a
               href="/projetos"
-              className="inline-flex h-11 items-center justify-center rounded-full border border-white/15 px-5 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="fdl-btn fdl-btn-md fdl-btn-neutral"
             >
               Ver projetos
             </a>
 
             <a
               href="/importar"
-              className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--fdl-cream)] px-5 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+              className="fdl-btn fdl-btn-md fdl-btn-primary"
             >
               Importar cronograma
             </a>
@@ -466,7 +466,7 @@ export default function DashboardClient() {
               type="button"
               disabled={!filtrosAtivos}
               onClick={limparFiltros}
-              className="h-12 w-full rounded-2xl border border-white/15 px-5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 xl:w-auto"
+              className="fdl-btn fdl-btn-md fdl-btn-neutral w-full disabled:cursor-not-allowed disabled:opacity-40 xl:w-auto"
             >
               Limpar
             </button>
@@ -549,9 +549,9 @@ export default function DashboardClient() {
         </div>
 
         {dados.oss_aguardando_validacao.length > 0 ? (
-          <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
+          <div className="mt-5 fdl-table-wrap">
             <div className="overflow-x-auto">
-              <table className="min-w-[1050px] w-full text-left text-sm">
+              <table className="min-w-[1050px] w-full text-left text-sm fdl-data-table">
                 <thead className="bg-white/10 text-white/70">
                   <tr>
                     <th className="px-4 py-3">Projeto</th>
@@ -600,7 +600,7 @@ export default function DashboardClient() {
                       <td className="px-4 py-3 text-center">
                         <a
                           href={`/projetos/${os.projeto_id}/os/${os.os_id}/validacao`}
-                          className="inline-flex h-9 items-center justify-center rounded-full bg-[var(--fdl-cream)] px-5 text-xs font-bold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                          className="fdl-btn fdl-btn-sm fdl-btn-primary"
                         >
                           Validar OS
                         </a>
@@ -633,9 +633,9 @@ export default function DashboardClient() {
         </div>
 
         {projetosTabela.length > 0 ? (
-          <div className="overflow-hidden rounded-2xl border border-white/10">
+          <div className="fdl-table-wrap">
             <div className="overflow-x-auto">
-              <table className="min-w-[1280px] w-full text-left text-sm">
+              <table className="min-w-[1280px] w-full text-left text-sm fdl-data-table">
                 <thead className="bg-white/10 text-white/70">
                   <tr>
                     <th className="px-4 py-3">Projeto</th>
@@ -719,9 +719,7 @@ export default function DashboardClient() {
 
                         <td className="px-4 py-3">
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${statusOperacionalClass(
-                              statusOperacional
-                            )}`}
+                            className={`fdl-chip ${statusOperacionalClass(statusOperacional)}`}
                           >
                             {statusOperacionalLabel(statusOperacional)}
                           </span>
@@ -734,7 +732,7 @@ export default function DashboardClient() {
                         <td className="px-4 py-3 text-center">
                           <a
                             href={`/projetos/${projeto.projeto_id}`}
-                            className="inline-flex h-8 items-center justify-center rounded-full bg-[var(--fdl-lilac)] px-4 text-xs font-semibold text-[var(--fdl-purple-dark)] transition hover:bg-white"
+                            className="fdl-btn fdl-btn-sm fdl-btn-secondary"
                           >
                             Abrir
                           </a>
@@ -806,14 +804,14 @@ export default function DashboardClient() {
                   {registro.os_id ? (
                     <a
                       href={`/projetos/${registro.projeto_id}/os/${registro.os_id}`}
-                      className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
+                      className="fdl-link text-sm"
                     >
                       Ver OS
                     </a>
                   ) : (
                     <a
                       href={`/projetos/${registro.projeto_id}`}
-                      className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
+                      className="fdl-link text-sm"
                     >
                       Ver projeto
                     </a>

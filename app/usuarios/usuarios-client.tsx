@@ -653,9 +653,9 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
               Carregando usuários...
             </div>
           ) : usuarios.length > 0 ? (
-            <div className="overflow-hidden rounded-2xl border border-white/10">
+            <div className="fdl-table-wrap">
               <div className="overflow-x-auto">
-                <table className="min-w-[980px] w-full text-left text-sm">
+                <table className="min-w-[980px] w-full text-left text-sm fdl-data-table">
                   <thead className="bg-white/10 text-white/70">
                     <tr>
                       <th className="px-4 py-3">Nome</th>

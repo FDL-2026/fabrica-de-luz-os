@@ -67,9 +67,9 @@ export default function FilaValidacaoProjetoClient({
       </div>
 
       {ordensAguardandoValidacao.length > 0 ? (
-        <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
+        <div className="mt-5 fdl-table-wrap">
           <div className="overflow-x-auto">
-            <table className="min-w-[900px] w-full text-left text-sm">
+            <table className="min-w-[900px] w-full text-left text-sm fdl-data-table">
               <thead className="bg-white/10 text-white/70">
                 <tr>
                   <th className="px-4 py-3">OS</th>
@@ -102,7 +102,7 @@ export default function FilaValidacaoProjetoClient({
                     <td className="px-4 py-3 text-center">
                       <a
                         href={`/projetos/${projetoId}/os/${os.id}/validacao`}
-                        className="inline-flex h-9 items-center justify-center rounded-full bg-[var(--fdl-cream)] px-5 text-xs font-bold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                        className="fdl-btn fdl-btn-sm fdl-btn-primary"
                       >
                         Validar OS
                       </a>

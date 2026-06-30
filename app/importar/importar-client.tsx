@@ -677,7 +677,7 @@ export default function ImportarClient() {
                 </p>
               </div>
 
-              <div className="overflow-hidden rounded-2xl border border-white/10">
+              <div className="fdl-table-wrap">
                 <table className="w-full border-collapse text-left text-sm">
                   <thead className="bg-white/10 text-white/70">
                     <tr>

@@ -148,9 +148,9 @@ export default function OsTableClient({
       </div>
 
       {ordensFiltradas.length > 0 ? (
-        <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
+        <div className="mt-5 fdl-table-wrap">
           <div className="overflow-x-auto">
-            <table className="min-w-[980px] w-full text-left text-sm">
+            <table className="min-w-[980px] w-full text-left text-sm fdl-data-table">
               <thead className="bg-white/10 text-white/70">
                 <tr>
                   <th className="px-4 py-3">OS</th>
