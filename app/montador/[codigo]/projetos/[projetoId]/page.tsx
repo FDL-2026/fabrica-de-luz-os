@@ -1,4 +1,4 @@
-import Image from "next/image";
+import MontadorShell from "@/components/montador/montador-shell";
 import OsClient from "./os-client";
 import AjustesPendentesMontador from "./ajustes-pendentes-montador";
 
@@ -16,25 +16,12 @@ export default async function MontadorProjetoPage({ params }: PageProps) {
   const { codigo, projetoId } = await params;
 
   return (
-    <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
-<div className="mx-auto min-h-screen w-full max-w-5xl px-5 py-8">
-        <div className="mb-8 flex justify-center">
-          <Image
-            src="/brand/H_TAGLINE_SF_ROXO.png"
-            alt="Fábrica de Luz"
-            width={500}
-            height={300}
-            priority
-            className="h-auto max-h-28 w-full max-w-md object-contain"
-          />
-        </div>
-
+    <MontadorShell maxWidth="xl" showFooter={false}>
+      <div className="fdl-mobile-stack">
         <AjustesPendentesMontador codigo={codigo} projetoId={projetoId} />
-
-
 
         <OsClient codigo={codigo} projetoId={projetoId} />
       </div>
-    </main>
+    </MontadorShell>
   );
 }

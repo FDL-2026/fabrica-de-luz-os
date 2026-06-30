@@ -1,4 +1,4 @@
-import Image from "next/image";
+import MontadorShell from "@/components/montador/montador-shell";
 import OsDetalheClient from "./os-detalhe-client";
 import AvisoAjusteMontador from "./aviso-ajuste-montador";
 
@@ -17,25 +17,12 @@ export default async function MontadorOsPage({ params }: PageProps) {
   const { codigo, projetoId, osId } = await params;
 
   return (
-    <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
-<div className="mx-auto min-h-screen w-full max-w-4xl px-5 py-8">
-        <div className="mb-8 flex justify-center">
-          <Image
-            src="/brand/H_TAGLINE_SF_ROXO.png"
-            alt="Fábrica de Luz"
-            width={500}
-            height={300}
-            priority
-            className="h-auto max-h-28 w-full max-w-md object-contain"
-          />
-        </div>
-
+    <MontadorShell maxWidth="lg" showFooter={false}>
+      <div className="fdl-mobile-stack">
         <AvisoAjusteMontador projetoId={projetoId} osId={osId} />
-
-
 
         <OsDetalheClient codigo={codigo} projetoId={projetoId} osId={osId} />
       </div>
-    </main>
+    </MontadorShell>
   );
 }
