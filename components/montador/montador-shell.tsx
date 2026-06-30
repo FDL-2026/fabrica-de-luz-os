@@ -28,17 +28,15 @@ export default function MontadorShell({
           widths[maxWidth]
         } ${center ? "justify-center" : ""}`}
       >
-        <header className="mb-6 flex justify-center sm:mb-8">
-          <div className="rounded-3xl bg-white px-5 py-4 shadow-xl shadow-black/15">
-            <Image
-              src="/brand/H_TAGLINE_CF_ROXO.png"
-              alt="Fábrica de Luz"
-              width={500}
-              height={300}
-              priority
-              className="h-auto max-h-20 w-full max-w-xs object-contain sm:max-h-24 sm:max-w-sm"
-            />
-          </div>
+        <header className="mb-7 flex justify-center sm:mb-8">
+          <Image
+            src="/brand/H_TAGLINE_SF_ROXO.png"
+            alt="Fábrica de Luz"
+            width={500}
+            height={300}
+            priority
+            className="h-auto max-h-28 w-full max-w-sm object-contain sm:max-h-32"
+          />
         </header>
 
         <div className="w-full">{children}</div>
