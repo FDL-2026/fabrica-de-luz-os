@@ -2972,3 +2972,36 @@ label:has(input[type="file"]):hover {
     width: 100% !important;
   }
 }
+
+
+/* FDL USERS ACTION COLUMN ALIGNMENT 2026 */
+/* Centraliza cabeçalho Ação e botões Editar na tabela de usuários */
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(6),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(6) {
+  width: 92px !important;
+  min-width: 92px !important;
+  max-width: 92px !important;
+  text-align: center !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(6) {
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(6) {
+  text-align: center !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(6) button,
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(6) a {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  min-width: 68px !important;
+  max-width: 68px !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
