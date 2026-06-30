@@ -346,20 +346,14 @@ export default function DashboardClient() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="fdl-header-actions">
             <a
               href="/projetos"
-              className="fdl-btn fdl-btn-md fdl-btn-neutral"
-            >
-              Ver projetos
-            </a>
+              className="fdl-action-link fdl-action-link-secondary">Ver projetos</a>
 
             <a
               href="/importar"
-              className="fdl-btn fdl-btn-md fdl-btn-primary"
-            >
-              Importar cronograma
-            </a>
+              className="fdl-action-link">Importar cronograma</a>
           </div>
         </div>
 
@@ -600,10 +594,7 @@ export default function DashboardClient() {
                       <td className="px-4 py-3 text-center">
                         <a
                           href={`/projetos/${os.projeto_id}/os/${os.os_id}/validacao`}
-                          className="fdl-btn fdl-btn-sm fdl-btn-primary"
-                        >
-                          Validar OS
-                        </a>
+                          className="fdl-action-link">Validar OS</a>
                       </td>
                     </tr>
                   ))}
@@ -732,10 +723,7 @@ export default function DashboardClient() {
                         <td className="px-4 py-3 text-center">
                           <a
                             href={`/projetos/${projeto.projeto_id}`}
-                            className="fdl-btn fdl-btn-sm fdl-btn-secondary"
-                          >
-                            Abrir
-                          </a>
+                            className="fdl-action-link">Abrir</a>
                         </td>
                       </tr>
                     );
