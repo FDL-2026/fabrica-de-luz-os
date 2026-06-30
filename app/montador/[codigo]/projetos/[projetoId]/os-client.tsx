@@ -174,7 +174,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
   if (erro) {
     return (
       <div className="space-y-5">
-        <div className="rounded-3xl border border-red-400/30 bg-red-500/10 p-6 text-red-100">
+        <div className="fdl-alert fdl-alert-error">
           {erro}
         </div>
 
@@ -207,7 +207,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+      <header className="fdl-form-card p-6">
         <a
           href={`/montador/${codigo}`}
           className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
@@ -266,8 +266,8 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
 
       <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
         <div className="mb-5">
-          <h2 className="text-xl font-bold">Ordens de serviço</h2>
-          <p className="mt-1 text-sm text-white/55">
+          <h2 className="fdl-section-title">Ordens de serviço</h2>
+          <p className="fdl-section-subtitle">
             OSs importadas automaticamente do cronograma.
           </p>
         </div>
@@ -276,7 +276,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           {ordens.map((os) => (
             <article
               key={os.os_id}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+              className="fdl-form-section p-5"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>

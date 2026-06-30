@@ -227,7 +227,7 @@ export default function ValidacaoOsClient({
 
   if (!dados.os) {
     return (
-      <div className="rounded-3xl border border-red-400/30 bg-red-500/10 p-6 text-red-100">
+      <div className="fdl-alert fdl-alert-error">
         OS não encontrada ou sem permissão de acesso.
       </div>
     );
@@ -238,7 +238,7 @@ export default function ValidacaoOsClient({
 
   return (
     <div className="space-y-6">
-      <header className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+      <header className="fdl-form-card p-6">
         <a
           href={`/projetos/${projetoId}/os/${osId}`}
           className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
@@ -283,8 +283,8 @@ export default function ValidacaoOsClient({
 
       <section className="grid gap-6 xl:grid-cols-[1fr_420px]">
         <div className="space-y-6">
-          <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-            <h2 className="text-xl font-bold">Dados da OS</h2>
+          <section className="fdl-form-card p-6">
+            <h2 className="fdl-section-title">Dados da OS</h2>
 
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
@@ -355,8 +355,8 @@ export default function ValidacaoOsClient({
             ) : null}
           </section>
 
-          <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-            <h2 className="text-xl font-bold">Fotos e vídeos enviados</h2>
+          <section className="fdl-form-card p-6">
+            <h2 className="fdl-section-title">Fotos e vídeos enviados</h2>
 
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               {dados.arquivos.length > 0 ? (
@@ -400,7 +400,7 @@ export default function ValidacaoOsClient({
 
         <aside className="space-y-6">
           <section className="rounded-3xl border border-[var(--fdl-cream)]/30 bg-white/[0.08] p-6">
-            <h2 className="text-xl font-bold">Ação do gestor</h2>
+            <h2 className="fdl-section-title">Ação do gestor</h2>
 
             <p className="mt-2 text-sm text-white/60">
               Aprove a OS se a execução estiver correta ou solicite ajuste com
@@ -469,8 +469,8 @@ export default function ValidacaoOsClient({
             </div>
           </section>
 
-          <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-            <h2 className="text-xl font-bold">Histórico</h2>
+          <section className="fdl-form-card p-6">
+            <h2 className="fdl-section-title">Histórico</h2>
 
             <div className="mt-5 space-y-3">
               {dados.registros.length > 0 ? (

@@ -255,7 +255,7 @@ export default async function CronogramaProjetoPage({ params }: PageProps) {
           </div>
 
           <section className="mt-8 grid gap-6 xl:grid-cols-[1fr_1fr]">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+            <div className="fdl-form-card p-6">
               <div className="mb-5">
                 <h2 className="text-xl font-semibold">Noites de montagem</h2>
                 <p className="mt-1 text-sm text-white/50">
@@ -301,7 +301,7 @@ export default async function CronogramaProjetoPage({ params }: PageProps) {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+            <div className="fdl-form-card p-6">
               <div className="mb-5">
                 <h2 className="text-xl font-semibold">Ordens de serviço</h2>
                 <p className="mt-1 text-sm text-white/50">

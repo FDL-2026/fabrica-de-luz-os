@@ -445,7 +445,7 @@ export default function ImportarClient() {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+      <section className="fdl-form-card p-6">
         <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
           <div>
             <p className="text-sm uppercase tracking-[0.24em] text-[var(--fdl-cream)]">
@@ -511,7 +511,7 @@ export default function ImportarClient() {
             ) : null}
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+          <div className="fdl-form-section p-5">
             <h3 className="text-lg font-semibold">Como o sistema grava</h3>
 
             <div className="mt-4 space-y-3 text-sm text-white/65">
@@ -570,7 +570,7 @@ export default function ImportarClient() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+          <section className="fdl-form-card p-6">
             <div className="mb-6">
               <h2 className="text-xl font-semibold">Dados do projeto</h2>
               <p className="mt-1 text-sm text-white/50">
@@ -640,7 +640,7 @@ export default function ImportarClient() {
           </section>
 
           <section className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+            <div className="fdl-form-card p-6">
               <div className="mb-5">
                 <h2 className="text-xl font-semibold">Etapas identificadas</h2>
                 <p className="mt-1 text-sm text-white/50">
@@ -669,7 +669,7 @@ export default function ImportarClient() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+            <div className="fdl-form-card p-6">
               <div className="mb-5">
                 <h2 className="text-xl font-semibold">OSs identificadas</h2>
                 <p className="mt-1 text-sm text-white/50">

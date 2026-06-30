@@ -198,7 +198,7 @@ export default function PinForm({ codigo }: PinFormProps) {
           </p>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+        <div className="fdl-form-section p-5">
           <div className="mb-5">
             <p className="text-sm uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
               Meus projetos
@@ -208,7 +208,7 @@ export default function PinForm({ codigo }: PinFormProps) {
               Projetos vinculados
             </h3>
 
-            <p className="mt-1 text-sm text-white/55">
+            <p className="fdl-section-subtitle">
               Selecione um projeto para acompanhar as OSs de montagem.
             </p>
           </div>
@@ -244,7 +244,7 @@ export default function PinForm({ codigo }: PinFormProps) {
                           {projeto.cliente || projeto.shopping}
                         </h4>
 
-                        <p className="mt-1 text-sm text-white/55">
+                        <p className="fdl-section-subtitle">
                            {projeto.uf}
                         </p>
                       </div>

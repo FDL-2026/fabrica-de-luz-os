@@ -205,7 +205,7 @@ export default async function ProjetosPage() {
                           {projeto.cliente || projeto.shopping}
                         </h3>
 
-                        <p className="mt-1 text-sm text-white/60">
+                        <p className="fdl-section-subtitle">
                            {projeto.uf}
                         </p>
                       </div>

@@ -102,11 +102,11 @@ export default function OsTableClient({
   }
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+    <section className="fdl-form-card p-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <h2 className="text-xl font-bold">Ordens de serviço</h2>
-          <p className="mt-1 text-sm text-white/55">
+          <h2 className="fdl-section-title">Ordens de serviço</h2>
+          <p className="fdl-section-subtitle">
             Filtre as OSs pelo status atual da execução.
           </p>
         </div>
@@ -125,7 +125,7 @@ export default function OsTableClient({
           <select
             value={statusFiltro}
             onChange={(event) => setStatusFiltro(event.target.value)}
-            className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+            className="fdl-field"
           >
             {statusOptions.map((status) => (
               <option key={status.value} className="text-black" value={status.value}>

@@ -254,7 +254,7 @@ export default function OsGestaoClient({
   if (erro || !os) {
     return (
       <div className="space-y-5">
-        <div className="rounded-3xl border border-red-400/30 bg-red-500/10 p-6 text-red-100">
+        <div className="fdl-alert fdl-alert-error">
           {erro || "Não foi possível carregar a OS."}
         </div>
 
@@ -270,7 +270,7 @@ export default function OsGestaoClient({
 
   return (
     <div className="space-y-6">
-      <header className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+      <header className="fdl-form-card p-6">
         <a
           href={`/projetos/${projetoId}`}
           className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
@@ -335,8 +335,8 @@ export default function OsGestaoClient({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-        <h2 className="text-xl font-bold">Dados da OS</h2>
+      <section className="fdl-form-card p-6">
+        <h2 className="fdl-section-title">Dados da OS</h2>
 
         <div className="mt-5 grid gap-4">
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
@@ -425,9 +425,9 @@ export default function OsGestaoClient({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-        <h2 className="text-xl font-bold">Fotos e vídeos</h2>
-        <p className="mt-1 text-sm text-white/55">
+      <section className="fdl-form-card p-6">
+        <h2 className="fdl-section-title">Fotos e vídeos</h2>
+        <p className="fdl-section-subtitle">
           Arquivos enviados pelo montador e armazenados no Google Drive.
         </p>
 
@@ -465,16 +465,16 @@ export default function OsGestaoClient({
               </article>
             ))
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
+            <div className="fdl-empty-state">
               Nenhum arquivo enviado para esta OS.
             </div>
           )}
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-        <h2 className="text-xl font-bold">Histórico da OS</h2>
-        <p className="mt-1 text-sm text-white/55">
+      <section className="fdl-form-card p-6">
+        <h2 className="fdl-section-title">Histórico da OS</h2>
+        <p className="fdl-section-subtitle">
           Registros criados durante a execução desta ordem de serviço.
         </p>
 
@@ -483,7 +483,7 @@ export default function OsGestaoClient({
             registros.map((registro) => (
               <article
                 key={registro.registro_id}
-                className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+                className="fdl-form-section p-5"
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
@@ -518,7 +518,7 @@ export default function OsGestaoClient({
               </article>
             ))
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
+            <div className="fdl-empty-state">
               Nenhum registro criado para esta OS ainda.
             </div>
           )}

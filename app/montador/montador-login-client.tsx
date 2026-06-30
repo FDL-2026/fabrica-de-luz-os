@@ -108,7 +108,7 @@ export default function MontadorLoginClient() {
         </div>
 
         {erro ? (
-          <div className="rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">
+          <div className="fdl-alert fdl-alert-error">
             {erro}
           </div>
         ) : null}

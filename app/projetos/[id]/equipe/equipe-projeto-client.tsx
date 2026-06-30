@@ -190,7 +190,7 @@ export default function EquipeProjetoClient({
 
   return (
     <div className="space-y-6">
-      <header className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+      <header className="fdl-form-card p-6">
         <a
           href={`/projetos/${projetoId}`}
           className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
@@ -213,9 +213,9 @@ export default function EquipeProjetoClient({
       <section className="grid gap-6 xl:grid-cols-[420px_1fr]">
         <form
           onSubmit={adicionarUsuario}
-          className="rounded-3xl border border-white/10 bg-white/[0.06] p-6"
+          className="fdl-form-card p-6"
         >
-          <h2 className="text-xl font-bold">Adicionar usuário</h2>
+          <h2 className="fdl-section-title">Adicionar usuário</h2>
 
           <div className="mt-5 space-y-4">
             <div>
@@ -226,7 +226,7 @@ export default function EquipeProjetoClient({
               <select
                 value={usuarioSelecionado}
                 onChange={(event) => setUsuarioSelecionado(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+                className="fdl-field"
               >
                 <option className="text-black" value="">
                   Selecione um usuário
@@ -253,7 +253,7 @@ export default function EquipeProjetoClient({
               <select
                 value={funcao}
                 onChange={(event) => setFuncao(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+                className="fdl-field"
               >
                 {funcoes.map((item) => (
                   <option key={item.value} className="text-black" value={item.value}>
@@ -264,13 +264,13 @@ export default function EquipeProjetoClient({
             </div>
 
             {erro ? (
-              <div className="rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">
+              <div className="fdl-alert fdl-alert-error">
                 {erro}
               </div>
             ) : null}
 
             {sucesso ? (
-              <div className="rounded-2xl border border-green-400/30 bg-green-500/10 p-4 text-sm text-green-100">
+              <div className="fdl-alert fdl-alert-success">
                 {sucesso}
               </div>
             ) : null}
@@ -285,16 +285,16 @@ export default function EquipeProjetoClient({
           </div>
         </form>
 
-        <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+        <section className="fdl-form-card p-6">
           <div className="mb-5">
-            <h2 className="text-xl font-bold">Equipe vinculada</h2>
-            <p className="mt-1 text-sm text-white/55">
+            <h2 className="fdl-section-title">Equipe vinculada</h2>
+            <p className="fdl-section-subtitle">
               Usuários que já possuem acesso a este projeto.
             </p>
           </div>
 
           {carregando ? (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
+            <div className="fdl-empty-state">
               Carregando equipe...
             </div>
           ) : equipe.length > 0 ? (
@@ -357,7 +357,7 @@ export default function EquipeProjetoClient({
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
+            <div className="fdl-empty-state">
               Nenhum usuário vinculado a este projeto ainda.
             </div>
           )}

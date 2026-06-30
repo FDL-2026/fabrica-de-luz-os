@@ -56,7 +56,7 @@ export default function FilaValidacaoProjetoClient({
 
           <h2 className="mt-2 text-xl font-bold">OSs aguardando validação</h2>
 
-          <p className="mt-1 text-sm text-white/60">
+          <p className="fdl-section-subtitle">
             OSs concluídas pelo montador e pendentes de aprovação do gestor.
           </p>
         </div>

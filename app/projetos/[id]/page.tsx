@@ -271,7 +271,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
           </div>
 
           <section className="mt-8 grid gap-6 xl:grid-cols-[1fr_1.2fr]">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+            <div className="fdl-form-card p-6">
               <div className="mb-5">
                 <h2 className="text-xl font-semibold">Dados do projeto</h2>
                 <p className="mt-1 text-sm text-white/50">
@@ -317,7 +317,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+            <div className="fdl-form-card p-6">
               <div className="mb-5">
                 <h2 className="text-xl font-semibold">
                   Cronograma noite a noite
@@ -365,11 +365,11 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
 
           
       
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+      <section className="fdl-form-card p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-xl font-bold">Equipe do projeto</h2>
-            <p className="mt-1 text-sm text-white/55">
+            <h2 className="fdl-section-title">Equipe do projeto</h2>
+            <p className="fdl-section-subtitle">
               Vincule montadores, supervisores e gestores que terão acesso a este projeto.
             </p>
           </div>

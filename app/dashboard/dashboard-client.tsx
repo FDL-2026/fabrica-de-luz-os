@@ -325,7 +325,7 @@ export default function DashboardClient() {
 
   if (erro) {
     return (
-      <div className="rounded-3xl border border-red-400/30 bg-red-500/10 p-6 text-red-100">
+      <div className="fdl-alert fdl-alert-error">
         {erro}
       </div>
     );
@@ -333,7 +333,7 @@ export default function DashboardClient() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+      <header className="fdl-form-card p-6">
         <p className="text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
           Dashboard operacional
         </p>
@@ -375,7 +375,7 @@ export default function DashboardClient() {
                 setGestorSelecionado(event.target.value);
                 setProjetoSelecionado("");
               }}
-              className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+              className="fdl-field"
             >
               <option className="text-black" value="">
                 Todos os gestores
@@ -397,7 +397,7 @@ export default function DashboardClient() {
             <select
               value={projetoSelecionado}
               onChange={(event) => setProjetoSelecionado(event.target.value)}
-              className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+              className="fdl-field"
             >
               <option className="text-black" value="">
                 Todos os projetos
@@ -423,7 +423,7 @@ export default function DashboardClient() {
             <select
               value={ufSelecionada}
               onChange={(event) => setUfSelecionada(event.target.value)}
-              className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+              className="fdl-field"
             >
               <option className="text-black" value="">
                 Todas
@@ -447,7 +447,7 @@ export default function DashboardClient() {
               onChange={(event) =>
                 setStatusOperacionalSelecionado(event.target.value)
               }
-              className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+              className="fdl-field"
             >
               {statusOperacionalOptions.map((status) => (
                 <option
@@ -538,7 +538,7 @@ export default function DashboardClient() {
 
             <h2 className="mt-2 text-xl font-bold">OSs aguardando validação</h2>
 
-            <p className="mt-1 text-sm text-white/60">
+            <p className="fdl-section-subtitle">
               OSs concluídas pelos montadores e pendentes de aprovação do gestor.
             </p>
           </div>
@@ -618,11 +618,11 @@ export default function DashboardClient() {
         )}
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+      <section className="fdl-form-card p-6">
         <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <h2 className="text-xl font-bold">Tabela geral de projetos</h2>
-            <p className="mt-1 text-sm text-white/55">
+            <h2 className="fdl-section-title">Tabela geral de projetos</h2>
+            <p className="fdl-section-subtitle">
               Visão compacta para acompanhamento de grande volume de projetos.
             </p>
           </div>
@@ -745,16 +745,16 @@ export default function DashboardClient() {
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
+          <div className="fdl-empty-state">
             Nenhum projeto encontrado para os filtros selecionados.
           </div>
         )}
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+      <section className="fdl-form-card p-6">
         <div className="mb-5">
-          <h2 className="text-xl font-bold">Últimos registros</h2>
-          <p className="mt-1 text-sm text-white/55">
+          <h2 className="fdl-section-title">Últimos registros</h2>
+          <p className="fdl-section-subtitle">
             Últimas atualizações enviadas pelos montadores.
           </p>
         </div>
@@ -764,7 +764,7 @@ export default function DashboardClient() {
             dados.ultimos_registros.map((registro) => (
               <article
                 key={registro.registro_id}
-                className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+                className="fdl-form-section p-5"
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
@@ -820,7 +820,7 @@ export default function DashboardClient() {
               </article>
             ))
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50 xl:col-span-2">
+            <div className="fdl-empty-state xl:col-span-2">
               Nenhum registro encontrado para os filtros selecionados.
             </div>
           )}

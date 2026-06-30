@@ -433,7 +433,7 @@ export default function OsDetalheClient({
   if (erro && !os) {
     return (
       <div className="space-y-5">
-        <div className="rounded-3xl border border-red-400/30 bg-red-500/10 p-6 text-red-100">
+        <div className="fdl-alert fdl-alert-error">
           {erro}
         </div>
 
@@ -457,7 +457,7 @@ export default function OsDetalheClient({
 
   return (
     <div className="space-y-6">
-      <header className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+      <header className="fdl-form-card p-6">
         <a
           href={`/montador/${codigo}/projetos/${projetoId}`}
           className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
@@ -493,10 +493,10 @@ export default function OsDetalheClient({
         </div>
       </header>
 
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
+      <section className="fdl-form-card p-6">
         <div className="mb-5">
-          <h2 className="text-xl font-bold">Dados da OS</h2>
-          <p className="mt-1 text-sm text-white/55">
+          <h2 className="fdl-section-title">Dados da OS</h2>
+          <p className="fdl-section-subtitle">
             Confira as informações antes de iniciar ou concluir.
           </p>
         </div>
@@ -545,9 +545,9 @@ export default function OsDetalheClient({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-        <h2 className="text-xl font-bold">Anexos obrigatórios</h2>
-        <p className="mt-1 text-sm text-white/55">
+      <section className="fdl-form-card p-6">
+        <h2 className="fdl-section-title">Anexos obrigatórios</h2>
+        <p className="fdl-section-subtitle">
           Para concluir a OS, envie pelo menos uma foto ou vídeo da execução.
         </p>
 
@@ -630,9 +630,9 @@ export default function OsDetalheClient({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-        <h2 className="text-xl font-bold">Status da OS</h2>
-        <p className="mt-1 text-sm text-white/55">
+      <section className="fdl-form-card p-6">
+        <h2 className="fdl-section-title">Status da OS</h2>
+        <p className="fdl-section-subtitle">
           Inicie ou conclua a OS conforme o andamento da execução.
         </p>
 
@@ -691,9 +691,9 @@ export default function OsDetalheClient({
         ) : null}
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-        <h2 className="text-xl font-bold">Registro de execução</h2>
-        <p className="mt-1 text-sm text-white/55">
+      <section className="fdl-form-card p-6">
+        <h2 className="fdl-section-title">Registro de execução</h2>
+        <p className="fdl-section-subtitle">
           Use este campo para registrar andamento, pendências ou observações da
           OS durante a montagem.
         </p>
@@ -707,7 +707,7 @@ export default function OsDetalheClient({
             <select
               value={tipoRegistro}
               onChange={(event) => setTipoRegistro(event.target.value)}
-              className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+              className="fdl-field"
             >
               <option className="text-black" value="acompanhamento">
                 Acompanhamento
@@ -734,7 +734,7 @@ export default function OsDetalheClient({
               onChange={(event) =>
                 setPercentualRegistro(Number(event.target.value))
               }
-              className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+              className="fdl-field"
             />
           </div>
         </div>
@@ -757,9 +757,9 @@ export default function OsDetalheClient({
         </button>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-        <h2 className="text-xl font-bold">Histórico da OS</h2>
-        <p className="mt-1 text-sm text-white/55">
+      <section className="fdl-form-card p-6">
+        <h2 className="fdl-section-title">Histórico da OS</h2>
+        <p className="fdl-section-subtitle">
           Registros criados durante a execução desta ordem de serviço.
         </p>
 
@@ -768,7 +768,7 @@ export default function OsDetalheClient({
             registros.map((registro) => (
               <article
                 key={registro.registro_id}
-                className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+                className="fdl-form-section p-5"
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
@@ -803,7 +803,7 @@ export default function OsDetalheClient({
               </article>
             ))
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
+            <div className="fdl-empty-state">
               Nenhum registro criado para esta OS ainda.
             </div>
           )}
