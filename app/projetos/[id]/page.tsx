@@ -194,7 +194,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
             <div>
               <a
                 href="/projetos"
-                className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
+                className="fdl-project-back-link"
               >
                 ← Voltar para projetos
               </a>
@@ -223,7 +223,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
 
               <a
                 href={`/projetos/${projeto.id}/cronograma`}
-                className="rounded-full bg-[var(--fdl-cream)] px-5 py-2 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                className="fdl-ui-btn fdl-ui-btn-primary"
               >
                 Ver cronograma
               </a>
@@ -231,36 +231,36 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
           </header>
 
           <div className="grid gap-4 md:grid-cols-4">
-            <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
-              <p className="text-sm text-[#7d6488]">Noites previstas</p>
-              <strong className="mt-3 block text-4xl">{totalNoites}</strong>
-              <span className="mt-2 block text-sm text-[#7d6488]">
+            <div className="fdl-project-kpi-card">
+              <p className="fdl-project-kpi-label">Noites previstas</p>
+              <strong className="fdl-project-kpi-value">{totalNoites}</strong>
+              <span className="fdl-project-kpi-help">
                 {noitesConcluidas} concluídas
               </span>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
-              <p className="text-sm text-[#7d6488]">Total de OSs</p>
-              <strong className="mt-3 block text-4xl">{totalOS}</strong>
-              <span className="mt-2 block text-sm text-[#7d6488]">
+            <div className="fdl-project-kpi-card">
+              <p className="fdl-project-kpi-label">Total de OSs</p>
+              <strong className="fdl-project-kpi-value">{totalOS}</strong>
+              <span className="fdl-project-kpi-help">
                 cadastradas no projeto
               </span>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
-              <p className="text-sm text-[#7d6488]">OSs pendentes</p>
-              <strong className="mt-3 block text-4xl">{osPendentes}</strong>
-              <span className="mt-2 block text-sm text-yellow-600">
+            <div className="fdl-project-kpi-card">
+              <p className="fdl-project-kpi-label">OSs pendentes</p>
+              <strong className="fdl-project-kpi-value">{osPendentes}</strong>
+              <span className="fdl-project-kpi-help fdl-project-kpi-warning">
                 aguardando execução
               </span>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
-              <p className="text-sm text-[#7d6488]">Progresso</p>
-              <strong className="mt-3 block text-4xl">{progresso}%</strong>
-              <div className="mt-3 h-2 rounded-full bg-[#eee7f4]">
+            <div className="fdl-project-kpi-card">
+              <p className="fdl-project-kpi-label">Progresso</p>
+              <strong className="fdl-project-kpi-value">{progresso}%</strong>
+              <div className="fdl-project-progress">
                 <div
-                  className="h-2 rounded-full bg-[var(--fdl-purple)]"
+                  className="fdl-project-progress-fill"
                   style={{ width: `${progresso}%` }}
                 />
               </div>
@@ -270,7 +270,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
           <section className="mt-8 grid gap-6 xl:grid-cols-[1fr_1.2fr]">
             <div className="fdl-form-card p-6">
               <div className="mb-5">
-                <h2 className="text-xl font-semibold">Dados do projeto</h2>
+                <h2 className="fdl-ui-section-title">Dados do projeto</h2>
                 <p className="mt-1 text-sm text-white/50">
                   Informações principais do contrato/montagem.
                 </p>
@@ -316,7 +316,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
 
             <div className="fdl-form-card p-6">
               <div className="mb-5">
-                <h2 className="text-xl font-semibold">
+                <h2 className="fdl-ui-section-title">
                   Cronograma noite a noite
                 </h2>
                 <p className="mt-1 text-sm text-white/50">
@@ -373,7 +373,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
 
           <a
             href={`/projetos/${projeto.id}/equipe`}
-            className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--fdl-lilac)] px-5 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:bg-white"
+            className="fdl-ui-btn fdl-ui-btn-secondary"
           >
             Gerenciar equipe
           </a>

@@ -2201,3 +2201,114 @@ select.fdl-field option,
   background: rgba(253, 230, 138, 0.12) !important;
   color: #fde68a !important;
 }
+
+
+/* FDL PROJECT DETAIL POLISH 2026 */
+/* Refinamento visual da página individual do projeto */
+
+.fdl-project-back-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  width: fit-content !important;
+  border-radius: 999px !important;
+  color: var(--fdl-cream) !important;
+  font-size: 0.86rem !important;
+  font-weight: 900 !important;
+  text-decoration: none !important;
+  transition: opacity 160ms ease, transform 160ms ease !important;
+}
+
+.fdl-project-back-link:hover {
+  opacity: 0.82 !important;
+  transform: translateX(-2px) !important;
+}
+
+/* KPIs superiores da página do projeto */
+.fdl-project-kpi-card {
+  min-height: 150px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  border-radius: 26px !important;
+  border: 1px solid rgba(255, 255, 255, 0.115) !important;
+  background: rgba(255, 255, 255, 0.068) !important;
+  padding: 20px !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+.fdl-project-kpi-card:hover {
+  background: rgba(255, 255, 255, 0.082) !important;
+}
+
+.fdl-project-kpi-label {
+  color: rgba(255, 255, 255, 0.58) !important;
+  font-size: 0.72rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.13em !important;
+  text-transform: uppercase !important;
+}
+
+.fdl-project-kpi-value {
+  margin-top: 12px !important;
+  display: block !important;
+  color: #ffffff !important;
+  font-size: clamp(2rem, 4vw, 2.75rem) !important;
+  line-height: 1 !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.fdl-project-kpi-help {
+  margin-top: 12px !important;
+  display: block !important;
+  color: rgba(255, 255, 255, 0.54) !important;
+  font-size: 0.84rem !important;
+  line-height: 1.4 !important;
+}
+
+.fdl-project-kpi-warning {
+  color: #fde68a !important;
+  font-weight: 800 !important;
+}
+
+.fdl-project-progress {
+  margin-top: 14px !important;
+  height: 8px !important;
+  overflow: hidden !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+}
+
+.fdl-project-progress-fill {
+  height: 8px !important;
+  border-radius: 999px !important;
+  background: var(--fdl-cream) !important;
+}
+
+/* Botões no header do projeto */
+.fdl-ui-btn.fdl-ui-btn-primary,
+.fdl-ui-btn.fdl-ui-btn-secondary {
+  min-height: 44px !important;
+}
+
+/* Ajuste dos painéis internos da página do projeto */
+.fdl-form-card .fdl-ui-section-title {
+  color: #ffffff !important;
+  font-size: 1.18rem !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.025em !important;
+}
+
+@media (max-width: 768px) {
+  .fdl-project-kpi-card {
+    min-height: 124px !important;
+    padding: 17px !important;
+  }
+
+  .fdl-project-kpi-value {
+    font-size: 2.15rem !important;
+  }
+}
