@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
 
 type MontadorShellProps = {
@@ -28,14 +27,11 @@ export default function MontadorShell({
           widths[maxWidth]
         } ${center ? "justify-center" : ""}`}
       >
-        <header className="mb-7 flex justify-center sm:mb-8">
-          <Image
-            src="/brand/H_TAGLINE_SF_ROXO.png"
+        <header className="mb-8 flex justify-center">
+          <img
+            src="/brand/H_TAGLINE_CF_ROXO.png"
             alt="Fábrica de Luz"
-            width={500}
-            height={300}
-            priority
-            className="h-auto max-h-28 w-full max-w-sm object-contain sm:max-h-32"
+            className="h-auto w-full max-w-[230px] object-contain sm:max-w-[280px]"
           />
         </header>
 
