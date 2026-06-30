@@ -3,7 +3,22 @@ import { createClient } from "@supabase/supabase-js";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const PERFIS_ADMIN = ["admin", "gerente_geral"];
+const PERFIS_GERENCIAM_USUARIOS = [
+  "admin",
+  "diretor",
+  "gerente_operacional",
+  "gestor_comercial",
+];
+
+const PERFIS_GERENCIAM_TODOS = ["admin", "diretor"];
+
+const PERFIS_VALIDOS = [
+  "admin",
+  "diretor",
+  "gestor_comercial",
+  "gerente_operacional",
+  "montador",
+];
 
 function env(name: string) {
   const value = process.env[name];
@@ -81,7 +96,7 @@ export async function POST(request: Request) {
     if (
       !solicitante ||
       !solicitante.ativo ||
-      !PERFIS_ADMIN.includes(solicitante.perfil)
+      !PERFIS_GERENCIAM_USUARIOS.includes(solicitante.perfil)
     ) {
       return Response.json(
         { error: "Você não tem permissão para editar usuários." },
@@ -123,9 +138,41 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!PERFIS_VALIDOS.includes(perfil)) {
+      return Response.json(
+        { error: "Perfil inválido." },
+        { status: 400 }
+      );
+    }
+
+    const podeGerenciarTodos = PERFIS_GERENCIAM_TODOS.includes(
+      solicitante.perfil
+    );
+
+    if (!podeGerenciarTodos && perfil !== "montador") {
+      return Response.json(
+        { error: "Seu perfil permite cadastrar/editar apenas montadores." },
+        { status: 403 }
+      );
+    }
+
+    if (!podeGerenciarTodos && tipoLogin !== "pin") {
+      return Response.json(
+        { error: "Montadores devem acessar por Código + PIN." },
+        { status: 403 }
+      );
+    }
+
+    if (perfil === "montador" && tipoLogin !== "pin") {
+      return Response.json(
+        { error: "Perfil Montador deve usar acesso por Código + PIN." },
+        { status: 400 }
+      );
+    }
+
     const { data: usuarioAtual, error: usuarioAtualError } = await adminClient
       .from("usuarios")
-      .select("id, auth_user_id, email, tipo_login")
+      .select("id, auth_user_id, email, tipo_login, perfil")
       .eq("id", usuarioId)
       .maybeSingle();
 
@@ -140,6 +187,13 @@ export async function POST(request: Request) {
       return Response.json(
         { error: "Usuário não encontrado." },
         { status: 404 }
+      );
+    }
+
+    if (!podeGerenciarTodos && usuarioAtual.perfil !== "montador") {
+      return Response.json(
+        { error: "Seu perfil permite editar apenas montadores." },
+        { status: 403 }
       );
     }
 

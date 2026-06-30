@@ -70,7 +70,7 @@ export default async function UsuariosPage() {
         </aside>
 
         <section className="p-8">
-          <UsuariosClient />
+          <UsuariosClient usuarioPerfil={usuario.perfil} />
         </section>
       </div>
     </main>

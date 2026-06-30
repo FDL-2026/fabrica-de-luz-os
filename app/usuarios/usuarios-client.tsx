@@ -15,14 +15,15 @@ type Usuario = {
   criado_em: string | null;
 };
 
+type UsuariosClientProps = {
+  usuarioPerfil: string;
+};
+
 const perfis = [
   { value: "admin", label: "Admin" },
-  { value: "gerente_geral", label: "Gerente Geral" },
-  { value: "gestor_contas", label: "Gestor Comercial" },
-  { value: "gestor_operacoes", label: "Gestor de Operações" },
-  { value: "gerente_operacoes", label: "Gerente de Operações" },
-  { value: "operacoes", label: "Operações" },
-  { value: "supervisor", label: "Supervisor" },
+  { value: "diretor", label: "Diretor" },
+  { value: "gestor_comercial", label: "Gestor Comercial" },
+  { value: "gerente_operacional", label: "Gerente Operacional" },
   { value: "montador", label: "Montador" },
 ];
 
@@ -44,8 +45,13 @@ function gerarCodigoMontador(totalUsuarios: number) {
   return `M${numero}`;
 }
 
-export default function UsuariosClient() {
+export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
   const supabase = useMemo(() => createClient(), []);
+
+  const podeGerenciarTodosPerfis = ["admin", "diretor"].includes(usuarioPerfil);
+  const perfisPermitidos = podeGerenciarTodosPerfis
+    ? perfis
+    : perfis.filter((item) => item.value === "montador");
 
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -53,11 +59,11 @@ export default function UsuariosClient() {
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
 
-  const [tipoLogin, setTipoLogin] = useState("email");
+  const [tipoLogin, setTipoLogin] = useState(() => podeGerenciarTodosPerfis ? "email" : "pin");
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [perfil, setPerfil] = useState("gestor_operacoes");
+  const [perfil, setPerfil] = useState(() => podeGerenciarTodosPerfis ? "gerente_operacional" : "montador");
   const [codigoAcesso, setCodigoAcesso] = useState("");
   const [pin, setPin] = useState("");
   const [ativo, setAtivo] = useState(true);
@@ -66,8 +72,8 @@ export default function UsuariosClient() {
   const [editNome, setEditNome] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editSenha, setEditSenha] = useState("");
-  const [editPerfil, setEditPerfil] = useState("gestor_operacoes");
-  const [editTipoLogin, setEditTipoLogin] = useState("email");
+  const [editPerfil, setEditPerfil] = useState(() => podeGerenciarTodosPerfis ? "gerente_operacional" : "montador");
+  const [editTipoLogin, setEditTipoLogin] = useState(() => podeGerenciarTodosPerfis ? "email" : "pin");
   const [editCodigoAcesso, setEditCodigoAcesso] = useState("");
   const [editPin, setEditPin] = useState("");
   const [editAtivo, setEditAtivo] = useState(true);
@@ -104,7 +110,7 @@ export default function UsuariosClient() {
     }
 
     if (value === "email") {
-      setPerfil("gestor_operacoes");
+      setPerfil(podeGerenciarTodosPerfis ? "gerente_operacional" : "montador");
       setCodigoAcesso("");
       setPin("");
     }
@@ -126,7 +132,7 @@ export default function UsuariosClient() {
       setEditCodigoAcesso("");
       setEditPin("");
       if (editPerfil === "montador") {
-        setEditPerfil("gestor_operacoes");
+        setEditPerfil(podeGerenciarTodosPerfis ? "gerente_operacional" : "montador");
       }
     }
   }
@@ -150,8 +156,8 @@ export default function UsuariosClient() {
     setEditNome("");
     setEditEmail("");
     setEditSenha("");
-    setEditPerfil("gestor_operacoes");
-    setEditTipoLogin("email");
+    setEditPerfil(podeGerenciarTodosPerfis ? "gerente_operacional" : "montador");
+    setEditTipoLogin(podeGerenciarTodosPerfis ? "email" : "pin");
     setEditCodigoAcesso("");
     setEditPin("");
     setEditAtivo(true);
@@ -216,7 +222,7 @@ export default function UsuariosClient() {
     setAtivo(true);
 
     if (tipoLogin === "email") {
-      setPerfil("gestor_operacoes");
+      setPerfil(podeGerenciarTodosPerfis ? "gerente_operacional" : "montador");
     } else {
       setPerfil("montador");
       setCodigoAcesso(gerarCodigoMontador(usuarios.length + 1));
@@ -330,8 +336,9 @@ export default function UsuariosClient() {
 
               <select
                 value={editTipoLogin}
+                disabled={!podeGerenciarTodosPerfis}
                 onChange={(event) => alterarTipoLoginEdicao(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <option className="text-black" value="email">
                   E-mail e senha
@@ -349,10 +356,11 @@ export default function UsuariosClient() {
 
               <select
                 value={editPerfil}
+                disabled={!podeGerenciarTodosPerfis}
                 onChange={(event) => setEditPerfil(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {perfis.map((item) => (
+                {perfisPermitidos.map((item) => (
                   <option key={item.value} className="text-black" value={item.value}>
                     {item.label}
                   </option>
@@ -486,8 +494,9 @@ export default function UsuariosClient() {
 
               <select
                 value={tipoLogin}
+                disabled={!podeGerenciarTodosPerfis}
                 onChange={(event) => alterarTipoLogin(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <option className="text-black" value="email">
                   E-mail e senha
@@ -588,10 +597,11 @@ export default function UsuariosClient() {
 
               <select
                 value={perfil}
+                disabled={!podeGerenciarTodosPerfis}
                 onChange={(event) => setPerfil(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)]"
+                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {perfis.map((item) => (
+                {perfisPermitidos.map((item) => (
                   <option key={item.value} className="text-black" value={item.value}>
                     {item.label}
                   </option>

@@ -39,12 +39,9 @@ const funcoes = [
 
 const perfis: Record<string, string> = {
   admin: "Admin",
-  gerente_geral: "Gerente Geral",
-  gestor_contas: "Gestor Comercial",
-  gestor_operacoes: "Gestor de Operações",
-  gerente_operacoes: "Gerente de Operações",
-  operacoes: "Operações",
-  supervisor: "Supervisor",
+  diretor: "Diretor",
+  gestor_comercial: "Gestor Comercial",
+  gerente_operacional: "Gerente Operacional",
   montador: "Montador",
 };
 
