@@ -11,7 +11,7 @@ export default async function ImportarPage() {
 
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
-      <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
+      <div className="grid min-h-screen lg:grid-cols-[264px_1fr]">
         <aside className="border-r border-white/10 bg-[var(--fdl-purple)] p-6">
           <div className="mb-10 flex items-center justify-center rounded-3xl bg-white/5 p-4">
             <Image
