@@ -3884,3 +3884,210 @@ main:has(.fdl-mobile-card) a[href*="/montador/"][class*="bg-[var(--fdl-cream)]"]
     width: 100% !important;
   }
 }
+
+
+/* FDL MONTADOR FINAL POLISH 2026 */
+/* Ajuste final da área do montador: mais confortável no desktop e melhor no mobile */
+
+.fdl-montador-main {
+  background:
+    radial-gradient(circle at top center, rgba(100, 59, 143, 0.18), transparent 32%),
+    var(--fdl-purple-dark) !important;
+}
+
+.fdl-montador-container {
+  padding-top: 34px !important;
+  padding-bottom: 34px !important;
+}
+
+/* Logo do montador */
+.fdl-montador-main header {
+  margin-bottom: 30px !important;
+}
+
+.fdl-montador-main header img {
+  max-width: 250px !important;
+  height: auto !important;
+}
+
+/* Cards principais */
+.fdl-montador-main section,
+.fdl-montador-main form,
+.fdl-montador-main article {
+  max-width: 100% !important;
+}
+
+/* Evita visual miniatura em desktop */
+.fdl-montador-main .rounded-3xl {
+  border-radius: 28px !important;
+}
+
+/* Cards escuros sólidos */
+.fdl-montador-main section.rounded-3xl,
+.fdl-montador-main form.rounded-3xl,
+.fdl-montador-main div.rounded-3xl {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.065) !important;
+}
+
+/* Cards internos */
+.fdl-montador-main div[class*="bg-white/[0.04]"],
+.fdl-montador-main div[class*="bg-white/[0.05]"],
+.fdl-montador-main div[class*="bg-white/[0.06]"],
+.fdl-montador-main div[class*="bg-white/10"] {
+  border-color: rgba(255, 255, 255, 0.105) !important;
+  background: rgba(255, 255, 255, 0.052) !important;
+}
+
+/* Remove cards brancos na área do montador */
+.fdl-montador-main div[class*="bg-white"],
+.fdl-montador-main section[class*="bg-white"] {
+  background-color: rgba(255, 255, 255, 0.065) !important;
+  color: #ffffff !important;
+}
+
+/* KPIs/resumos do painel do montador */
+.fdl-montador-main .grid > div[class*="bg-white"] {
+  min-height: 92px !important;
+  border: 1px solid rgba(255, 255, 255, 0.115) !important;
+  background: rgba(255, 255, 255, 0.068) !important;
+  color: #ffffff !important;
+}
+
+.fdl-montador-main .grid > div[class*="bg-white"] p {
+  color: rgba(255, 255, 255, 0.58) !important;
+}
+
+.fdl-montador-main .grid > div[class*="bg-white"] strong,
+.fdl-montador-main .grid > div[class*="bg-white"] span {
+  color: #ffffff !important;
+}
+
+/* Tipografia mais legível */
+.fdl-montador-main h1 {
+  font-size: clamp(1.85rem, 4vw, 2.35rem) !important;
+  line-height: 1.04 !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.fdl-montador-main h2 {
+  font-size: clamp(1.25rem, 3vw, 1.55rem) !important;
+  line-height: 1.15 !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.03em !important;
+}
+
+.fdl-montador-main p {
+  line-height: 1.55 !important;
+}
+
+/* Kicker */
+.fdl-montador-main p[class*="uppercase"],
+.fdl-montador-main .fdl-mobile-kicker {
+  color: var(--fdl-cream) !important;
+  font-size: 0.68rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.18em !important;
+}
+
+/* Inputs */
+.fdl-montador-main input,
+.fdl-montador-main textarea,
+.fdl-montador-main select {
+  min-height: 50px !important;
+  border-radius: 17px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+.fdl-montador-main input:focus,
+.fdl-montador-main textarea:focus,
+.fdl-montador-main select:focus {
+  border-color: var(--fdl-cream) !important;
+  box-shadow: 0 0 0 4px rgba(237, 224, 177, 0.10) !important;
+}
+
+/* Botões */
+.fdl-montador-main button,
+.fdl-montador-main a[class*="bg-[var(--fdl-cream)]"] {
+  min-height: 50px !important;
+  border-radius: 17px !important;
+  font-weight: 850 !important;
+}
+
+.fdl-montador-main a[class*="bg-[var(--fdl-cream)]"],
+.fdl-montador-main button[class*="bg-[var(--fdl-cream)]"] {
+  background: var(--fdl-cream) !important;
+  color: var(--fdl-purple-dark) !important;
+}
+
+/* Card de ajustes solicitados */
+.fdl-montador-main section[class*="border-red"],
+.fdl-montador-main div[class*="border-red"] {
+  border-color: rgba(248, 113, 113, 0.42) !important;
+  background: rgba(127, 29, 29, 0.30) !important;
+}
+
+/* Card de acesso liberado */
+.fdl-montador-main section[class*="border-green"],
+.fdl-montador-main div[class*="border-green"] {
+  border-color: rgba(74, 222, 128, 0.36) !important;
+  background: rgba(21, 128, 61, 0.16) !important;
+}
+
+/* Lista de OSs do montador */
+.fdl-montador-main article,
+.fdl-montador-main li {
+  border-color: rgba(255, 255, 255, 0.105) !important;
+}
+
+/* Melhor aproveitamento no desktop */
+@media (min-width: 900px) {
+  .fdl-montador-main .fdl-montador-container {
+    padding-top: 40px !important;
+  }
+
+  .fdl-montador-main:has([href*="/os/"]) .fdl-montador-container {
+    max-width: 860px !important;
+  }
+}
+
+/* Mobile real */
+@media (max-width: 640px) {
+  .fdl-montador-main {
+    min-height: 100dvh !important;
+  }
+
+  .fdl-montador-container {
+    padding: 18px 14px 22px !important;
+  }
+
+  .fdl-montador-main header {
+    margin-bottom: 18px !important;
+  }
+
+  .fdl-montador-main header img {
+    max-width: 210px !important;
+  }
+
+  .fdl-montador-main .rounded-3xl {
+    border-radius: 22px !important;
+  }
+
+  .fdl-montador-main h1 {
+    font-size: 1.8rem !important;
+  }
+
+  .fdl-montador-main h2 {
+    font-size: 1.28rem !important;
+  }
+
+  .fdl-montador-main button,
+  .fdl-montador-main a[class*="bg-[var(--fdl-cream)]"] {
+    width: 100% !important;
+    min-height: 52px !important;
+  }
+}

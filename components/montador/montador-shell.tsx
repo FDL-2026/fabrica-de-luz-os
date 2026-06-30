@@ -9,10 +9,10 @@ type MontadorShellProps = {
 };
 
 const widths = {
-  sm: "max-w-md",
-  md: "max-w-xl",
-  lg: "max-w-4xl",
-  xl: "max-w-5xl",
+  sm: "max-w-[520px]",
+  md: "max-w-[680px]",
+  lg: "max-w-[860px]",
+  xl: "max-w-[860px]",
 };
 
 export default function MontadorShell({
@@ -22,9 +22,9 @@ export default function MontadorShell({
   showFooter = true,
 }: MontadorShellProps) {
   return (
-    <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
+    <main className="fdl-montador-main min-h-screen bg-[var(--fdl-purple-dark)] text-white">
       <div
-        className={`mx-auto flex min-h-screen w-full flex-col px-5 py-8 sm:px-6 sm:py-10 ${
+        className={`fdl-montador-container mx-auto flex min-h-screen w-full flex-col px-5 py-8 sm:px-6 sm:py-10 ${
           widths[maxWidth]
         } ${center ? "justify-center" : ""}`}
       >
