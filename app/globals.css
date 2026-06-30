@@ -2679,3 +2679,111 @@ label:has(input[type="file"]):hover {
     min-width: 760px !important;
   }
 }
+
+
+/* FDL USERS TABLE FINAL FIX 2026 */
+/* Corrige a tabela de usuários sem rolagem lateral em telas desktop */
+
+.fdl-users-list-card {
+  align-self: start !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.fdl-users-list-card .fdl-ui-table-wrap {
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.fdl-users-list-card .fdl-ui-table-scroll {
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+}
+
+.fdl-users-table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed !important;
+}
+
+/* Nome */
+.fdl-users-table th:nth-child(1),
+.fdl-users-table td:nth-child(1) {
+  width: 30% !important;
+}
+
+/* Perfil */
+.fdl-users-table th:nth-child(2),
+.fdl-users-table td:nth-child(2) {
+  width: 18% !important;
+}
+
+/* Acesso */
+.fdl-users-table th:nth-child(3),
+.fdl-users-table td:nth-child(3) {
+  width: 11% !important;
+}
+
+/* Status */
+.fdl-users-table th:nth-child(4),
+.fdl-users-table td:nth-child(4) {
+  width: 11% !important;
+}
+
+/* Último PIN */
+.fdl-users-table th:nth-child(5),
+.fdl-users-table td:nth-child(5) {
+  width: 18% !important;
+}
+
+/* Ação */
+.fdl-users-table th:nth-child(6),
+.fdl-users-table td:nth-child(6) {
+  width: 12% !important;
+  text-align: right !important;
+}
+
+.fdl-users-table th,
+.fdl-users-table td {
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  vertical-align: middle !important;
+}
+
+.fdl-users-table td {
+  overflow: hidden !important;
+}
+
+.fdl-users-table td p {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.fdl-users-table td p:first-child {
+  white-space: nowrap !important;
+}
+
+.fdl-users-table td p:nth-child(2) {
+  max-width: 100% !important;
+  white-space: nowrap !important;
+}
+
+.fdl-users-table .fdl-ui-btn,
+.fdl-users-table button,
+.fdl-users-table a {
+  white-space: nowrap !important;
+}
+
+/* Em telas menores, libera rolagem interna apenas dentro do card */
+@media (max-width: 1180px) {
+  .fdl-users-list-card .fdl-ui-table-scroll {
+    overflow-x: auto !important;
+  }
+
+  .fdl-users-table {
+    min-width: 760px !important;
+    table-layout: auto !important;
+  }
+}

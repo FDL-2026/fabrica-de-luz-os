@@ -479,7 +479,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
         </section>
       ) : null}
 
-      <section className="grid gap-6 xl:grid-cols-[420px_1fr]">
+      <section className="grid items-start gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
         <form
           onSubmit={criarUsuario}
           className="fdl-form-card p-6"
@@ -655,7 +655,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
           ) : usuarios.length > 0 ? (
             <div className="fdl-ui-table-wrap">
               <div className="fdl-ui-table-scroll">
-                <table className="w-full min-w-[760px] fdl-ui-table fdl-users-table">
+                <table className="w-full fdl-ui-table fdl-users-table">
                   <thead className="bg-white/10 text-white/70">
                     <tr>
                       <th className="px-4 py-3">Nome</th>
