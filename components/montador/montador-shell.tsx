@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { ReactNode } from "react";
 
 type MontadorShellProps = {
@@ -23,22 +24,25 @@ export default function MontadorShell({
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
       <div
-        className={`mx-auto flex min-h-screen w-full flex-col px-5 py-6 sm:px-6 sm:py-8 ${
+        className={`mx-auto flex min-h-screen w-full flex-col px-5 py-8 sm:px-6 sm:py-10 ${
           widths[maxWidth]
         } ${center ? "justify-center" : ""}`}
       >
         <header className="mb-8 flex justify-center">
-          <img
-            src="/brand/H_TAGLINE_CF_ROXO.png"
+          <Image
+            src="/brand/H_TAGLINE_SF_ROXO.png"
             alt="Fábrica de Luz"
-            className="h-auto w-full max-w-[230px] object-contain sm:max-w-[280px]"
+            width={500}
+            height={300}
+            priority
+            className="h-auto max-h-28 w-full max-w-sm object-contain"
           />
         </header>
 
         <div className="w-full">{children}</div>
 
         {showFooter ? (
-          <footer className="mt-6 text-center text-xs text-white/38">
+          <footer className="mt-6 text-center text-xs text-white/40">
             Fábrica de Luz · Sistema OS
           </footer>
         ) : null}
