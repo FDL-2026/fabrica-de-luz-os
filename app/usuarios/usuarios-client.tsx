@@ -656,6 +656,14 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
             <div className="fdl-ui-table-wrap">
               <div className="fdl-ui-table-scroll">
                 <table className="w-full fdl-ui-table fdl-users-table">
+                  <colgroup>
+                    <col className="w-[30%]" />
+                    <col className="w-[17%]" />
+                    <col className="w-[10%]" />
+                    <col className="w-[10%]" />
+                    <col className="w-[20%]" />
+                    <col className="w-[96px]" />
+                  </colgroup>
                   <thead className="bg-white/10 text-white/70">
                     <tr>
                       <th className="px-4 py-3">Nome</th>
@@ -663,7 +671,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
                       <th className="px-4 py-3">Acesso</th>
                       <th className="px-4 py-3">Status</th>
                       <th className="px-4 py-3">Último PIN</th>
-                      <th className="px-4 py-3 text-center">Ação</th>
+                      <th className="w-[96px] px-2 py-3 text-center">Ação</th>
                     </tr>
                   </thead>
 
@@ -708,7 +716,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
                           {formatDateTime(usuario.ultimo_acesso_pin)}
                         </td>
 
-                        <td className="px-4 py-3 text-center">
+                        <td className="w-[96px] px-2 py-3 text-center align-middle">
                           <button
                             type="button"
                             onClick={() => abrirEdicao(usuario)}

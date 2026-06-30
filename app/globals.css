@@ -3005,3 +3005,40 @@ label:has(input[type="file"]):hover {
   justify-content: center !important;
   text-align: center !important;
 }
+
+
+/* FDL USERS ACTION STRUCTURAL FIX 2026 */
+/* Força alinhamento real da coluna Ação na tabela de usuários */
+
+.fdl-users-table {
+  table-layout: fixed !important;
+}
+
+.fdl-users-table th:nth-child(6),
+.fdl-users-table td:nth-child(6) {
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+  text-align: center !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+.fdl-users-table td:nth-child(6) {
+  vertical-align: middle !important;
+}
+
+.fdl-users-table td:nth-child(6) button,
+.fdl-users-table td:nth-child(6) a {
+  display: inline-flex !important;
+  width: 72px !important;
+  min-width: 72px !important;
+  max-width: 72px !important;
+  height: 34px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
