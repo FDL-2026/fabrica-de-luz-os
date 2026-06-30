@@ -2787,3 +2787,99 @@ label:has(input[type="file"]):hover {
     table-layout: auto !important;
   }
 }
+
+
+/* FDL USERS HARD LAYOUT FIX 2026 */
+/* Correção específica para a tela /usuarios */
+
+/* Cancela o espaçamento global que estava empurrando o segundo card para baixo */
+.fdl-users-list-card {
+  margin-top: 0 !important;
+  align-self: start !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Garante que a tabela não herde min-width antigo de regras globais */
+.fdl-form-card.fdl-users-list-card:has(.fdl-ui-table-wrap) .fdl-ui-table.fdl-users-table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed !important;
+}
+
+/* Evita rolagem horizontal em desktop */
+.fdl-form-card.fdl-users-list-card:has(.fdl-ui-table-wrap) .fdl-ui-table-scroll {
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* Estrutura das colunas */
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(1),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(1) {
+  width: 30% !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(2),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(2) {
+  width: 18% !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(3),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(3) {
+  width: 11% !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(4),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(4) {
+  width: 11% !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(5),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(5) {
+  width: 17% !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(6),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(6) {
+  width: 13% !important;
+  text-align: right !important;
+}
+
+/* Compactação da tabela */
+.fdl-form-card.fdl-users-list-card .fdl-users-table th,
+.fdl-form-card.fdl-users-list-card .fdl-users-table td {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  vertical-align: middle !important;
+}
+
+/* Nome e e-mail com ellipsis, sem quebrar layout */
+.fdl-form-card.fdl-users-list-card .fdl-users-table td p {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Botão editar menor e sempre dentro da coluna */
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:last-child button,
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:last-child a {
+  min-height: 34px !important;
+  max-width: 74px !important;
+  padding-left: 13px !important;
+  padding-right: 13px !important;
+  font-size: 0.76rem !important;
+  white-space: nowrap !important;
+}
+
+/* Em telas menores, libera rolagem interna, não na página inteira */
+@media (max-width: 1280px) {
+  .fdl-form-card.fdl-users-list-card:has(.fdl-ui-table-wrap) .fdl-ui-table-scroll {
+    overflow-x: auto !important;
+  }
+
+  .fdl-form-card.fdl-users-list-card:has(.fdl-ui-table-wrap) .fdl-ui-table.fdl-users-table {
+    min-width: 760px !important;
+    table-layout: auto !important;
+  }
+}
