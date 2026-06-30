@@ -479,7 +479,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
         </section>
       ) : null}
 
-      <section className="grid items-start gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
+      <section className="grid items-start gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
         <form
           onSubmit={criarUsuario}
           className="fdl-form-card p-6"

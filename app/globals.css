@@ -2883,3 +2883,92 @@ label:has(input[type="file"]):hover {
     table-layout: auto !important;
   }
 }
+
+
+/* FDL USERS NO SCROLL FINAL 2026 */
+/* Ajuste final para eliminar a rolagem lateral residual da tela de usuários */
+
+.fdl-users-list-card {
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table {
+  font-size: 0.86rem !important;
+}
+
+/* Redistribuição final das colunas */
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(1),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(1) {
+  width: 29% !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(2),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(2) {
+  width: 17% !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(3),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(3) {
+  width: 10% !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(4),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(4) {
+  width: 10% !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(5),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(5) {
+  width: 18% !important;
+}
+
+.fdl-form-card.fdl-users-list-card .fdl-users-table th:nth-child(6),
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:nth-child(6) {
+  width: 16% !important;
+}
+
+/* Menos padding horizontal */
+.fdl-form-card.fdl-users-list-card .fdl-users-table th,
+.fdl-form-card.fdl-users-list-card .fdl-users-table td {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+/* Botão editar mais compacto */
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:last-child button,
+.fdl-form-card.fdl-users-list-card .fdl-users-table td:last-child a {
+  min-height: 32px !important;
+  max-width: 68px !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  font-size: 0.72rem !important;
+}
+
+/* Badges menores dentro da tabela */
+.fdl-form-card.fdl-users-list-card .fdl-users-table .fdl-ui-badge,
+.fdl-form-card.fdl-users-list-card .fdl-users-table span {
+  max-width: 100% !important;
+}
+
+/* Só libera scroll interno em telas realmente menores */
+@media (max-width: 1120px) {
+  .fdl-form-card.fdl-users-list-card:has(.fdl-ui-table-wrap) .fdl-ui-table-scroll {
+    overflow-x: auto !important;
+  }
+
+  .fdl-form-card.fdl-users-list-card:has(.fdl-ui-table-wrap) .fdl-ui-table.fdl-users-table {
+    min-width: 720px !important;
+  }
+}
+
+@media (min-width: 1121px) {
+  .fdl-form-card.fdl-users-list-card:has(.fdl-ui-table-wrap) .fdl-ui-table-scroll {
+    overflow-x: hidden !important;
+  }
+
+  .fdl-form-card.fdl-users-list-card:has(.fdl-ui-table-wrap) .fdl-ui-table.fdl-users-table {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+}
