@@ -780,3 +780,94 @@ body {
   font-size: 0.88rem;
   color: rgba(255, 255, 255, 0.58);
 }
+
+
+/* FDL UI PROJECT PAGE 2026 */
+.fdl-ui-page-block {
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.105);
+  background:
+    radial-gradient(circle at top right, rgba(237, 224, 177, 0.08), transparent 30%),
+    rgba(255, 255, 255, 0.052);
+  padding: 24px;
+}
+
+.fdl-ui-project-toolbar {
+  margin-top: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.115);
+  background: rgba(255, 255, 255, 0.055);
+  padding: 16px;
+}
+
+.fdl-ui-project-toolbar-grid {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 768px) {
+  .fdl-ui-project-toolbar-grid {
+    grid-template-columns: minmax(220px, 320px) auto;
+    align-items: end;
+    justify-content: space-between;
+  }
+}
+
+.fdl-ui-actions-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.fdl-ui-table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.fdl-ui-subtle-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.80);
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.fdl-ui-status-pendente {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.fdl-ui-status-andamento {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.fdl-ui-status-validacao {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.fdl-ui-status-concluida {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.fdl-ui-status-ajuste {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.fdl-ui-status-neutro {
+  background: rgba(255, 255, 255, 0.13);
+  color: rgba(255, 255, 255, 0.76);
+}

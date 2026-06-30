@@ -18,6 +18,10 @@ type FilaValidacaoProjetoClientProps = {
   ordensAguardandoValidacao: OrdemServico[];
 };
 
+function codigoOs(os: OrdemServico) {
+  return os.codigo_cronograma || os.codigo_os || "Sem código";
+}
+
 export default function FilaValidacaoProjetoClient({
   projetoId,
   ordensAguardandoValidacao,
@@ -47,62 +51,50 @@ export default function FilaValidacaoProjetoClient({
   }
 
   return (
-    <section className="rounded-3xl border border-yellow-300/30 bg-yellow-300/10 p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+    <section className="fdl-ui-section fdl-ui-section-warning">
+      <div className="fdl-ui-section-head">
         <div>
-          <p className="text-sm uppercase tracking-[0.24em] text-[var(--fdl-cream)]">
-            Fila de validação
-          </p>
-
-          <h2 className="mt-2 text-xl font-bold">OSs aguardando validação</h2>
-
-          <p className="fdl-section-subtitle">
+          <p className="fdl-ui-kicker">Fila de validação</p>
+          <h2 className="fdl-ui-section-title">OSs aguardando validação</h2>
+          <p className="fdl-ui-section-desc">
             OSs concluídas pelo montador e pendentes de aprovação do gestor.
           </p>
         </div>
 
-        <span className="w-fit rounded-full bg-yellow-100 px-4 py-2 text-sm font-bold text-yellow-700">
+        <span className="fdl-ui-badge fdl-ui-badge-yellow">
           {ordensAguardandoValidacao.length} pendente(s)
         </span>
       </div>
 
       {ordensAguardandoValidacao.length > 0 ? (
-        <div className="mt-5 fdl-table-wrap">
-          <div className="overflow-x-auto">
-            <table className="min-w-[900px] w-full text-left text-sm fdl-data-table">
-              <thead className="bg-white/10 text-white/70">
+        <div className="fdl-ui-table-wrap">
+          <div className="fdl-ui-table-scroll">
+            <table className="min-w-[900px] fdl-ui-table">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3">OS</th>
-                  <th className="px-4 py-3">Local</th>
-                  <th className="px-4 py-3">Serviço</th>
-                  <th className="px-4 py-3">Equipe</th>
-                  <th className="px-4 py-3 text-center">Ação</th>
+                  <th>OS</th>
+                  <th>Local</th>
+                  <th>Serviço</th>
+                  <th>Equipe</th>
+                  <th className="text-right">Ação</th>
                 </tr>
               </thead>
 
               <tbody>
                 {ordensAguardandoValidacao.map((os) => (
-                  <tr key={os.id} className="border-t border-white/10">
-                    <td className="px-4 py-3 font-bold text-white">
-                      {os.codigo_cronograma || os.codigo_os || "-"}
-                    </td>
+                  <tr key={os.id}>
+                    <td className="fdl-ui-table-primary">{codigoOs(os)}</td>
 
-                    <td className="px-4 py-3 text-white/75">
-                      {os.local || "-"}
-                    </td>
+                    <td className="text-white/74">{os.local || "-"}</td>
 
-                    <td className="px-4 py-3 text-white/75">
-                      {os.servico || "-"}
-                    </td>
+                    <td className="text-white/74">{os.servico || "-"}</td>
 
-                    <td className="px-4 py-3 text-white/75">
-                      {os.equipe || "-"}
-                    </td>
+                    <td className="text-white/74">{os.equipe || "-"}</td>
 
-                    <td className="px-4 py-3 text-center">
+                    <td className="text-right">
                       <a
                         href={`/projetos/${projetoId}/os/${os.id}/validacao`}
-                        className="fdl-btn fdl-btn-sm fdl-btn-primary"
+                        className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-primary"
                       >
                         Validar OS
                       </a>
@@ -114,7 +106,7 @@ export default function FilaValidacaoProjetoClient({
           </div>
         </div>
       ) : (
-        <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-sm text-white/55">
+        <div className="fdl-ui-empty">
           Nenhuma OS aguardando validação neste projeto.
         </div>
       )}

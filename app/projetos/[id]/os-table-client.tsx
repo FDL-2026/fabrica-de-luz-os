@@ -11,6 +11,7 @@ type OrdemServico = {
   servico: string | null;
   equipe: string | null;
   status: string | null;
+  status_validacao?: string | null;
 };
 
 type OsTableClientProps = {
@@ -32,7 +33,7 @@ function formatStatus(status: string | null) {
     em_andamento: "Em andamento",
     aguardando_validacao: "Aguardando validação",
     concluida: "Concluída",
-    concluido: "Concluído",
+    concluido: "Concluída",
   };
 
   if (!status) return "Sem status";
@@ -42,30 +43,26 @@ function formatStatus(status: string | null) {
 
 function statusClass(status: string | null) {
   switch (status) {
-    case "concluida":
-    case "concluido":
-      return "bg-green-100 text-green-700";
+    case "pendente":
+      return "fdl-ui-status-pendente";
 
     case "em_andamento":
-      return "bg-blue-100 text-blue-700";
+      return "fdl-ui-status-andamento";
 
     case "aguardando_validacao":
-    case "pendente":
-      return "bg-yellow-100 text-yellow-700";
+      return "fdl-ui-status-validacao";
+
+    case "concluida":
+    case "concluido":
+      return "fdl-ui-status-concluida";
 
     default:
-      return "bg-[var(--fdl-cream)] text-[var(--fdl-purple-dark)]";
+      return "fdl-ui-status-neutro";
   }
 }
 
-function statusBateFiltro(statusOs: string | null, statusFiltro: string) {
-  if (!statusFiltro) return true;
-
-  if (statusFiltro === "concluida") {
-    return statusOs === "concluida" || statusOs === "concluido";
-  }
-
-  return statusOs === statusFiltro;
+function codigoOs(os: OrdemServico) {
+  return os.codigo_cronograma || os.codigo_os || "Sem código";
 }
 
 export default function OsTableClient({
@@ -76,6 +73,14 @@ export default function OsTableClient({
 
   const [statusFiltro, setStatusFiltro] = useState("");
   const [podeValidarProjeto, setPodeValidarProjeto] = useState(false);
+
+  const ordensFiltradas = useMemo(() => {
+    if (!statusFiltro) return ordensServico;
+
+    return ordensServico.filter((os) => os.status === statusFiltro);
+  }, [ordensServico, statusFiltro]);
+
+  const filtrosAtivos = Boolean(statusFiltro);
 
   useEffect(() => {
     async function carregarPermissaoValidacao() {
@@ -89,136 +94,123 @@ export default function OsTableClient({
     carregarPermissaoValidacao();
   }, [projetoId, supabase]);
 
-  const ordensFiltradas = useMemo(() => {
-    return ordensServico.filter((os) =>
-      statusBateFiltro(os.status, statusFiltro)
-    );
-  }, [ordensServico, statusFiltro]);
-
-  const filtrosAtivos = Boolean(statusFiltro);
-
   function limparFiltros() {
     setStatusFiltro("");
   }
 
   return (
-    <section className="fdl-form-card p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+    <section className="fdl-ui-page-block">
+      <div className="fdl-ui-section-head">
         <div>
-          <h2 className="fdl-section-title">Ordens de serviço</h2>
-          <p className="fdl-section-subtitle">
+          <h2 className="fdl-ui-section-title">Ordens de serviço</h2>
+          <p className="fdl-ui-section-desc">
             Filtre as OSs pelo status atual da execução.
           </p>
         </div>
 
-        <span className="w-fit rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white/80">
+        <span className="fdl-ui-subtle-count">
           {ordensFiltradas.length} de {ordensServico.length} OS(s)
         </span>
       </div>
 
-      <div className="mt-5 grid gap-4 rounded-3xl border border-white/10 bg-white/[0.04] p-4 md:grid-cols-[1fr_auto]">
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-white">
-            Status
-          </label>
+      <div className="fdl-ui-project-toolbar">
+        <div className="fdl-ui-project-toolbar-grid">
+          <div>
+            <label className="fdl-ui-label">Status</label>
 
-          <select
-            value={statusFiltro}
-            onChange={(event) => setStatusFiltro(event.target.value)}
-            className="fdl-field"
-          >
-            {statusOptions.map((status) => (
-              <option key={status.value} className="text-black" value={status.value}>
-                {status.label}
-              </option>
-            ))}
-          </select>
-        </div>
+            <select
+              value={statusFiltro}
+              onChange={(event) => setStatusFiltro(event.target.value)}
+              className="fdl-ui-select"
+            >
+              {statusOptions.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="flex items-end">
-          <button
-            type="button"
-            disabled={!filtrosAtivos}
-            onClick={limparFiltros}
-            className="h-12 w-full rounded-2xl border border-white/15 px-5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 md:w-auto"
-          >
-            Limpar
-          </button>
+          <div className="flex items-end justify-end">
+            <button
+              type="button"
+              disabled={!filtrosAtivos}
+              onClick={limparFiltros}
+              className="fdl-ui-btn fdl-ui-btn-ghost w-full md:w-auto"
+            >
+              Limpar
+            </button>
+          </div>
         </div>
       </div>
 
       {ordensFiltradas.length > 0 ? (
-        <div className="mt-5 fdl-table-wrap">
-          <div className="overflow-x-auto">
-            <table className="min-w-[980px] w-full text-left text-sm fdl-data-table">
-              <thead className="bg-white/10 text-white/70">
+        <div className="fdl-ui-table-wrap">
+          <div className="fdl-ui-table-scroll">
+            <table className="min-w-[980px] fdl-ui-table">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3">OS</th>
-                  <th className="px-4 py-3">Local</th>
-                  <th className="px-4 py-3">Serviço</th>
-                  <th className="px-4 py-3">Equipe</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-center">Ações</th>
+                  <th>OS</th>
+                  <th>Local</th>
+                  <th>Serviço</th>
+                  <th>Equipe</th>
+                  <th>Status</th>
+                  <th className="text-right">Ações</th>
                 </tr>
               </thead>
 
               <tbody>
-                {ordensFiltradas.map((os) => (
-                  <tr key={os.id} className="border-t border-white/10">
-                    <td className="px-4 py-3 font-bold text-white">
-                      {os.codigo_cronograma || os.codigo_os || "-"}
-                    </td>
+                {ordensFiltradas.map((os) => {
+                  const podeValidarOs =
+                    podeValidarProjeto && os.status === "aguardando_validacao";
 
-                    <td className="px-4 py-3 text-white/75">
-                      {os.local || "-"}
-                    </td>
+                  return (
+                    <tr key={os.id}>
+                      <td className="fdl-ui-table-primary">{codigoOs(os)}</td>
 
-                    <td className="px-4 py-3 text-white/75">
-                      {os.servico || "-"}
-                    </td>
+                      <td className="text-white/74">{os.local || "-"}</td>
 
-                    <td className="px-4 py-3 text-white/75">
-                      {os.equipe || "-"}
-                    </td>
+                      <td className="text-white/74">{os.servico || "-"}</td>
 
-                    <td className="px-4 py-3">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClass(
-                          os.status
-                        )}`}
-                      >
-                        {formatStatus(os.status)}
-                      </span>
-                    </td>
+                      <td className="text-white/74">{os.equipe || "-"}</td>
 
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap justify-center gap-2">
-                        <a
-                          href={`/projetos/${projetoId}/os/${os.id}`}
-                          className="inline-flex h-8 w-[86px] items-center justify-center whitespace-nowrap rounded-full bg-[var(--fdl-lilac)] px-3 text-xs font-semibold leading-none text-[var(--fdl-purple-dark)] transition hover:bg-white"
+                      <td>
+                        <span
+                          className={`fdl-ui-badge ${statusClass(os.status)}`}
                         >
-                          Detalhes
-                        </a>
+                          {formatStatus(os.status)}
+                        </span>
+                      </td>
 
-                        {podeValidarProjeto && os.status === "aguardando_validacao" ? (
+                      <td>
+                        <div className="fdl-ui-table-actions">
                           <a
-                            href={`/projetos/${projetoId}/os/${os.id}/validacao`}
-                            className="inline-flex h-8 w-[78px] items-center justify-center whitespace-nowrap rounded-full bg-[var(--fdl-cream)] px-3 text-xs font-semibold leading-none text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                            href={`/projetos/${projetoId}/os/${os.id}`}
+                            className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary"
                           >
-                            Validar
+                            Detalhes
                           </a>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+
+                          {podeValidarOs ? (
+                            <a
+                              href={`/projetos/${projetoId}/os/${os.id}/validacao`}
+                              className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-primary"
+                            >
+                              Validar
+                            </a>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       ) : (
-        <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center text-sm text-white/50">
-          Nenhuma OS encontrada para o status selecionado.
+        <div className="fdl-ui-empty">
+          Nenhuma OS encontrada para o filtro selecionado.
         </div>
       )}
     </section>
