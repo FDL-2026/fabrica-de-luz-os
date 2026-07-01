@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/require-user";
 
 export const dynamic = "force-dynamic";
@@ -12,130 +12,168 @@ type PageProps = {
   }>;
 };
 
-function formatDate(date: string | null) {
-  if (!date) return "Não informado";
+type Projeto = {
+  id: string;
+  cliente: string | null;
+  shopping: string | null;
+  uf: string | null;
+  temporada: string | null;
+  status: string | null;
+};
 
-  return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
-}
+type OrdemServico = {
+  id: string;
+  codigo_os: string | null;
+  codigo_cronograma: string | null;
+  servico: string | null;
+  local: string | null;
+  equipe: string | null;
+  status: string | null;
+  progresso: number | null;
+  inicio_previsto: string | null;
+  termino_previsto: string | null;
+};
 
-function formatTime(time: string | null) {
-  if (!time) return "--h";
+function formatDateTime(value: string | null) {
+  if (!value) return "Não informado";
 
-  const [hour, minute] = time.split(":");
+  const date = new Date(value);
 
-  if (minute === "00") {
-    return `${hour}h`;
+  if (Number.isNaN(date.getTime())) {
+    return "Não informado";
   }
 
-  return `${hour}h${minute}`;
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function formatDate(value: string | null) {
+  if (!value) return "Não informado";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Não informado";
+  }
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
 }
 
 function formatStatus(status: string | null) {
-  if (!status) return "Sem status";
+  const normalized = String(status ?? "").toLowerCase();
 
   const labels: Record<string, string> = {
     planejamento: "Planejamento",
-    em_montagem: "Em montagem",
-    pausado: "Pausado",
-    concluido: "Concluído",
-    cancelado: "Cancelado",
-    prevista: "Prevista",
-    em_andamento: "Em andamento",
-    concluida: "Concluída",
-    atrasada: "Atrasada",
     pendente: "Pendente",
-    bloqueada: "Bloqueada",
+    em_andamento: "Em andamento",
+    aguardando_validacao: "Aguardando validação",
+    ajuste_solicitado: "Ajuste solicitado",
+    concluida: "Concluída",
+    concluido: "Concluída",
+    aprovada: "Aprovada",
+    cancelada: "Cancelada",
   };
 
-  return labels[status] ?? status.replace("_", " ");
+  return labels[normalized] ?? status ?? "Não informado";
 }
 
 function statusClass(status: string | null) {
-  switch (status) {
-    case "em_montagem":
-    case "em_andamento":
-      return "bg-green-100 text-green-700";
+  const normalized = String(status ?? "").toLowerCase();
 
-    case "planejamento":
-    case "prevista":
-      return "bg-blue-100 text-blue-700";
-
-    case "pausado":
-    case "pendente":
-      return "bg-yellow-100 text-yellow-700";
-
-    case "concluido":
-    case "concluida":
-      return "bg-[var(--fdl-cream)] text-[var(--fdl-purple-dark)]";
-
-    case "cancelado":
-    case "atrasada":
-    case "bloqueada":
-      return "bg-red-100 text-red-700";
-
-    default:
-      return "bg-white/20 text-white";
+  if (normalized.includes("validacao")) {
+    return "bg-amber-100 text-amber-800";
   }
+
+  if (normalized.includes("andamento")) {
+    return "bg-blue-100 text-blue-700";
+  }
+
+  if (normalized.includes("conclu") || normalized.includes("aprov")) {
+    return "bg-green-100 text-green-700";
+  }
+
+  if (normalized.includes("ajuste")) {
+    return "bg-red-100 text-red-700";
+  }
+
+  if (normalized.includes("planejamento")) {
+    return "bg-blue-100 text-blue-700";
+  }
+
+  return "bg-[var(--fdl-lilac)] text-[var(--fdl-purple-dark)]";
+}
+
+function compararOS(a: OrdemServico, b: OrdemServico) {
+  const dataA = a.inicio_previsto ? new Date(a.inicio_previsto).getTime() : Number.MAX_SAFE_INTEGER;
+  const dataB = b.inicio_previsto ? new Date(b.inicio_previsto).getTime() : Number.MAX_SAFE_INTEGER;
+
+  if (dataA !== dataB) return dataA - dataB;
+
+  return String(a.codigo_cronograma ?? a.codigo_os ?? "").localeCompare(
+    String(b.codigo_cronograma ?? b.codigo_os ?? ""),
+    "pt-BR",
+    { numeric: true }
+  );
 }
 
 export default async function CronogramaProjetoPage({ params }: PageProps) {
   const { id } = await params;
+  const { usuario } = await requireUser();
+  const supabase = await createClient();
 
-  const { supabase, usuario } = await requireUser(
-    `/projetos/${id}/cronograma`
-  );
-
-  const { data: projeto } = await supabase
+  const { data: projeto, error: projetoError } = await supabase
     .from("projetos")
-    .select(
-      "id, cliente, shopping, cidade, uf, temporada, status, data_inicio, data_fim"
-    )
+    .select("id, cliente, shopping, uf, temporada, status")
     .eq("id", id)
-    .single();
+    .maybeSingle<Projeto>();
 
-  if (!projeto) {
+  if (projetoError || !projeto) {
     notFound();
   }
 
-  const { data: noites } = await supabase
-    .from("noites_montagem")
-    .select("id, numero_noite, data, horario_inicio, horario_fim, status")
-    .eq("projeto_id", id)
-    .order("numero_noite", { ascending: true });
-
-  const { data: ordensServico } = await supabase
+  const { data: ordens, error: ordensError } = await supabase
     .from("ordens_servico")
-    .select("id, codigo_os, local, servico, equipe, status, prioridade")
+    .select(
+      "id, codigo_os, codigo_cronograma, servico, local, equipe, status, progresso, inicio_previsto, termino_previsto"
+    )
     .eq("projeto_id", id)
-    .order("codigo_os", { ascending: true });
+    .order("inicio_previsto", { ascending: true, nullsFirst: false })
+    .order("codigo_cronograma", { ascending: true });
 
-  const totalNoites = noites?.length ?? 0;
-  const totalOS = ordensServico?.length ?? 0;
+  if (ordensError) {
+    throw new Error(ordensError.message);
+  }
 
-  const noitesConcluidas =
-    noites?.filter((noite) => noite.status === "concluida").length ?? 0;
+  const oss = [...((ordens ?? []) as OrdemServico[])].sort(compararOS);
 
-  const osConcluidas =
-    ordensServico?.filter((os) => os.status === "concluida").length ?? 0;
+  const totalOS = oss.length;
+  const comData = oss.filter((os) => os.inicio_previsto || os.termino_previsto).length;
+  const semData = totalOS - comData;
 
-  const progressoNoites =
-    totalNoites > 0 ? Math.round((noitesConcluidas / totalNoites) * 100) : 0;
-
-  const progressoOS =
-    totalOS > 0 ? Math.round((osConcluidas / totalOS) * 100) : 0;
+  const primeiraData = oss.find((os) => os.inicio_previsto)?.inicio_previsto ?? null;
+  const ultimaData =
+    [...oss].reverse().find((os) => os.termino_previsto)?.termino_previsto ??
+    [...oss].reverse().find((os) => os.inicio_previsto)?.inicio_previsto ??
+    null;
 
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
       <div className="grid min-h-screen lg:grid-cols-[264px_1fr]">
-        <aside className="border-r border-white/10 bg-[var(--fdl-purple)] p-6">
+        <aside className="hidden border-r border-white/10 bg-[var(--fdl-purple)] p-6 lg:block">
           <div className="mb-10 flex items-center justify-center rounded-3xl bg-white/5 p-4">
-            <Image
+            <img
               src="/brand/H_TAGLINE_SF_ROXO.png"
               alt="Fábrica de Luz"
-              width={500}
-              height={300}
-              priority
-              className="h-auto max-h-28 w-full object-contain"
+              className="h-auto w-full max-w-[180px]"
             />
           </div>
 
@@ -184,169 +222,168 @@ export default async function CronogramaProjetoPage({ params }: PageProps) {
           </a>
         </aside>
 
-        <section className="p-8">
+        <section className="p-6 sm:p-8">
           <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <a
+              <Link
                 href={`/projetos/${projeto.id}`}
-                className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
+                className="fdl-project-back-link"
               >
                 ← Voltar para o projeto
-              </a>
+              </Link>
 
               <p className="mt-6 text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
-                Cronograma de montagem
+                Cronograma
               </p>
 
               <h1 className="mt-2 text-3xl font-bold">
-                {projeto.cliente || projeto.shopping}
+                {projeto.cliente || projeto.shopping || "Projeto"}
               </h1>
 
               <p className="mt-2 text-sm text-white/60">
-                 {projeto.uf} · Temporada {projeto.temporada}
+                {projeto.uf || "UF não informada"} · Temporada{" "}
+                {projeto.temporada || "Não informada"}
               </p>
             </div>
 
-            <a
-              href={`/projetos/${projeto.id}`}
-              className="rounded-full bg-[var(--fdl-cream)] px-5 py-2 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
-            >
-              Ver resumo do projeto
-            </a>
+            <div className="flex flex-wrap items-center gap-3">
+              <span
+                className={`rounded-full px-4 py-2 text-sm font-semibold ${statusClass(
+                  projeto.status
+                )}`}
+              >
+                {formatStatus(projeto.status)}
+              </span>
+
+              <Link
+                href={`/projetos/${projeto.id}`}
+                className="fdl-ui-btn fdl-ui-btn-primary"
+              >
+                Abrir projeto
+              </Link>
+            </div>
           </header>
 
           <div className="grid gap-4 md:grid-cols-4">
-            <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
-              <p className="text-sm text-[#7d6488]">Noites</p>
-              <strong className="mt-3 block text-4xl">{totalNoites}</strong>
-              <span className="mt-2 block text-sm text-[#7d6488]">
-                total previsto
+            <div className="fdl-project-kpi-card">
+              <p className="fdl-project-kpi-label">Total de OSs</p>
+              <strong className="fdl-project-kpi-value">{totalOS}</strong>
+              <span className="fdl-project-kpi-help">cadastradas no projeto</span>
+            </div>
+
+            <div className="fdl-project-kpi-card">
+              <p className="fdl-project-kpi-label">Com data</p>
+              <strong className="fdl-project-kpi-value">{comData}</strong>
+              <span className="fdl-project-kpi-help">com planejamento definido</span>
+            </div>
+
+            <div className="fdl-project-kpi-card">
+              <p className="fdl-project-kpi-label">Sem data</p>
+              <strong className="fdl-project-kpi-value">{semData}</strong>
+              <span className="fdl-project-kpi-help fdl-project-kpi-warning">
+                precisam de revisão
               </span>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
-              <p className="text-sm text-[#7d6488]">Noites concluídas</p>
-              <strong className="mt-3 block text-4xl">
-                {noitesConcluidas}
+            <div className="fdl-project-kpi-card">
+              <p className="fdl-project-kpi-label">Período</p>
+              <strong className="fdl-project-kpi-value text-[1.25rem]">
+                {formatDate(primeiraData)}
               </strong>
-              <span className="mt-2 block text-sm text-green-600">
-                {progressoNoites}% do cronograma
+              <span className="fdl-project-kpi-help">
+                até {formatDate(ultimaData)}
               </span>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
-              <p className="text-sm text-[#7d6488]">OSs</p>
-              <strong className="mt-3 block text-4xl">{totalOS}</strong>
-              <span className="mt-2 block text-sm text-[#7d6488]">
-                vinculadas ao projeto
-              </span>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
-              <p className="text-sm text-[#7d6488]">Execução de OSs</p>
-              <strong className="mt-3 block text-4xl">{progressoOS}%</strong>
-              <div className="mt-3 h-2 rounded-full bg-[#eee7f4]">
-                <div
-                  className="h-2 rounded-full bg-[var(--fdl-purple)]"
-                  style={{ width: `${progressoOS}%` }}
-                />
-              </div>
             </div>
           </div>
 
-          <section className="mt-8 grid gap-6 xl:grid-cols-[1fr_1fr]">
-            <div className="fdl-form-card p-6">
-              <div className="mb-5">
-                <h2 className="text-xl font-semibold">Noites de montagem</h2>
-                <p className="mt-1 text-sm text-white/50">
-                  Sequência operacional prevista para execução.
+          <section className="fdl-ui-page-block mt-8 p-6">
+            <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="fdl-section-title">OSs planejadas</h2>
+                <p className="fdl-section-subtitle">
+                  Visão executiva das ordens de serviço cadastradas e suas datas planejadas.
                 </p>
               </div>
 
-              <div className="space-y-3">
-                {noites && noites.length > 0 ? (
-                  noites.map((noite) => (
-                    <article
-                      key={noite.id}
-                      className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="text-lg font-semibold">
-                            Noite {String(noite.numero_noite).padStart(2, "0")}
-                          </p>
-
-                          <p className="mt-1 text-sm text-white/50">
-                            {formatDate(noite.data)} ·{" "}
-                            {formatTime(noite.horario_inicio)} às{" "}
-                            {formatTime(noite.horario_fim)}
-                          </p>
-                        </div>
-
-                        <span
-                          className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${statusClass(
-                            noite.status
-                          )}`}
-                        >
-                          {formatStatus(noite.status)}
-                        </span>
-                      </div>
-                    </article>
-                  ))
-                ) : (
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center text-sm text-white/50">
-                    Nenhuma noite cadastrada ainda.
-                  </div>
-                )}
-              </div>
+              <span className="fdl-ui-badge bg-white/10 text-white">
+                {totalOS} OS(s)
+              </span>
             </div>
 
-            <div className="fdl-form-card p-6">
-              <div className="mb-5">
-                <h2 className="text-xl font-semibold">Ordens de serviço</h2>
-                <p className="mt-1 text-sm text-white/50">
-                  Lista operacional das OSs previstas no projeto.
-                </p>
+            {oss.length > 0 ? (
+              <div className="fdl-ui-table-wrap">
+                <div className="fdl-ui-table-scroll">
+                  <table className="fdl-ui-table min-w-[1040px]">
+                    <thead>
+                      <tr>
+                        <th>OS</th>
+                        <th>Serviço</th>
+                        <th>Local</th>
+                        <th>Equipe</th>
+                        <th>Início planejado</th>
+                        <th>Término planejado</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {oss.map((os) => (
+                        <tr key={os.id}>
+                          <td>
+                            <p className="fdl-ui-table-primary">
+                              {os.codigo_os || os.codigo_cronograma || "OS sem código"}
+                            </p>
+                            {os.codigo_cronograma ? (
+                              <p className="fdl-ui-table-secondary">
+                                Cronograma {os.codigo_cronograma}
+                              </p>
+                            ) : null}
+                          </td>
+
+                          <td>{os.servico || "Não informado"}</td>
+                          <td>{os.local || "Não informado"}</td>
+                          <td>{os.equipe || "Não informado"}</td>
+
+                          <td>
+                            <span className={os.inicio_previsto ? "" : "text-amber-200"}>
+                              {formatDateTime(os.inicio_previsto)}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span className={os.termino_previsto ? "" : "text-amber-200"}>
+                              {formatDateTime(os.termino_previsto)}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span className={`fdl-ui-badge ${statusClass(os.status)}`}>
+                              {formatStatus(os.status)}
+                            </span>
+                          </td>
+
+                          <td>
+                            <div className="fdl-ui-table-actions">
+                              <Link
+                                href={`/projetos/${projeto.id}/os/${os.id}`}
+                                className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-primary"
+                              >
+                                Abrir
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-
-              <div className="space-y-3">
-                {ordensServico && ordensServico.length > 0 ? (
-                  ordensServico.map((os) => (
-                    <article
-                      key={os.id}
-                      className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <p className="font-semibold">{os.codigo_os}</p>
-
-                          <p className="mt-1 text-sm text-white/70">
-                            {os.servico}
-                          </p>
-
-                          <p className="mt-2 text-xs text-white/45">
-                            Local: {os.local || "Não informado"} · Equipe:{" "}
-                            {os.equipe || "Não definida"}
-                          </p>
-                        </div>
-
-                        <span
-                          className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${statusClass(
-                            os.status
-                          )}`}
-                        >
-                          {formatStatus(os.status)}
-                        </span>
-                      </div>
-                    </article>
-                  ))
-                ) : (
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center text-sm text-white/50">
-                    Nenhuma OS cadastrada ainda.
-                  </div>
-                )}
+            ) : (
+              <div className="fdl-empty-state">
+                Nenhuma OS cadastrada para este projeto.
               </div>
-            </div>
+            )}
           </section>
         </section>
       </div>
