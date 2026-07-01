@@ -119,7 +119,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
   const [ordens, setOrdens] = useState<OsMontador[]>([]);
   const [montadorNome, setMontadorNome] = useState("");
   const [osAbertaId, setOsAbertaId] = useState<string | null>(null);
-  const [filtroOs, setFiltroOs] = useState<FiltroOs>("todas");
+  const [filtroOs, setFiltroOs] = useState<FiltroOs | null>(null);
 
   const projeto = ordens[0] ?? null;
 
@@ -144,6 +144,10 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
   }, [ordens]);
 
   const ordensFiltradas = useMemo(() => {
+    if (!filtroOs) {
+      return [];
+    }
+
     switch (filtroOs) {
       case "pendentes":
         return ordens.filter((os) => os.os_status === "pendente");
@@ -162,12 +166,14 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
     }
   }, [ordens, filtroOs]);
 
-  const filtroLabel = {
-    todas: "Todas as OSs",
-    pendentes: "OSs pendentes",
-    andamento: "OSs em andamento",
-    concluidas: "OSs concluídas",
-  }[filtroOs];
+  const filtroLabel = filtroOs
+    ? {
+        todas: "Todas as OSs",
+        pendentes: "OSs pendentes",
+        andamento: "OSs em andamento",
+        concluidas: "OSs concluídas",
+      }[filtroOs]
+    : "Selecione um filtro";
 
   function alterarFiltro(novoFiltro: FiltroOs) {
     setFiltroOs(novoFiltro);
@@ -231,6 +237,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
 
       setOrdens((data ?? []) as OsMontador[]);
       setOsAbertaId(null);
+      setFiltroOs(null);
       setCarregando(false);
     }
 
@@ -376,7 +383,9 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
         <div className="mb-5">
           <h2 className="fdl-section-title">Ordens de serviço</h2>
           <p className="fdl-section-subtitle">
-            {filtroLabel}: toque em uma OS para ver os detalhes e abrir a execução.
+            {filtroOs
+              ? `${filtroLabel}: toque em uma OS para ver os detalhes e abrir a execução.`
+              : "Selecione um dos cards acima para visualizar as OSs."}
           </p>
         </div>
 
@@ -496,10 +505,23 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           </div>
         ) : (
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-center">
-            <p className="font-semibold text-white">Nenhuma OS neste filtro.</p>
-            <p className="mt-1 text-sm text-white/50">
-              Toque em outro card de resumo para visualizar outras OSs.
-            </p>
+            {filtroOs ? (
+              <>
+                <p className="font-semibold text-white">Nenhuma OS neste filtro.</p>
+                <p className="mt-1 text-sm text-white/50">
+                  Toque em outro card de resumo para visualizar outras OSs.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-semibold text-white">
+                  Selecione um filtro para visualizar as OSs.
+                </p>
+                <p className="mt-1 text-sm text-white/50">
+                  Use os cards de resumo acima para abrir todas, pendentes, em andamento ou concluídas.
+                </p>
+              </>
+            )}
           </div>
         )}
       </section>
