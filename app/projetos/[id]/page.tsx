@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/require-user";
 import OsTableClient from "./os-table-client";
 import FilaValidacaoProjetoClient from "./fila-validacao-projeto-client";
+import ProgressoPonderadoProjeto from "@/components/progresso/progresso-ponderado-projeto";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

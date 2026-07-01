@@ -199,9 +199,9 @@ export default function ProgressoPonderadoProjeto({
         />
 
         <ProgressBar
-          label="Simples"
+          label="Modelo anterior"
           value={resultado.progresso_simples}
-          description="Referência antiga: OSs concluídas divididas pelo total de OSs."
+          description="Cálculo antigo: OSs concluídas divididas pelo total de OSs."
           variant="simples"
         />
       </div>
