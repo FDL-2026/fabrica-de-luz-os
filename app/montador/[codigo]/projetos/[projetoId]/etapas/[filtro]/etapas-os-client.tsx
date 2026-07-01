@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 
 type FiltroOs = "todas" | "pendentes" | "andamento" | "validacao" | "concluidas";
 
-type OsMaesClientProps = {
+type EtapasOsClientProps = {
   codigo: string;
   projetoId: string;
   filtro: string;
@@ -33,7 +33,7 @@ type OsMontador = {
   progresso: number | null;
 };
 
-type GrupoOsMae = {
+type GrupoEtapa = {
   chave: string;
   codigo: string;
   titulo: string;
@@ -241,7 +241,7 @@ function passaNoFiltro(os: OsMontador, filtro: FiltroOs) {
   return true;
 }
 
-function agruparOsMaes(ordens: OsMontador[]) {
+function agruparPorEtapa(ordens: OsMontador[]) {
   const mapa = new Map<string, OsMontador[]>();
 
   for (const os of ordens) {
@@ -251,7 +251,7 @@ function agruparOsMaes(ordens: OsMontador[]) {
     mapa.set(chave, grupoAtual);
   }
 
-  const grupos: GrupoOsMae[] = Array.from(mapa.entries()).map(
+  const grupos: GrupoEtapa[] = Array.from(mapa.entries()).map(
     ([chave, oss]) => {
       const primeira = oss[0];
       const codigo = String(chave);
@@ -296,11 +296,11 @@ function lerMontadorSession() {
   }
 }
 
-export default function OsMaesClient({
+export default function EtapasOsClient({
   codigo,
   projetoId,
   filtro,
-}: OsMaesClientProps) {
+}: EtapasOsClientProps) {
   const supabase = useMemo(() => createClient(), []);
   const filtroAtual = filtroNormalizado(filtro);
 
@@ -318,7 +318,7 @@ export default function OsMaesClient({
   );
 
   const grupos = useMemo(
-    () => agruparOsMaes(ordensFiltradas),
+    () => agruparPorEtapa(ordensFiltradas),
     [ordensFiltradas]
   );
 
@@ -435,16 +435,16 @@ export default function OsMaesClient({
           </span>
 
           <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
-            {grupos.length} OS mãe(s) · {ordensFiltradas.length} subOS(s)
+            {grupos.length} etapa(s) · {ordensFiltradas.length} OS(s)
           </span>
         </div>
       </header>
 
       <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
         <div className="mb-5">
-          <h2 className="fdl-section-title">OSs mães</h2>
+          <h2 className="fdl-section-title">Etapas do cronograma</h2>
           <p className="fdl-section-subtitle">
-            Toque em uma OS mãe para visualizar as subOSs relacionadas.
+            Toque em uma etapa para visualizar as OSs relacionadas.
           </p>
         </div>
 
@@ -471,7 +471,7 @@ export default function OsMaesClient({
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
-                          OS mãe {grupo.codigo}
+                          Etapa {grupo.codigo}
                         </p>
 
                         <h3 className="mt-2 text-lg font-bold leading-snug text-white">
@@ -479,7 +479,7 @@ export default function OsMaesClient({
                         </h3>
 
                         <p className="mt-1 text-sm text-white/55">
-                          {grupo.oss.length} subOS(s) · Início{" "}
+                          {grupo.oss.length} OS(s) · Início{" "}
                           {formatDate(grupo.inicio)} · Fim{" "}
                           {formatDate(grupo.termino)}
                         </p>
@@ -495,7 +495,7 @@ export default function OsMaesClient({
                         </span>
 
                         <span className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 px-4 text-xs font-bold text-white/75">
-                          {aberto ? "Ocultar" : "Ver subOSs"}
+                          {aberto ? "Ocultar" : "Ver OSs"}
                         </span>
                       </div>
                     </div>

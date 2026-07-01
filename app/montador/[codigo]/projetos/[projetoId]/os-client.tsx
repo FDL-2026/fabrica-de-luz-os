@@ -290,7 +290,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
 
       <section className="grid gap-4 md:grid-cols-5">
         <a
-          href={`/montador/${codigo}/projetos/${projetoId}/os-maes/todas`}
+          href={`/montador/${codigo}/projetos/${projetoId}/etapas/todas`}
           className={cardResumoClass("default")}
         >
           <p className="text-sm font-semibold text-white/60">Total de OSs</p>
@@ -303,7 +303,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
         </a>
 
         <a
-          href={`/montador/${codigo}/projetos/${projetoId}/os-maes/pendentes`}
+          href={`/montador/${codigo}/projetos/${projetoId}/etapas/pendentes`}
           className={cardResumoClass("warning")}
         >
           <p className="text-sm font-semibold text-white/60">Pendentes</p>
@@ -316,7 +316,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
         </a>
 
         <a
-          href={`/montador/${codigo}/projetos/${projetoId}/os-maes/andamento`}
+          href={`/montador/${codigo}/projetos/${projetoId}/etapas/andamento`}
           className={cardResumoClass("success")}
         >
           <p className="text-sm font-semibold text-white/60">Em andamento</p>
@@ -329,7 +329,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
         </a>
 
         <a
-          href={`/montador/${codigo}/projetos/${projetoId}/os-maes/validacao`}
+          href={`/montador/${codigo}/projetos/${projetoId}/etapas/validacao`}
           className={cardResumoClass("validation")}
         >
           <p className="text-sm font-semibold text-amber-50/75">
@@ -344,7 +344,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
         </a>
 
         <a
-          href={`/montador/${codigo}/projetos/${projetoId}/os-maes/concluidas`}
+          href={`/montador/${codigo}/projetos/${projetoId}/etapas/concluidas`}
           className={cardResumoClass("default")}
         >
           <p className="text-sm font-semibold text-white/60">Concluídas</p>
@@ -362,7 +362,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           Selecione um card acima para visualizar as OSs.
         </p>
         <p className="mt-1 text-sm text-white/50">
-          As OSs serão exibidas agrupadas por OS mãe, reduzindo a rolagem na tela do montador.
+          As OSs serão exibidas por etapa do cronograma, reduzindo a rolagem na tela do montador.
         </p>
       </section>
     </div>

@@ -1,5 +1,5 @@
 import MontadorShell from "@/components/montador/montador-shell";
-import OsMaesClient from "./os-maes-client";
+import EtapasOsClient from "./etapas-os-client";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -17,7 +17,7 @@ export default async function OsMaesPage({ params }: PageProps) {
 
   return (
     <MontadorShell maxWidth="xl" showFooter={false}>
-      <OsMaesClient codigo={codigo} projetoId={projetoId} filtro={filtro} />
+      <EtapasOsClient codigo={codigo} projetoId={projetoId} filtro={filtro} />
     </MontadorShell>
   );
 }
