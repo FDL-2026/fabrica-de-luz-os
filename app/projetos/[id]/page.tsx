@@ -271,6 +271,10 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
             </div>
           </div>
 
+          <div className="mt-6">
+            <ProgressoPonderadoProjeto projetoId={projeto.id} />
+          </div>
+
           <section className="mt-8 grid gap-6 xl:grid-cols-[1fr_1.2fr]">
             <div className="fdl-form-card p-6">
               <div className="mb-5">
