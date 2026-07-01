@@ -458,7 +458,7 @@ export default function EtapasOsClient({
                   key={grupo.chave}
                   className={`rounded-3xl border p-4 transition ${
                     aberto
-                      ? "border-[var(--fdl-cream)]/45 bg-white/[0.08]"
+                      ? "fdl-etapa-card-open border-[var(--fdl-cream)]/35 bg-white/[0.08]"
                       : "border-white/10 bg-white/[0.045] hover:bg-white/[0.065]"
                   }`}
                 >
@@ -471,11 +471,15 @@ export default function EtapasOsClient({
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
-                          Etapa {grupo.codigo}
+                          {String(grupo.codigo).includes(".") || /^\d+$/.test(String(grupo.codigo))
+                            ? `Etapa ${grupo.codigo}`
+                            : `OS ${grupo.codigo}`}
                         </p>
 
                         <h3 className="mt-2 text-lg font-bold leading-snug text-white">
-                          {grupo.titulo}
+                          {grupo.titulo.startsWith("Etapa OS-")
+                            ? grupo.oss[0]?.servico || grupo.titulo
+                            : grupo.titulo}
                         </h3>
 
                         <p className="mt-1 text-sm text-white/55">
@@ -487,14 +491,14 @@ export default function EtapasOsClient({
 
                       <div className="flex flex-wrap items-center gap-2">
                         <span
-                          className={`w-fit rounded-full px-3 py-1 text-[11px] font-bold ${statusClass(
+                          className={`fdl-etapa-status w-fit ${statusClass(
                             grupo.status
                           )}`}
                         >
                           {formatStatus(grupo.status)}
                         </span>
 
-                        <span className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 px-4 text-xs font-bold text-white/75">
+                        <span className="fdl-etapa-action-btn shrink-0">
                           {aberto ? "Ocultar" : "Ver OSs"}
                         </span>
                       </div>
@@ -531,7 +535,7 @@ export default function EtapasOsClient({
 
                             <div className="flex shrink-0 flex-col gap-2 md:items-end">
                               <span
-                                className={`w-fit rounded-full px-3 py-1 text-[11px] font-bold ${statusClass(
+                                className={`fdl-etapa-status w-fit ${statusClass(
                                   os.os_status
                                 )}`}
                               >
@@ -540,7 +544,7 @@ export default function EtapasOsClient({
 
                               <a
                                 href={`/montador/${codigo}/projetos/${projetoId}/os/${os.os_id}`}
-                                className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--fdl-cream)] px-5 text-xs font-bold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                                className="fdl-open-os-btn"
                               >
                                 Abrir OS
                               </a>
