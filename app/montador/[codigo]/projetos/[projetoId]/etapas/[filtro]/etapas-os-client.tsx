@@ -144,6 +144,34 @@ function codigoOs(os: OsMontador) {
   return os.codigo_cronograma || os.codigo_os || "sem código";
 }
 
+function labelCodigo(codigo: string | null | undefined) {
+  const value = String(codigo ?? "").trim();
+
+  if (!value) return "OS sem código";
+
+  if (value.toUpperCase().startsWith("OS")) {
+    return value;
+  }
+
+  return `OS ${value}`;
+}
+
+function labelGrupo(grupo: GrupoEtapa) {
+  const codigo = String(grupo.codigo ?? "").trim();
+
+  if (!codigo) return "Etapa sem código";
+
+  if (codigo.toUpperCase().startsWith("OS")) {
+    return codigo;
+  }
+
+  return `Etapa ${codigo}`;
+}
+
+function pluralOs(total: number) {
+  return total === 1 ? "1 OS" : `${total} OSs`;
+}
+
 function codigoMae(os: OsMontador) {
   const codigo = String(os.codigo_cronograma || os.codigo_os || "").trim();
 
@@ -255,9 +283,11 @@ function agruparPorEtapa(ordens: OsMontador[]) {
     ([chave, oss]) => {
       const primeira = oss[0];
       const codigo = String(chave);
+
       const titulo =
         primeira.etapa_nome ||
-        (codigo.includes(".") ? `OS ${codigo}` : `Etapa ${codigo}`);
+        primeira.servico ||
+        (codigo.toUpperCase().startsWith("OS") ? codigo : `Etapa ${codigo}`);
 
       return {
         chave,
@@ -465,42 +495,38 @@ export default function EtapasOsClient({
                   <button
                     type="button"
                     onClick={() => setGrupoAberto(aberto ? null : grupo.chave)}
-                    className="w-full text-left"
+                    className="fdl-etapa-toggle w-full text-left"
                     aria-expanded={aberto}
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
-                          {String(grupo.codigo).includes(".") || /^\d+$/.test(String(grupo.codigo))
-                            ? `Etapa ${grupo.codigo}`
-                            : `OS ${grupo.codigo}`}
+                          {labelGrupo(grupo)}
                         </p>
 
                         <h3 className="mt-2 text-lg font-bold leading-snug text-white">
-                          {grupo.titulo.startsWith("Etapa OS-")
-                            ? grupo.oss[0]?.servico || grupo.titulo
-                            : grupo.titulo}
+                          {grupo.titulo}
                         </h3>
 
-                        <p className="mt-1 text-sm text-white/55">
-                          {grupo.oss.length} OS(s) · Início{" "}
+                        <p className="mt-1 text-sm font-semibold text-white/55">
+                          {pluralOs(grupo.oss.length)} · Início{" "}
                           {formatDate(grupo.inicio)} · Fim{" "}
                           {formatDate(grupo.termino)}
                         </p>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span
-                          className={`fdl-etapa-status w-fit ${statusClass(
+                      <div className="flex shrink-0 flex-wrap items-center gap-2">
+                        <div
+                          className={`fdl-etapa-status ${statusClass(
                             grupo.status
                           )}`}
                         >
                           {formatStatus(grupo.status)}
-                        </span>
+                        </div>
 
-                        <span className="fdl-etapa-action-btn shrink-0">
+                        <div className="fdl-etapa-action-btn">
                           {aberto ? "Ocultar" : "Ver OSs"}
-                        </span>
+                        </div>
                       </div>
                     </div>
                   </button>
@@ -513,9 +539,9 @@ export default function EtapasOsClient({
                           className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
                         >
                           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                            <div>
+                            <div className="min-w-0">
                               <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--fdl-cream)]">
-                                OS {codigoOs(os)}
+                                {labelCodigo(codigoOs(os))}
                               </p>
 
                               <h4 className="mt-1 font-bold text-white">
@@ -534,13 +560,13 @@ export default function EtapasOsClient({
                             </div>
 
                             <div className="flex shrink-0 flex-col gap-2 md:items-end">
-                              <span
-                                className={`fdl-etapa-status w-fit ${statusClass(
+                              <div
+                                className={`fdl-etapa-status ${statusClass(
                                   os.os_status
                                 )}`}
                               >
                                 {formatStatus(os.os_status)}
-                              </span>
+                              </div>
 
                               <a
                                 href={`/montador/${codigo}/projetos/${projetoId}/os/${os.os_id}`}
