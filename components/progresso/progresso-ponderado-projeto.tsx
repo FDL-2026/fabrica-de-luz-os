@@ -50,16 +50,14 @@ function ProgressBar({
   label: string;
   value: number;
   description: string;
-  variant?: "default" | "validado" | "simples";
+  variant?: "default" | "validado";
 }) {
   const width = Math.max(0, Math.min(100, value));
 
   const barClass =
     variant === "validado"
       ? "bg-green-200"
-      : variant === "simples"
-        ? "bg-white/50"
-        : "bg-[var(--fdl-cream)]";
+      : "bg-[var(--fdl-cream)]";
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
@@ -184,7 +182,7 @@ export default function ProgressoPonderadoProjeto({
         </p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-2">
         <ProgressBar
           label="Executado"
           value={resultado.progresso_executado}
@@ -198,12 +196,6 @@ export default function ProgressoPonderadoProjeto({
           variant="validado"
         />
 
-        <ProgressBar
-          label="Modelo anterior"
-          value={resultado.progresso_simples}
-          description="Cálculo antigo: OSs concluídas divididas pelo total de OSs."
-          variant="simples"
-        />
       </div>
 
       <div className="mt-5 grid gap-3 md:grid-cols-4">
