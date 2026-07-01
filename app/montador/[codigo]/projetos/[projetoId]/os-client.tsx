@@ -22,6 +22,7 @@ type OsMontador = {
   codigo_cronograma: string | null;
   etapa_nome: string | null;
   servico: string | null;
+  local: string | null;
   equipe: string | null;
   os_status: string | null;
   inicio_previsto: string | null;
@@ -31,7 +32,22 @@ type OsMontador = {
 
 function formatDate(date: string | null) {
   if (!date) return "Não informado";
-  return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
+
+  const onlyDate = String(date).split("T")[0];
+  const parts = onlyDate.split("-");
+
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+  }
+
+  const parsed = new Date(date);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return "Não informado";
+  }
+
+  return parsed.toLocaleDateString("pt-BR");
 }
 
 function formatStatus(status: string | null) {
@@ -45,12 +61,15 @@ function formatStatus(status: string | null) {
     cancelado: "Cancelado",
     pendente: "Pendente",
     em_andamento: "Em andamento",
+    aguardando_validacao: "Aguardando validação",
+    ajuste_solicitado: "Ajuste solicitado",
     concluida: "Concluída",
+    aprovada: "Aprovada",
     bloqueada: "Bloqueada",
     atrasada: "Atrasada",
   };
 
-  return labels[status] ?? status.replace("_", " ");
+  return labels[status] ?? status.replaceAll("_", " ");
 }
 
 function statusClass(status: string | null) {
@@ -58,6 +77,9 @@ function statusClass(status: string | null) {
     case "em_montagem":
     case "em_andamento":
       return "bg-green-100 text-green-700";
+
+    case "aguardando_validacao":
+      return "bg-amber-100 text-amber-800";
 
     case "planejamento":
     case "prevista":
@@ -69,8 +91,10 @@ function statusClass(status: string | null) {
 
     case "concluido":
     case "concluida":
+    case "aprovada":
       return "bg-[var(--fdl-cream)] text-[var(--fdl-purple-dark)]";
 
+    case "ajuste_solicitado":
     case "cancelado":
     case "bloqueada":
     case "atrasada":
@@ -81,20 +105,25 @@ function statusClass(status: string | null) {
   }
 }
 
+function codigoOs(os: OsMontador) {
+  return os.codigo_cronograma || os.codigo_os || "sem código";
+}
+
 export default function OsClient({ codigo, projetoId }: OsClientProps) {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [ordens, setOrdens] = useState<OsMontador[]>([]);
   const [montadorNome, setMontadorNome] = useState("");
+  const [osAbertaId, setOsAbertaId] = useState<string | null>(null);
 
   const projeto = ordens[0] ?? null;
 
   const resumo = useMemo(() => {
     const total = ordens.length;
-    const concluidas = ordens.filter(
-      (os) => os.os_status === "concluida"
+    const concluidas = ordens.filter((os) =>
+      ["concluida", "concluido", "aprovada"].includes(os.os_status ?? "")
     ).length;
     const pendentes = ordens.filter((os) => os.os_status === "pendente").length;
     const andamento = ordens.filter(
@@ -157,6 +186,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
       }
 
       setOrdens((data ?? []) as OsMontador[]);
+      setOsAbertaId(null);
       setCarregando(false);
     }
 
@@ -174,9 +204,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
   if (erro) {
     return (
       <div className="space-y-5">
-        <div className="fdl-alert fdl-alert-error">
-          {erro}
-        </div>
+        <div className="fdl-alert fdl-alert-error">{erro}</div>
 
         <a
           href={`/montador/${codigo}`}
@@ -268,71 +296,122 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
         <div className="mb-5">
           <h2 className="fdl-section-title">Ordens de serviço</h2>
           <p className="fdl-section-subtitle">
-            OSs importadas automaticamente do cronograma.
+            Toque em uma OS para ver os detalhes e abrir a execução.
           </p>
         </div>
 
-        <div className="space-y-4">
-          {ordens.map((os) => (
-            <article
-              key={os.os_id}
-              className="fdl-form-section p-5"
-            >
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
-                    OS {os.codigo_cronograma || os.codigo_os}
-                  </p>
+        <div className="space-y-3">
+          {ordens.map((os) => {
+            const aberta = osAbertaId === os.os_id;
 
-                  <h3 className="mt-2 text-lg font-bold text-white">
-                    {os.servico || "OS sem descrição"}
-                  </h3>
-
-                  <p className="mt-2 text-sm text-white/50">
-                    {os.etapa_nome || "Etapa não informada"}
-                  </p>
-                </div>
-
-                <span
-                  className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${statusClass(
-                    os.os_status
-                  )}`}
-                >
-                  {formatStatus(os.os_status)}
-                </span>
-              </div>
-
-              <div className="mt-4 grid gap-3 text-sm md:grid-cols-3">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="text-white/40">Início previsto</p>
-                  <p className="mt-1 font-semibold text-white">
-                    {formatDate(os.inicio_previsto)}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="text-white/40">Término previsto</p>
-                  <p className="mt-1 font-semibold text-white">
-                    {formatDate(os.termino_previsto)}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="text-white/40">Equipe</p>
-                  <p className="mt-1 font-semibold text-white">
-                    {os.equipe || "Não informada"}
-                  </p>
-                </div>
-              </div>
-
-              <a
-                href={`/montador/${codigo}/projetos/${projetoId}/os/${os.os_id}`}
-                className="mt-4 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+            return (
+              <article
+                key={os.os_id}
+                className={`rounded-3xl border p-4 transition ${
+                  aberta
+                    ? "border-[var(--fdl-cream)]/45 bg-white/[0.08]"
+                    : "border-white/10 bg-white/[0.045] hover:bg-white/[0.065]"
+                }`}
               >
-                Abrir OS
-              </a>
-            </article>
-          ))}
+                <button
+                  type="button"
+                  onClick={() => setOsAbertaId(aberta ? null : os.os_id)}
+                  className="w-full text-left"
+                  aria-expanded={aberta}
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
+                          OS {codigoOs(os)}
+                        </p>
+
+                        <span
+                          className={`w-fit rounded-full px-3 py-1 text-[11px] font-bold ${statusClass(
+                            os.os_status
+                          )}`}
+                        >
+                          {formatStatus(os.os_status)}
+                        </span>
+                      </div>
+
+                      <h3 className="mt-2 text-base font-bold leading-snug text-white sm:text-lg">
+                        {os.servico || "OS sem descrição"}
+                      </h3>
+
+                      <p className="mt-1 text-sm text-white/55">
+                        {os.local || os.etapa_nome || "Local/etapa não informado"}
+                      </p>
+
+                      <p className="mt-2 text-xs font-semibold text-white/50">
+                        Início {formatDate(os.inicio_previsto)} · Fim{" "}
+                        {formatDate(os.termino_previsto)}
+                      </p>
+                    </div>
+
+                    <span className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 px-4 text-xs font-bold text-white/75">
+                      {aberta ? "Ocultar" : "Detalhes"}
+                    </span>
+                  </div>
+                </button>
+
+                {aberta ? (
+                  <div className="mt-4 border-t border-white/10 pt-4">
+                    <div className="grid gap-3 text-sm md:grid-cols-2">
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                        <p className="text-white/40">Serviço</p>
+                        <p className="mt-1 font-semibold text-white">
+                          {os.servico || "Não informado"}
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                        <p className="text-white/40">Local</p>
+                        <p className="mt-1 font-semibold text-white">
+                          {os.local || "Não informado"}
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                        <p className="text-white/40">Início previsto</p>
+                        <p className="mt-1 font-semibold text-white">
+                          {formatDate(os.inicio_previsto)}
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                        <p className="text-white/40">Término previsto</p>
+                        <p className="mt-1 font-semibold text-white">
+                          {formatDate(os.termino_previsto)}
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                        <p className="text-white/40">Equipe</p>
+                        <p className="mt-1 font-semibold text-white">
+                          {os.equipe || "Não informada"}
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                        <p className="text-white/40">Etapa</p>
+                        <p className="mt-1 font-semibold text-white">
+                          {os.etapa_nome || "Não informada"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <a
+                      href={`/montador/${codigo}/projetos/${projetoId}/os/${os.os_id}`}
+                      className="mt-4 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                    >
+                      Abrir OS
+                    </a>
+                  </div>
+                ) : null}
+              </article>
+            );
+          })}
         </div>
       </section>
     </div>
