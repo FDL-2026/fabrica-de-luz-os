@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import OsTableClient from "./os-table-client";
 import FilaValidacaoProjetoClient from "./fila-validacao-projeto-client";
 import ProgressoPonderadoProjeto from "@/components/progresso/progresso-ponderado-projeto";
+import ProgressoPonderadoKpi from "@/components/progresso/progresso-ponderado-kpi";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -260,14 +261,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
             </div>
 
             <div className="fdl-project-kpi-card">
-              <p className="fdl-project-kpi-label">Progresso</p>
-              <strong className="fdl-project-kpi-value">{progresso}%</strong>
-              <div className="fdl-project-progress">
-                <div
-                  className="fdl-project-progress-fill"
-                  style={{ width: `${progresso}%` }}
-                />
-              </div>
+              <ProgressoPonderadoKpi projetoId={projeto.id} />
             </div>
           </div>
 
