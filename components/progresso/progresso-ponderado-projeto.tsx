@@ -15,7 +15,6 @@ type ResultadoProgresso = {
   total_dias_ponderados: number;
   progresso_executado: number;
   progresso_validado: number;
-  progresso_simples: number;
   os_concluidas: number;
   os_aguardando_validacao: number;
   os_pendentes: number;
@@ -128,7 +127,6 @@ export default function ProgressoPonderadoProjeto({
         total_dias_ponderados: toNumber(item.total_dias_ponderados),
         progresso_executado: toNumber(item.progresso_executado),
         progresso_validado: toNumber(item.progresso_validado),
-        progresso_simples: toNumber(item.progresso_simples),
         os_concluidas: toNumber(item.os_concluidas),
         os_aguardando_validacao: toNumber(item.os_aguardando_validacao),
         os_pendentes: toNumber(item.os_pendentes),

@@ -130,11 +130,6 @@ function nomeProjeto(projeto: {
   return projeto.uf ? `${nome} - ${projeto.uf}` : nome;
 }
 
-function progressoProjeto(projeto: ProjetoDashboard) {
-  if (!projeto.total_os) return 0;
-  return Math.round((projeto.concluidas / projeto.total_os) * 100);
-}
-
 type ProgressoPonderadoProjetoDashboard = {
   progresso_executado: number;
   progresso_validado: number;
@@ -160,7 +155,7 @@ function progressoProjetoPonderado(
   const progresso = progressos[projeto.projeto_id];
 
   if (!progresso) {
-    return progressoProjeto(projeto);
+    return 0;
   }
 
   return progresso.progresso_executado;
