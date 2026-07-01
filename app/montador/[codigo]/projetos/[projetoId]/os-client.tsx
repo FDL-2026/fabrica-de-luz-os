@@ -8,6 +8,8 @@ type OsClientProps = {
   projetoId: string;
 };
 
+type FiltroOs = "todas" | "pendentes" | "andamento" | "concluidas";
+
 type OsMontador = {
   projeto_id: string;
   cliente: string | null;
@@ -117,6 +119,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
   const [ordens, setOrdens] = useState<OsMontador[]>([]);
   const [montadorNome, setMontadorNome] = useState("");
   const [osAbertaId, setOsAbertaId] = useState<string | null>(null);
+  const [filtroOs, setFiltroOs] = useState<FiltroOs>("todas");
 
   const projeto = ordens[0] ?? null;
 
@@ -139,6 +142,47 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
       progresso,
     };
   }, [ordens]);
+
+  const ordensFiltradas = useMemo(() => {
+    switch (filtroOs) {
+      case "pendentes":
+        return ordens.filter((os) => os.os_status === "pendente");
+
+      case "andamento":
+        return ordens.filter((os) => os.os_status === "em_andamento");
+
+      case "concluidas":
+        return ordens.filter((os) =>
+          ["concluida", "concluido", "aprovada"].includes(os.os_status ?? "")
+        );
+
+      case "todas":
+      default:
+        return ordens;
+    }
+  }, [ordens, filtroOs]);
+
+  const filtroLabel = {
+    todas: "Todas as OSs",
+    pendentes: "OSs pendentes",
+    andamento: "OSs em andamento",
+    concluidas: "OSs concluídas",
+  }[filtroOs];
+
+  function alterarFiltro(novoFiltro: FiltroOs) {
+    setFiltroOs(novoFiltro);
+    setOsAbertaId(null);
+  }
+
+  function cardResumoClass(ativo: boolean) {
+    return [
+      "rounded-3xl border p-5 text-left transition",
+      "hover:-translate-y-0.5 hover:bg-white/[0.09]",
+      ativo
+        ? "border-[var(--fdl-cream)]/55 bg-white/[0.09] shadow-[0_0_0_1px_rgba(237,224,177,0.12)]"
+        : "border-white/10 bg-white/[0.06]",
+    ].join(" ");
+  }
 
   useEffect(() => {
     async function carregarOs() {
@@ -271,37 +315,74 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
       </header>
 
       <section className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-3xl border border-white/10 bg-white p-5 text-[var(--fdl-text-dark)]">
-          <p className="text-sm text-[#7d6488]">Total de OSs</p>
-          <strong className="mt-2 block text-4xl">{resumo.total}</strong>
-        </div>
+        <button
+          type="button"
+          onClick={() => alterarFiltro("todas")}
+          className={cardResumoClass(filtroOs === "todas")}
+        >
+          <p className="text-sm font-semibold text-white/60">Total de OSs</p>
+          <strong className="mt-2 block text-4xl font-black text-white">
+            {resumo.total}
+          </strong>
+          <span className="mt-2 block text-xs font-semibold text-white/45">
+            Ver todas
+          </span>
+        </button>
 
-        <div className="rounded-3xl border border-white/10 bg-white p-5 text-[var(--fdl-text-dark)]">
-          <p className="text-sm text-[#7d6488]">Pendentes</p>
-          <strong className="mt-2 block text-4xl">{resumo.pendentes}</strong>
-        </div>
+        <button
+          type="button"
+          onClick={() => alterarFiltro("pendentes")}
+          className={cardResumoClass(filtroOs === "pendentes")}
+        >
+          <p className="text-sm font-semibold text-white/60">Pendentes</p>
+          <strong className="mt-2 block text-4xl font-black text-white">
+            {resumo.pendentes}
+          </strong>
+          <span className="mt-2 block text-xs font-semibold text-yellow-100/70">
+            Aguardando execução
+          </span>
+        </button>
 
-        <div className="rounded-3xl border border-white/10 bg-white p-5 text-[var(--fdl-text-dark)]">
-          <p className="text-sm text-[#7d6488]">Em andamento</p>
-          <strong className="mt-2 block text-4xl">{resumo.andamento}</strong>
-        </div>
+        <button
+          type="button"
+          onClick={() => alterarFiltro("andamento")}
+          className={cardResumoClass(filtroOs === "andamento")}
+        >
+          <p className="text-sm font-semibold text-white/60">Em andamento</p>
+          <strong className="mt-2 block text-4xl font-black text-white">
+            {resumo.andamento}
+          </strong>
+          <span className="mt-2 block text-xs font-semibold text-green-100/70">
+            Em execução
+          </span>
+        </button>
 
-        <div className="rounded-3xl border border-white/10 bg-white p-5 text-[var(--fdl-text-dark)]">
-          <p className="text-sm text-[#7d6488]">Concluídas</p>
-          <strong className="mt-2 block text-4xl">{resumo.concluidas}</strong>
-        </div>
+        <button
+          type="button"
+          onClick={() => alterarFiltro("concluidas")}
+          className={cardResumoClass(filtroOs === "concluidas")}
+        >
+          <p className="text-sm font-semibold text-white/60">Concluídas</p>
+          <strong className="mt-2 block text-4xl font-black text-white">
+            {resumo.concluidas}
+          </strong>
+          <span className="mt-2 block text-xs font-semibold text-[var(--fdl-cream)]/80">
+            Finalizadas
+          </span>
+        </button>
       </section>
 
       <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
         <div className="mb-5">
           <h2 className="fdl-section-title">Ordens de serviço</h2>
           <p className="fdl-section-subtitle">
-            Toque em uma OS para ver os detalhes e abrir a execução.
+            {filtroLabel}: toque em uma OS para ver os detalhes e abrir a execução.
           </p>
         </div>
 
-        <div className="space-y-3">
-          {ordens.map((os) => {
+        {ordensFiltradas.length > 0 ? (
+          <div className="space-y-3">
+            {ordensFiltradas.map((os) => {
             const aberta = osAbertaId === os.os_id;
 
             return (
@@ -411,8 +492,16 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
                 ) : null}
               </article>
             );
-          })}
-        </div>
+            })}
+          </div>
+        ) : (
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-center">
+            <p className="font-semibold text-white">Nenhuma OS neste filtro.</p>
+            <p className="mt-1 text-sm text-white/50">
+              Toque em outro card de resumo para visualizar outras OSs.
+            </p>
+          </div>
+        )}
       </section>
     </div>
   );
