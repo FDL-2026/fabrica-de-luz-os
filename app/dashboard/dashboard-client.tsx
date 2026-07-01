@@ -135,6 +135,37 @@ function progressoProjeto(projeto: ProjetoDashboard) {
   return Math.round((projeto.concluidas / projeto.total_os) * 100);
 }
 
+type ProgressoPonderadoProjetoDashboard = {
+  progresso_executado: number;
+  progresso_validado: number;
+  total_dias_ponderados: number;
+};
+
+function toNumber(value: unknown) {
+  const number = Number(value ?? 0);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function formatPercentual(value: number) {
+  return value.toLocaleString("pt-BR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+}
+
+function progressoProjetoPonderado(
+  projeto: ProjetoDashboard,
+  progressos: Record<string, ProgressoPonderadoProjetoDashboard>
+) {
+  const progresso = progressos[projeto.projeto_id];
+
+  if (!progresso) {
+    return progressoProjeto(projeto);
+  }
+
+  return progresso.progresso_executado;
+}
+
 function statusOperacionalProjeto(projeto: ProjetoDashboard) {
   if (projeto.aguardando_validacao > 0) return "com_validacao";
   if (projeto.em_andamento > 0) return "em_andamento";
@@ -214,6 +245,9 @@ export default function DashboardClient() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [dados, setDados] = useState<DashboardData>(emptyDashboard);
+  const [progressosPonderados, setProgressosPonderados] = useState<
+    Record<string, ProgressoPonderadoProjetoDashboard>
+  >({});
 
   const [gestorSelecionado, setGestorSelecionado] = useState("");
   const [projetoSelecionado, setProjetoSelecionado] = useState("");
@@ -222,16 +256,63 @@ export default function DashboardClient() {
     useState("");
 
   const progressoGeral = useMemo(() => {
-    const total =
-      dados.resumo.os_pendentes +
-      dados.resumo.os_em_andamento +
-      dados.resumo.os_aguardando_validacao +
-      dados.resumo.os_concluidas;
+    let totalDias = 0;
+    let totalExecutado = 0;
 
-    if (total === 0) return 0;
+    for (const projeto of dados.projetos) {
+      const progresso = progressosPonderados[projeto.projeto_id];
 
-    return Math.round((dados.resumo.os_concluidas / total) * 100);
-  }, [dados]);
+      if (!progresso) continue;
+
+      totalDias += progresso.total_dias_ponderados;
+      totalExecutado +=
+        progresso.total_dias_ponderados *
+        (progresso.progresso_executado / 100);
+    }
+
+    if (totalDias <= 0) return 0;
+
+    return Math.round((totalExecutado / totalDias) * 10000) / 100;
+  }, [dados.projetos, progressosPonderados]);
+
+  useEffect(() => {
+    async function carregarProgressosPonderados() {
+      const projetoIds = dados.projetos
+        .map((projeto) => projeto.projeto_id)
+        .filter((id): id is string => Boolean(id));
+
+      if (projetoIds.length === 0) {
+        setProgressosPonderados({});
+        return;
+      }
+
+      const { data, error } = await supabase.rpc(
+        "fdl_listar_progresso_ponderado_projetos",
+        {
+          p_projeto_ids: projetoIds,
+        }
+      );
+
+      if (error) {
+        console.error("Erro ao carregar progressos ponderados", error);
+        return;
+      }
+
+      const mapa: Record<string, ProgressoPonderadoProjetoDashboard> = {};
+
+      for (const item of data ?? []) {
+        mapa[String(item.projeto_id)] = {
+          progresso_executado: toNumber(item.progresso_executado),
+          progresso_validado: toNumber(item.progresso_validado),
+          total_dias_ponderados: toNumber(item.total_dias_ponderados),
+        };
+      }
+
+      setProgressosPonderados(mapa);
+    }
+
+    carregarProgressosPonderados();
+  }, [dados.projetos, supabase]);
 
   const projetosDisponiveisParaFiltro = useMemo(() => {
     if (!gestorSelecionado) return dados.filtros.projetos_opcoes;
@@ -467,13 +548,13 @@ export default function DashboardClient() {
         </div>
 
         <div className="fdl-ui-kpi">
-          <p className="fdl-ui-kpi-label">Progresso geral</p>
-          <strong className="fdl-ui-kpi-value">{progressoGeral}%</strong>
+          <p className="fdl-ui-kpi-label">Progresso executado</p>
+          <strong className="fdl-ui-kpi-value">{formatPercentual(progressoGeral)}%</strong>
 
           <div className="mt-4 h-2 rounded-full bg-[#eee7f3]">
             <div
               className="h-2 rounded-full bg-[var(--fdl-purple)]"
-              style={{ width: `${progressoGeral}%` }}
+              style={{ width: `${Math.max(0, Math.min(100, progressoGeral))}%` }}
             />
           </div>
         </div>
@@ -592,7 +673,7 @@ export default function DashboardClient() {
 
                 <tbody>
                   {projetosTabela.map((projeto) => {
-                    const progresso = progressoProjeto(projeto);
+                    const progresso = progressoProjetoPonderado(projeto, progressosPonderados);
                     const statusOperacional =
                       statusOperacionalProjeto(projeto);
 
@@ -646,7 +727,7 @@ export default function DashboardClient() {
                               />
                             </div>
                             <span className="w-10 text-xs font-black text-white">
-                              {progresso}%
+                              {formatPercentual(progresso)}%
                             </span>
                           </div>
                         </td>
