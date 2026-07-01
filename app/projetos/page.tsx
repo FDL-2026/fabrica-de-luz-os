@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/require-user";
+import ProgressoPonderadoCardProjeto from "@/components/progresso/progresso-ponderado-card-projeto";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -234,6 +235,8 @@ export default async function ProjetosPage() {
                         </p>
                       </div>
                     </div>
+
+                    <ProgressoPonderadoCardProjeto projetoId={projeto.id} />
 
                     <div className="mt-5 flex flex-wrap gap-3">
                       <a
