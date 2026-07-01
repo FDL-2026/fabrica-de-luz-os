@@ -8,8 +8,6 @@ type OsClientProps = {
   projetoId: string;
 };
 
-type FiltroOs = "todas" | "pendentes" | "andamento" | "concluidas";
-
 type OsMontador = {
   projeto_id: string;
   cliente: string | null;
@@ -24,7 +22,6 @@ type OsMontador = {
   codigo_cronograma: string | null;
   etapa_nome: string | null;
   servico: string | null;
-  local: string | null;
   equipe: string | null;
   os_status: string | null;
   inicio_previsto: string | null;
@@ -107,8 +104,23 @@ function statusClass(status: string | null) {
   }
 }
 
-function codigoOs(os: OsMontador) {
-  return os.codigo_cronograma || os.codigo_os || "sem código";
+function cardResumoClass(tipo: "default" | "warning" | "success" | "validation") {
+  const base =
+    "group block rounded-3xl border p-5 text-left transition hover:-translate-y-0.5 hover:bg-white/[0.09]";
+
+  if (tipo === "validation") {
+    return `${base} border-amber-300/30 bg-amber-500/10`;
+  }
+
+  if (tipo === "warning") {
+    return `${base} border-yellow-300/20 bg-white/[0.06]`;
+  }
+
+  if (tipo === "success") {
+    return `${base} border-green-300/20 bg-white/[0.06]`;
+  }
+
+  return `${base} border-white/10 bg-white/[0.06]`;
 }
 
 export default function OsClient({ codigo, projetoId }: OsClientProps) {
@@ -118,77 +130,34 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
   const [erro, setErro] = useState("");
   const [ordens, setOrdens] = useState<OsMontador[]>([]);
   const [montadorNome, setMontadorNome] = useState("");
-  const [osAbertaId, setOsAbertaId] = useState<string | null>(null);
-  const [filtroOs, setFiltroOs] = useState<FiltroOs | null>(null);
 
   const projeto = ordens[0] ?? null;
 
   const resumo = useMemo(() => {
     const total = ordens.length;
+
     const concluidas = ordens.filter((os) =>
       ["concluida", "concluido", "aprovada"].includes(os.os_status ?? "")
     ).length;
+
     const pendentes = ordens.filter((os) => os.os_status === "pendente").length;
+
     const andamento = ordens.filter(
       (os) => os.os_status === "em_andamento"
     ).length;
-    const progresso = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+
+    const aguardandoValidacao = ordens.filter(
+      (os) => os.os_status === "aguardando_validacao"
+    ).length;
 
     return {
       total,
       concluidas,
       pendentes,
       andamento,
-      progresso,
+      aguardandoValidacao,
     };
   }, [ordens]);
-
-  const ordensFiltradas = useMemo(() => {
-    if (!filtroOs) {
-      return [];
-    }
-
-    switch (filtroOs) {
-      case "pendentes":
-        return ordens.filter((os) => os.os_status === "pendente");
-
-      case "andamento":
-        return ordens.filter((os) => os.os_status === "em_andamento");
-
-      case "concluidas":
-        return ordens.filter((os) =>
-          ["concluida", "concluido", "aprovada"].includes(os.os_status ?? "")
-        );
-
-      case "todas":
-      default:
-        return ordens;
-    }
-  }, [ordens, filtroOs]);
-
-  const filtroLabel = filtroOs
-    ? {
-        todas: "Todas as OSs",
-        pendentes: "OSs pendentes",
-        andamento: "OSs em andamento",
-        concluidas: "OSs concluídas",
-      }[filtroOs]
-    : "Selecione um filtro";
-
-  function alterarFiltro(novoFiltro: FiltroOs) {
-    setFiltroOs(novoFiltro);
-    setOsAbertaId(null);
-  }
-
-  function cardResumoClass(ativo: boolean) {
-    return [
-      "rounded-3xl border p-5 text-left transition",
-      "hover:-translate-y-0.5 hover:bg-white/[0.09]",
-      ativo
-        ? "border-[var(--fdl-cream)]/55 bg-white/[0.09] shadow-[0_0_0_1px_rgba(237,224,177,0.12)]"
-        : "border-white/10 bg-white/[0.06]",
-    ].join(" ");
-  }
 
   useEffect(() => {
     async function carregarOs() {
@@ -236,8 +205,6 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
       }
 
       setOrdens((data ?? []) as OsMontador[]);
-      setOsAbertaId(null);
-      setFiltroOs(null);
       setCarregando(false);
     }
 
@@ -321,11 +288,10 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-4">
-        <button
-          type="button"
-          onClick={() => alterarFiltro("todas")}
-          className={cardResumoClass(filtroOs === "todas")}
+      <section className="grid gap-4 md:grid-cols-5">
+        <a
+          href={`/montador/${codigo}/projetos/${projetoId}/os-maes/todas`}
+          className={cardResumoClass("default")}
         >
           <p className="text-sm font-semibold text-white/60">Total de OSs</p>
           <strong className="mt-2 block text-4xl font-black text-white">
@@ -334,12 +300,11 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           <span className="mt-2 block text-xs font-semibold text-white/45">
             Ver todas
           </span>
-        </button>
+        </a>
 
-        <button
-          type="button"
-          onClick={() => alterarFiltro("pendentes")}
-          className={cardResumoClass(filtroOs === "pendentes")}
+        <a
+          href={`/montador/${codigo}/projetos/${projetoId}/os-maes/pendentes`}
+          className={cardResumoClass("warning")}
         >
           <p className="text-sm font-semibold text-white/60">Pendentes</p>
           <strong className="mt-2 block text-4xl font-black text-white">
@@ -348,12 +313,11 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           <span className="mt-2 block text-xs font-semibold text-yellow-100/70">
             Aguardando execução
           </span>
-        </button>
+        </a>
 
-        <button
-          type="button"
-          onClick={() => alterarFiltro("andamento")}
-          className={cardResumoClass(filtroOs === "andamento")}
+        <a
+          href={`/montador/${codigo}/projetos/${projetoId}/os-maes/andamento`}
+          className={cardResumoClass("success")}
         >
           <p className="text-sm font-semibold text-white/60">Em andamento</p>
           <strong className="mt-2 block text-4xl font-black text-white">
@@ -362,12 +326,26 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           <span className="mt-2 block text-xs font-semibold text-green-100/70">
             Em execução
           </span>
-        </button>
+        </a>
 
-        <button
-          type="button"
-          onClick={() => alterarFiltro("concluidas")}
-          className={cardResumoClass(filtroOs === "concluidas")}
+        <a
+          href={`/montador/${codigo}/projetos/${projetoId}/os-maes/validacao`}
+          className={cardResumoClass("validation")}
+        >
+          <p className="text-sm font-semibold text-amber-50/75">
+            Aguardando validação
+          </p>
+          <strong className="mt-2 block text-4xl font-black text-white">
+            {resumo.aguardandoValidacao}
+          </strong>
+          <span className="mt-2 block text-xs font-semibold text-amber-100/75">
+            Enviadas ao gestor
+          </span>
+        </a>
+
+        <a
+          href={`/montador/${codigo}/projetos/${projetoId}/os-maes/concluidas`}
+          className={cardResumoClass("default")}
         >
           <p className="text-sm font-semibold text-white/60">Concluídas</p>
           <strong className="mt-2 block text-4xl font-black text-white">
@@ -376,154 +354,16 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           <span className="mt-2 block text-xs font-semibold text-[var(--fdl-cream)]/80">
             Finalizadas
           </span>
-        </button>
+        </a>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
-        <div className="mb-5">
-          <h2 className="fdl-section-title">Ordens de serviço</h2>
-          <p className="fdl-section-subtitle">
-            {filtroOs
-              ? `${filtroLabel}: toque em uma OS para ver os detalhes e abrir a execução.`
-              : "Selecione um dos cards acima para visualizar as OSs."}
-          </p>
-        </div>
-
-        {ordensFiltradas.length > 0 ? (
-          <div className="space-y-3">
-            {ordensFiltradas.map((os) => {
-            const aberta = osAbertaId === os.os_id;
-
-            return (
-              <article
-                key={os.os_id}
-                className={`rounded-3xl border p-4 transition ${
-                  aberta
-                    ? "border-[var(--fdl-cream)]/45 bg-white/[0.08]"
-                    : "border-white/10 bg-white/[0.045] hover:bg-white/[0.065]"
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => setOsAbertaId(aberta ? null : os.os_id)}
-                  className="w-full text-left"
-                  aria-expanded={aberta}
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
-                          OS {codigoOs(os)}
-                        </p>
-
-                        <span
-                          className={`w-fit rounded-full px-3 py-1 text-[11px] font-bold ${statusClass(
-                            os.os_status
-                          )}`}
-                        >
-                          {formatStatus(os.os_status)}
-                        </span>
-                      </div>
-
-                      <h3 className="mt-2 text-base font-bold leading-snug text-white sm:text-lg">
-                        {os.servico || "OS sem descrição"}
-                      </h3>
-
-                      <p className="mt-1 text-sm text-white/55">
-                        {os.local || os.etapa_nome || "Local/etapa não informado"}
-                      </p>
-
-                      <p className="mt-2 text-xs font-semibold text-white/50">
-                        Início {formatDate(os.inicio_previsto)} · Fim{" "}
-                        {formatDate(os.termino_previsto)}
-                      </p>
-                    </div>
-
-                    <span className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 px-4 text-xs font-bold text-white/75">
-                      {aberta ? "Ocultar" : "Detalhes"}
-                    </span>
-                  </div>
-                </button>
-
-                {aberta ? (
-                  <div className="mt-4 border-t border-white/10 pt-4">
-                    <div className="grid gap-3 text-sm md:grid-cols-2">
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                        <p className="text-white/40">Serviço</p>
-                        <p className="mt-1 font-semibold text-white">
-                          {os.servico || "Não informado"}
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                        <p className="text-white/40">Local</p>
-                        <p className="mt-1 font-semibold text-white">
-                          {os.local || "Não informado"}
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                        <p className="text-white/40">Início previsto</p>
-                        <p className="mt-1 font-semibold text-white">
-                          {formatDate(os.inicio_previsto)}
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                        <p className="text-white/40">Término previsto</p>
-                        <p className="mt-1 font-semibold text-white">
-                          {formatDate(os.termino_previsto)}
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                        <p className="text-white/40">Equipe</p>
-                        <p className="mt-1 font-semibold text-white">
-                          {os.equipe || "Não informada"}
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                        <p className="text-white/40">Etapa</p>
-                        <p className="mt-1 font-semibold text-white">
-                          {os.etapa_nome || "Não informada"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <a
-                      href={`/montador/${codigo}/projetos/${projetoId}/os/${os.os_id}`}
-                      className="mt-4 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
-                    >
-                      Abrir OS
-                    </a>
-                  </div>
-                ) : null}
-              </article>
-            );
-            })}
-          </div>
-        ) : (
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-center">
-            {filtroOs ? (
-              <>
-                <p className="font-semibold text-white">Nenhuma OS neste filtro.</p>
-                <p className="mt-1 text-sm text-white/50">
-                  Toque em outro card de resumo para visualizar outras OSs.
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="font-semibold text-white">
-                  Selecione um filtro para visualizar as OSs.
-                </p>
-                <p className="mt-1 text-sm text-white/50">
-                  Use os cards de resumo acima para abrir todas, pendentes, em andamento ou concluídas.
-                </p>
-              </>
-            )}
-          </div>
-        )}
+      <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-5 text-center">
+        <p className="font-semibold text-white">
+          Selecione um card acima para visualizar as OSs.
+        </p>
+        <p className="mt-1 text-sm text-white/50">
+          As OSs serão exibidas agrupadas por OS mãe, reduzindo a rolagem na tela do montador.
+        </p>
       </section>
     </div>
   );
