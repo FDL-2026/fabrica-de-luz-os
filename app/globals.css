@@ -4265,3 +4265,90 @@ main:has(.fdl-mobile-card) a[href*="/montador/"][class*="bg-[var(--fdl-cream)]"]
     min-height: 112px !important;
   }
 }
+
+
+/* FDL MONTADOR ACTION BUTTON POLISH 2026 */
+/* Refinamento final dos botões de ação da área do montador */
+
+.fdl-montador-main a[href*="/os/"],
+.fdl-montador-main a[href*="/etapas/"],
+.fdl-montador-main button span:has(+ svg),
+.fdl-montador-main button span {
+  transition:
+    transform 160ms ease,
+    filter 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease !important;
+}
+
+/* Botões principais de ação: Abrir OS */
+.fdl-montador-main a[href*="/os/"] {
+  min-height: 44px !important;
+  min-width: 112px !important;
+  border-radius: 16px !important;
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+  font-size: 0.84rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.01em !important;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Evita que links pequenos de voltar sejam transformados em botão grande */
+.fdl-montador-main a[href*="/projetos/"]:not([href*="/os/"]):not([href*="/etapas/"]) {
+  box-shadow: none !important;
+}
+
+/* Botões/labels de ação dentro dos cards expansíveis: Ver OSs / Ocultar */
+.fdl-montador-main button span {
+  border-radius: 14px !important;
+  min-height: 38px !important;
+  min-width: 92px !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+/* Botões de filtro que são cards não devem parecer botões pequenos */
+.fdl-montador-main a[href*="/etapas/"] {
+  border-radius: 24px !important;
+}
+
+/* Hover consistente */
+.fdl-montador-main a[href*="/os/"]:hover,
+.fdl-montador-main button:hover span {
+  transform: translateY(-1px) !important;
+  filter: brightness(0.97) !important;
+}
+
+/* Botão claro principal */
+.fdl-montador-main a[href*="/os/"][class*="fdl-cream"],
+.fdl-montador-main a[href*="/os/"][class*="bg-[var(--fdl-cream)]"] {
+  background: var(--fdl-cream) !important;
+  color: var(--fdl-purple-dark) !important;
+}
+
+/* Botão vermelho de ajuste */
+.fdl-montador-main section[class*="border-red"] a[href*="/os/"] {
+  min-height: 42px !important;
+  border-radius: 15px !important;
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+/* Mobile: ações ocupam a largura toda quando fizer sentido */
+@media (max-width: 640px) {
+  .fdl-montador-main a[href*="/os/"] {
+    width: 100% !important;
+    min-height: 48px !important;
+    border-radius: 16px !important;
+  }
+
+  .fdl-montador-main button span {
+    min-height: 40px !important;
+    min-width: 96px !important;
+  }
+}
