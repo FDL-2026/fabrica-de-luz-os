@@ -334,11 +334,7 @@ export default async function CronogramaProjetoPage({ params }: PageProps) {
                             <p className="fdl-ui-table-primary">
                               {os.codigo_os || os.codigo_cronograma || "OS sem código"}
                             </p>
-                            {os.codigo_cronograma ? (
-                              <p className="fdl-ui-table-secondary">
-                                Cronograma {os.codigo_cronograma}
-                              </p>
-                            ) : null}
+
                           </td>
 
                           <td>{os.servico || "Não informado"}</td>
@@ -347,13 +343,13 @@ export default async function CronogramaProjetoPage({ params }: PageProps) {
 
                           <td>
                             <span className={os.inicio_previsto ? "" : "text-amber-200"}>
-                              {formatDateTime(os.inicio_previsto)}
+                              {formatDate(os.inicio_previsto)}
                             </span>
                           </td>
 
                           <td>
                             <span className={os.termino_previsto ? "" : "text-amber-200"}>
-                              {formatDateTime(os.termino_previsto)}
+                              {formatDate(os.termino_previsto)}
                             </span>
                           </td>
 
