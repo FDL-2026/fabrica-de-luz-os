@@ -39,7 +39,7 @@ export default function ProgressoPonderadoKpi({
       );
 
       const item = Array.isArray(data) ? data[0] : data;
-      const valor = toNumber(item?.progresso_executado);
+      const valor = toNumber(item?.progresso_validado);
 
       setProgresso(valor);
       setCarregando(false);
@@ -52,7 +52,7 @@ export default function ProgressoPonderadoKpi({
 
   return (
     <>
-      <p className="fdl-project-kpi-label">Progresso executado</p>
+      <p className="fdl-project-kpi-label">Progresso validado</p>
 
       <strong className="fdl-project-kpi-value">
         {carregando ? "..." : `${formatPercent(progresso)}%`}
@@ -66,7 +66,7 @@ export default function ProgressoPonderadoKpi({
       </div>
 
       <span className="mt-3 block text-xs font-bold text-[var(--fdl-cream)]">
-        ponderado por duração
+        aprovado pelo gestor
       </span>
     </>
   );

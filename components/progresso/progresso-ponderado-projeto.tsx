@@ -13,7 +13,6 @@ type ResultadoProgresso = {
   total_os_com_data: number;
   total_os_sem_data: number;
   total_dias_ponderados: number;
-  progresso_executado: number;
   progresso_validado: number;
   os_concluidas: number;
   os_aguardando_validacao: number;
@@ -44,19 +43,12 @@ function ProgressBar({
   label,
   value,
   description,
-  variant = "default",
 }: {
   label: string;
   value: number;
   description: string;
-  variant?: "default" | "validado";
 }) {
   const width = Math.max(0, Math.min(100, value));
-
-  const barClass =
-    variant === "validado"
-      ? "bg-green-200"
-      : "bg-[var(--fdl-cream)]";
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
@@ -75,7 +67,7 @@ function ProgressBar({
 
       <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/10">
         <div
-          className={`h-full rounded-full ${barClass}`}
+          className="h-full rounded-full bg-[var(--fdl-cream)]"
           style={{ width: `${width}%` }}
         />
       </div>
@@ -125,7 +117,6 @@ export default function ProgressoPonderadoProjeto({
         total_os_com_data: toNumber(item.total_os_com_data),
         total_os_sem_data: toNumber(item.total_os_sem_data),
         total_dias_ponderados: toNumber(item.total_dias_ponderados),
-        progresso_executado: toNumber(item.progresso_executado),
         progresso_validado: toNumber(item.progresso_validado),
         os_concluidas: toNumber(item.os_concluidas),
         os_aguardando_validacao: toNumber(item.os_aguardando_validacao),
@@ -142,7 +133,7 @@ export default function ProgressoPonderadoProjeto({
   if (carregando) {
     return (
       <section className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 text-white/60">
-        Calculando progresso ponderado...
+        Calculando progresso validado...
       </section>
     );
   }
@@ -150,7 +141,7 @@ export default function ProgressoPonderadoProjeto({
   if (erro) {
     return (
       <section className="rounded-3xl border border-red-400/30 bg-red-500/10 p-6 text-red-100">
-        Erro ao calcular progresso ponderado: {erro}
+        Erro ao calcular progresso validado: {erro}
       </section>
     );
   }
@@ -167,33 +158,25 @@ export default function ProgressoPonderadoProjeto({
     <section className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 text-white shadow-2xl shadow-black/10">
       <div className="mb-5">
         <p className="text-xs font-black uppercase tracking-[0.24em] text-[var(--fdl-cream)]">
-          Progresso ponderado
+          Progresso validado
         </p>
 
         <h2 className="mt-2 text-2xl font-black">
-          Evolução por duração planejada
+          Evolução aprovada pela gestão
         </h2>
 
         <p className="mt-2 text-sm font-medium text-white/55">
-          O peso de cada OS é calculado pela duração prevista em relação à soma
-          total de dias-OS do projeto.
+          O progresso do projeto considera apenas OSs aprovadas pelo gestor,
+          com peso proporcional à duração planejada.
         </p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4">
         <ProgressBar
-          label="Executado"
-          value={resultado.progresso_executado}
-          description="Inclui OSs concluídas, aguardando validação e percentual em andamento."
-        />
-
-        <ProgressBar
-          label="Validado"
+          label="Progresso validado"
           value={resultado.progresso_validado}
-          description="Considera apenas OSs aprovadas pela gestão."
-          variant="validado"
+          description="Avança somente após aprovação da OS pela gestão."
         />
-
       </div>
 
       <div className="mt-5 grid gap-3 md:grid-cols-4">
@@ -208,7 +191,7 @@ export default function ProgressoPonderadoProjeto({
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/45">
-            Dias-OS
+            Volume planejado
           </p>
           <strong className="mt-2 block text-2xl font-black">
             {formatNumber(resultado.total_dias_ponderados)}

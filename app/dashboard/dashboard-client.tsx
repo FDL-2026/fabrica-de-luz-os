@@ -158,7 +158,7 @@ function progressoProjetoPonderado(
     return 0;
   }
 
-  return progresso.progresso_executado;
+  return progresso.progresso_validado;
 }
 
 function statusOperacionalProjeto(projeto: ProjetoDashboard) {
@@ -262,7 +262,7 @@ export default function DashboardClient() {
       totalDias += progresso.total_dias_ponderados;
       totalExecutado +=
         progresso.total_dias_ponderados *
-        (progresso.progresso_executado / 100);
+        (progresso.progresso_validado / 100);
     }
 
     if (totalDias <= 0) return 0;
@@ -543,7 +543,7 @@ export default function DashboardClient() {
         </div>
 
         <div className="fdl-ui-kpi">
-          <p className="fdl-ui-kpi-label">Progresso executado</p>
+          <p className="fdl-ui-kpi-label">Progresso validado</p>
           <strong className="fdl-ui-kpi-value">{formatPercentual(progressoGeral)}%</strong>
 
           <div className="mt-4 h-2 rounded-full bg-[#eee7f3]">
