@@ -1,13 +1,13 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type EquipeProjetoClientProps = {
   projetoId: string;
 };
 
-type UsuarioEquipe = {
+type UsuarioRpc = {
   usuario_id: string;
   nome: string | null;
   email: string | null;
@@ -15,61 +15,15 @@ type UsuarioEquipe = {
   ativo: boolean;
   tipo_login: string | null;
   codigo_acesso: string | null;
-  funcao: string | null;
+  funcao?: string | null;
 };
 
-type UsuarioDisponivel = {
+type Montador = {
   usuario_id: string;
-  nome: string | null;
-  email: string | null;
-  perfil: string | null;
+  nome: string;
+  codigo_acesso: string | null;
   ativo: boolean;
-  tipo_login: string | null;
-  codigo_acesso: string | null;
 };
-
-const funcoes = [
-  { value: "montador", label: "Montador" },
-  { value: "supervisor", label: "Supervisor" },
-  { value: "gestor_operacoes", label: "Gestor de Operações" },
-  { value: "gestor_comercial", label: "Gestor Comercial" },
-  { value: "importador", label: "Importador" },
-  { value: "visualizacao", label: "Visualização" },
-];
-
-const perfis: Record<string, string> = {
-  admin: "Admin",
-  diretor: "Diretor",
-  gestor_comercial: "Gestor Comercial",
-  gerente_operacional: "Gerente Operacional",
-  montador: "Montador",
-};
-
-function formatPerfil(perfil: string | null) {
-  if (!perfil) return "-";
-  return perfis[perfil] ?? perfil.replace("_", " ");
-}
-
-function formatFuncao(funcao: string | null) {
-  if (!funcao) return "-";
-
-  return (
-    funcoes.find((item) => item.value === funcao)?.label ||
-    funcao.replace("_", " ")
-  );
-}
-
-function acessoUsuario(usuario: {
-  tipo_login: string | null;
-  email: string | null;
-  codigo_acesso: string | null;
-}) {
-  if (usuario.tipo_login === "pin") {
-    return usuario.codigo_acesso || "Código não informado";
-  }
-
-  return usuario.email || "E-mail não informado";
-}
 
 export default function EquipeProjetoClient({
   projetoId,
@@ -80,13 +34,10 @@ export default function EquipeProjetoClient({
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
-  const [equipe, setEquipe] = useState<UsuarioEquipe[]>([]);
-  const [usuariosDisponiveis, setUsuariosDisponiveis] = useState<
-    UsuarioDisponivel[]
-  >([]);
-
-  const [usuarioSelecionado, setUsuarioSelecionado] = useState("");
-  const [funcao, setFuncao] = useState("montador");
+  const [busca, setBusca] = useState("");
+  const [montadores, setMontadores] = useState<Montador[]>([]);
+  const [vinculados, setVinculados] = useState<Set<string>>(new Set());
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
 
   async function carregar() {
     setCarregando(true);
@@ -101,87 +52,119 @@ export default function EquipeProjetoClient({
       }),
     ]);
 
-    if (equipeResult.error) {
-      setErro(equipeResult.error.message);
-      setEquipe([]);
-      setUsuariosDisponiveis([]);
+    if (equipeResult.error || usuariosResult.error) {
+      setErro(
+        equipeResult.error?.message ||
+          usuariosResult.error?.message ||
+          "Erro ao carregar montadores."
+      );
+      setMontadores([]);
+      setVinculados(new Set());
+      setSelecionados(new Set());
       setCarregando(false);
       return;
     }
 
-    if (usuariosResult.error) {
-      setErro(usuariosResult.error.message);
-      setEquipe([]);
-      setUsuariosDisponiveis([]);
-      setCarregando(false);
-      return;
-    }
+    const equipe = ((equipeResult.data ?? []) as UsuarioRpc[]).filter(
+      (usuario) => usuario.perfil === "montador"
+    );
 
-    setEquipe((equipeResult.data ?? []) as UsuarioEquipe[]);
-    setUsuariosDisponiveis((usuariosResult.data ?? []) as UsuarioDisponivel[]);
+    const idsEquipe = new Set(equipe.map((usuario) => usuario.usuario_id));
+
+    const disponiveis = ((usuariosResult.data ?? []) as UsuarioRpc[]).filter(
+      (usuario) =>
+        usuario.perfil === "montador" && !idsEquipe.has(usuario.usuario_id)
+    );
+
+    const lista: Montador[] = [...equipe, ...disponiveis]
+      .map((usuario) => ({
+        usuario_id: usuario.usuario_id,
+        nome: usuario.nome?.trim() || "Sem nome",
+        codigo_acesso: usuario.codigo_acesso,
+        ativo: usuario.ativo,
+      }))
+      .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+
+    setMontadores(lista);
+    setVinculados(idsEquipe);
+    setSelecionados(new Set(idsEquipe));
     setCarregando(false);
   }
 
   useEffect(() => {
     carregar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projetoId, supabase]);
 
-  async function adicionarUsuario(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!usuarioSelecionado) {
-      setErro("Selecione um usuário para vincular ao projeto.");
-      return;
-    }
-
-    setErro("");
+  function alternar(usuarioId: string) {
     setSucesso("");
-    setSalvando(true);
-
-    const { error } = await supabase.rpc("fdl_adicionar_usuario_projeto", {
-      p_projeto_id: projetoId,
-      p_usuario_id: usuarioSelecionado,
-      p_funcao: funcao,
+    setSelecionados((atual) => {
+      const proximo = new Set(atual);
+      if (proximo.has(usuarioId)) {
+        proximo.delete(usuarioId);
+      } else {
+        proximo.add(usuarioId);
+      }
+      return proximo;
     });
-
-    if (error) {
-      setErro(error.message);
-      setSalvando(false);
-      return;
-    }
-
-    setUsuarioSelecionado("");
-    setFuncao("montador");
-    setSucesso("Usuário vinculado ao projeto com sucesso.");
-
-    await carregar();
-
-    setSalvando(false);
   }
 
-  async function removerUsuario(usuario: UsuarioEquipe) {
-    const confirmar = window.confirm(
-      `Remover ${usuario.nome || "este usuário"} deste projeto?`
+  const montadoresFiltrados = useMemo(() => {
+    const termo = busca.trim().toLowerCase();
+    if (!termo) return montadores;
+
+    return montadores.filter(
+      (montador) =>
+        montador.nome.toLowerCase().includes(termo) ||
+        (montador.codigo_acesso ?? "").toLowerCase().includes(termo)
     );
+  }, [montadores, busca]);
 
-    if (!confirmar) return;
+  const adicionar = useMemo(
+    () => [...selecionados].filter((id) => !vinculados.has(id)),
+    [selecionados, vinculados]
+  );
 
+  const remover = useMemo(
+    () => [...vinculados].filter((id) => !selecionados.has(id)),
+    [selecionados, vinculados]
+  );
+
+  const houveMudanca = adicionar.length > 0 || remover.length > 0;
+
+  async function salvar() {
     setErro("");
     setSucesso("");
     setSalvando(true);
 
-    const { error } = await supabase.rpc("fdl_remover_usuario_projeto", {
-      p_projeto_id: projetoId,
-      p_usuario_id: usuario.usuario_id,
-    });
+    for (const usuarioId of adicionar) {
+      const { error } = await supabase.rpc("fdl_adicionar_usuario_projeto", {
+        p_projeto_id: projetoId,
+        p_usuario_id: usuarioId,
+        p_funcao: "montador",
+      });
 
-    if (error) {
-      setErro(error.message);
-      setSalvando(false);
-      return;
+      if (error) {
+        setErro(error.message);
+        setSalvando(false);
+        return;
+      }
     }
 
-    setSucesso("Usuário removido do projeto.");
+    for (const usuarioId of remover) {
+      const { error } = await supabase.rpc("fdl_remover_usuario_projeto", {
+        p_projeto_id: projetoId,
+        p_usuario_id: usuarioId,
+      });
+
+      if (error) {
+        setErro(error.message);
+        setSalvando(false);
+        return;
+      }
+    }
+
+    setSucesso("Equipe de montagem atualizada com sucesso.");
 
     await carregar();
 
@@ -199,169 +182,119 @@ export default function EquipeProjetoClient({
         </a>
 
         <p className="mt-6 text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
-          Equipe do projeto
+          Equipe de Montagem
         </p>
 
-        <h1 className="mt-2 text-3xl font-bold">Usuários vinculados</h1>
+        <h1 className="mt-2 text-3xl font-bold">Montadores do projeto</h1>
 
         <p className="mt-2 text-sm text-white/60">
-          Adicione montadores, supervisores e gestores que terão acesso a este
-          projeto.
+          Selecione os montadores que farão parte deste projeto. Somente
+          usuários com perfil montador aparecem nesta lista.
         </p>
       </header>
 
-      <section className="grid gap-6 xl:grid-cols-[420px_1fr]">
-        <form
-          onSubmit={adicionarUsuario}
-          className="fdl-form-card p-6"
-        >
-          <h2 className="fdl-section-title">Adicionar usuário</h2>
+      <section className="fdl-form-card p-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="rounded-full bg-[var(--fdl-cream)] px-4 py-1.5 text-sm font-semibold text-[var(--fdl-purple-dark)]">
+              👷 {selecionados.size}{" "}
+              {selecionados.size === 1 ? "selecionado" : "selecionados"}
+            </span>
 
-          <div className="mt-5 space-y-4">
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-white">
-                Usuário
-              </label>
-
-              <select
-                value={usuarioSelecionado}
-                onChange={(event) => setUsuarioSelecionado(event.target.value)}
-                className="fdl-field"
-              >
-                <option className="text-black" value="">
-                  Selecione um usuário
-                </option>
-
-                {usuariosDisponiveis.map((usuario) => (
-                  <option
-                    key={usuario.usuario_id}
-                    className="text-black"
-                    value={usuario.usuario_id}
-                  >
-                    {usuario.nome} · {formatPerfil(usuario.perfil)} ·{" "}
-                    {acessoUsuario(usuario)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-white">
-                Função no projeto
-              </label>
-
-              <select
-                value={funcao}
-                onChange={(event) => setFuncao(event.target.value)}
-                className="fdl-field"
-              >
-                {funcoes.map((item) => (
-                  <option key={item.value} className="text-black" value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {erro ? (
-              <div className="fdl-alert fdl-alert-error">
-                {erro}
-              </div>
+            {houveMudanca ? (
+              <span className="rounded-full bg-yellow-100 px-4 py-1.5 text-sm font-semibold text-yellow-700">
+                Alterações não salvas
+              </span>
             ) : null}
-
-            {sucesso ? (
-              <div className="fdl-alert fdl-alert-success">
-                {sucesso}
-              </div>
-            ) : null}
-
-            <button
-              type="submit"
-              disabled={salvando || !usuarioSelecionado}
-              className="h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {salvando ? "Salvando..." : "Adicionar ao projeto"}
-            </button>
-          </div>
-        </form>
-
-        <section className="fdl-form-card p-6">
-          <div className="mb-5">
-            <h2 className="fdl-section-title">Equipe vinculada</h2>
-            <p className="fdl-section-subtitle">
-              Usuários que já possuem acesso a este projeto.
-            </p>
           </div>
 
+          <div className="w-full md:w-72">
+            <input
+              type="search"
+              value={busca}
+              onChange={(event) => setBusca(event.target.value)}
+              placeholder="Buscar montador..."
+              className="fdl-field"
+            />
+          </div>
+        </div>
+
+        {erro ? (
+          <div className="fdl-ui-alert fdl-ui-alert-error mt-4">{erro}</div>
+        ) : null}
+
+        {sucesso ? (
+          <div className="fdl-ui-alert fdl-ui-alert-success mt-4">
+            {sucesso}
+          </div>
+        ) : null}
+
+        <div className="mt-5">
           {carregando ? (
-            <div className="fdl-empty-state">
-              Carregando equipe...
-            </div>
-          ) : equipe.length > 0 ? (
-            <div className="fdl-table-wrap">
-              <div className="overflow-x-auto">
-                <table className="min-w-[900px] w-full text-left text-sm fdl-data-table">
-                  <thead className="bg-white/10 text-white/70">
-                    <tr>
-                      <th className="px-4 py-3">Usuário</th>
-                      <th className="px-4 py-3">Perfil</th>
-                      <th className="px-4 py-3">Função</th>
-                      <th className="px-4 py-3">Acesso</th>
-                      <th className="px-4 py-3 text-center">Ação</th>
-                    </tr>
-                  </thead>
+            <div className="fdl-empty-state">Carregando montadores...</div>
+          ) : montadoresFiltrados.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {montadoresFiltrados.map((montador) => {
+                const marcado = selecionados.has(montador.usuario_id);
 
-                  <tbody>
-                    {equipe.map((usuario) => (
-                      <tr
-                        key={usuario.usuario_id}
-                        className="border-t border-white/10"
-                      >
-                        <td className="px-4 py-3">
-                          <p className="font-semibold text-white">
-                            {usuario.nome}
-                          </p>
-                          <p className="mt-1 text-xs text-white/45">
-                            {usuario.ativo ? "Ativo" : "Inativo"}
-                          </p>
-                        </td>
+                return (
+                  <label
+                    key={montador.usuario_id}
+                    className={`flex cursor-pointer items-center gap-3 rounded-2xl border p-4 transition ${
+                      marcado
+                        ? "border-[var(--fdl-cream)] bg-white/10"
+                        : "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={marcado}
+                      disabled={salvando}
+                      onChange={() => alternar(montador.usuario_id)}
+                      className="h-5 w-5 shrink-0 accent-[var(--fdl-cream)]"
+                    />
 
-                        <td className="px-4 py-3 text-white/75">
-                          {formatPerfil(usuario.perfil)}
-                        </td>
-
-                        <td className="px-4 py-3">
-                          <span className="rounded-full bg-[var(--fdl-lilac)] px-3 py-1 text-xs font-semibold text-[var(--fdl-purple-dark)]">
-                            {formatFuncao(usuario.funcao)}
-                          </span>
-                        </td>
-
-                        <td className="px-4 py-3 text-white/60">
-                          {acessoUsuario(usuario)}
-                        </td>
-
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            type="button"
-                            disabled={salvando}
-                            onClick={() => removerUsuario(usuario)}
-                            className="inline-flex h-8 items-center justify-center rounded-full bg-red-100 px-3 text-xs font-semibold text-red-700 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            Remover
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-white">
+                        {montador.nome}
+                      </p>
+                      <p className="mt-0.5 truncate text-xs text-white/45">
+                        {montador.codigo_acesso
+                          ? `Código ${montador.codigo_acesso}`
+                          : "Sem código de acesso"}
+                        {montador.ativo ? "" : " · Inativo"}
+                      </p>
+                    </div>
+                  </label>
+                );
+              })}
             </div>
           ) : (
             <div className="fdl-empty-state">
-              Nenhum usuário vinculado a este projeto ainda.
+              {busca
+                ? "Nenhum montador encontrado para esta busca."
+                : "Nenhum montador cadastrado no sistema."}
             </div>
           )}
-        </section>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <a
+            href={`/projetos/${projetoId}`}
+            className="fdl-ui-btn fdl-ui-btn-ghost"
+          >
+            Cancelar
+          </a>
+
+          <button
+            type="button"
+            onClick={salvar}
+            disabled={salvando || !houveMudanca}
+            className="fdl-ui-btn fdl-ui-btn-primary"
+          >
+            {salvando ? "Salvando..." : "Salvar equipe"}
+          </button>
+        </div>
       </section>
     </div>
   );

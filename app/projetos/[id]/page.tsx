@@ -16,6 +16,22 @@ type PageProps = {
   }>;
 };
 
+type MembroEquipe = {
+  usuario_id: string;
+  nome: string | null;
+  email: string | null;
+  perfil: string | null;
+  ativo: boolean;
+  tipo_login: string | null;
+  codigo_acesso: string | null;
+  funcao: string | null;
+};
+
+function primeiroNome(nome: string | null) {
+  if (!nome) return "Sem nome";
+  return nome.trim().split(/\s+/)[0];
+}
+
 function formatDate(date: string | null) {
   if (!date) return "Não informado";
 
@@ -111,6 +127,29 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
     .select("id, codigo_os, local, servico, equipe, status, prioridade")
     .eq("projeto_id", id)
     .order("codigo_os", { ascending: true });
+
+  const { data: dadosComerciais } = await supabase
+    .from("projetos")
+    .select("responsavel_comercial")
+    .eq("id", id)
+    .maybeSingle();
+
+  const gestorComercial = dadosComerciais?.responsavel_comercial ?? null;
+
+  const { data: equipeProjeto } = await supabase.rpc(
+    "fdl_listar_equipe_projeto",
+    { p_projeto_id: id }
+  );
+
+  const montadoresEquipe = ((equipeProjeto ?? []) as MembroEquipe[]).filter(
+    (membro) => membro.perfil === "montador"
+  );
+
+  const nomesMontadores = montadoresEquipe
+    .slice(0, 3)
+    .map((membro) => primeiroNome(membro.nome));
+
+  const montadoresRestantes = montadoresEquipe.length - nomesMontadores.length;
 
   const totalNoites = noites?.length ?? 0;
 
@@ -278,20 +317,43 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                 </p>
               </div>
 
-              <div className="grid gap-4 text-sm">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="text-white/45">Cliente</p>
-                  <p className="mt-1 font-semibold">{projeto.cliente}</p>
+              <div className="grid gap-3 text-sm">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                    <p className="text-white/45">Cliente</p>
+                    <p className="mt-1 font-semibold">{projeto.cliente}</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                    <p className="text-white/45">Shopping</p>
+                    <p className="mt-1 font-semibold">
+                      {projeto.shopping || "Não informado"}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="text-white/45">Shopping</p>
-                  <p className="mt-1 font-semibold">
-                    {projeto.shopping || "Não informado"}
-                  </p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                    <p className="text-white/45">Cidade</p>
+                    <p className="mt-1 font-semibold">
+                      {projeto.cidade || "Não informada"}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                    <p className="text-white/45">UF</p>
+                    <p className="mt-1 font-semibold">{projeto.uf || "--"}</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                    <p className="text-white/45">Temporada</p>
+                    <p className="mt-1 font-semibold">
+                      {projeto.temporada || "--"}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
                     <p className="text-white/45">Início previsto</p>
                     <p className="mt-1 font-semibold">
@@ -308,11 +370,51 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="text-white/45">Observações</p>
-                  <p className="mt-1 text-white/80">
-                    {projeto.observacoes || "Nenhuma observação cadastrada."}
+                  <p className="text-white/45">Gestor Comercial</p>
+                  <p className="mt-1 font-semibold">
+                    {gestorComercial || "Não informado"}
                   </p>
                 </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-white/45">Equipe de Montagem</p>
+                      <p className="mt-1 font-semibold">
+                        👷{" "}
+                        {montadoresEquipe.length > 0
+                          ? `${montadoresEquipe.length} ${
+                              montadoresEquipe.length === 1
+                                ? "montador"
+                                : "montadores"
+                            }`
+                          : "Nenhum montador vinculado"}
+                      </p>
+                      {montadoresEquipe.length > 0 ? (
+                        <p className="mt-1 truncate text-white/70">
+                          {nomesMontadores.join(" • ")}
+                          {montadoresRestantes > 0
+                            ? ` • +${montadoresRestantes}`
+                            : ""}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <a
+                      href={`/projetos/${projeto.id}/equipe`}
+                      className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary shrink-0"
+                    >
+                      Gerenciar
+                    </a>
+                  </div>
+                </div>
+
+                {projeto.observacoes ? (
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                    <p className="text-white/45">Observações</p>
+                    <p className="mt-1 text-white/80">{projeto.observacoes}</p>
+                  </div>
+                ) : null}
               </div>
             </div>
 
@@ -362,28 +464,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
             </div>
           </section>
 
-          
-      
-      <section className="fdl-form-card p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="fdl-section-title">Equipe do projeto</h2>
-            <p className="fdl-section-subtitle">
-              Vincule montadores, supervisores e gestores que terão acesso a este projeto.
-            </p>
-          </div>
-
-          <a
-            href={`/projetos/${projeto.id}/equipe`}
-            className="fdl-ui-btn fdl-ui-btn-secondary"
-          >
-            Gerenciar equipe
-          </a>
-        </div>
-      </section>
-
-
-            <FilaValidacaoProjetoClient
+          <FilaValidacaoProjetoClient
         projetoId={projeto.id}
         ordensAguardandoValidacao={ordensAguardandoValidacao}
       />
