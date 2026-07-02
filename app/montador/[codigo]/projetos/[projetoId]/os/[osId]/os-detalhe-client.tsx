@@ -67,6 +67,8 @@ function formatDateTime(date: string | null) {
   });
 }
 
+const MINIMO_REGISTROS_CONCLUSAO = 7;
+
 function formatStatus(status: string | null) {
   if (!status) return "Sem status";
 
@@ -450,10 +452,20 @@ export default function OsDetalheClient({
   if (!os) return null;
 
   const podeIniciar = os.os_status === "pendente";
-  const temAnexoObrigatorio = arquivos.some(
+
+  const totalRegistrosConclusao = arquivos.filter(
     (arquivo) => arquivo.tipo === "foto" || arquivo.tipo === "video"
+  ).length;
+
+  const registrosFaltantesConclusao = Math.max(
+    0,
+    MINIMO_REGISTROS_CONCLUSAO - totalRegistrosConclusao
   );
-  const podeConcluir = os.os_status !== "concluida" && temAnexoObrigatorio;
+
+  const temAnexosObrigatorios =
+    totalRegistrosConclusao >= MINIMO_REGISTROS_CONCLUSAO;
+
+  const podeConcluir = os.os_status !== "concluida" && temAnexosObrigatorios;
 
   return (
     <div className="space-y-6">
@@ -548,7 +560,13 @@ export default function OsDetalheClient({
       <section className="fdl-form-card p-6">
         <h2 className="fdl-section-title">Anexos obrigatórios</h2>
         <p className="fdl-section-subtitle">
-          Para concluir a OS, envie pelo menos uma foto ou vídeo da execução.
+          Para concluir a OS, envie no mínimo 7 registros de foto ou vídeo da execução.
+          <span className="mt-2 block text-xs font-bold text-[var(--fdl-cream)]">
+            {totalRegistrosConclusao}/{MINIMO_REGISTROS_CONCLUSAO} registros enviados
+            {registrosFaltantesConclusao > 0
+              ? ` · faltam ${registrosFaltantesConclusao}`
+              : " · mínimo atingido"}
+          </span>
         </p>
 
         <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
@@ -624,7 +642,7 @@ export default function OsDetalheClient({
           ) : (
             <div className="rounded-2xl border border-yellow-400/25 bg-yellow-500/10 p-4 text-sm text-yellow-100">
               Nenhuma foto ou vídeo enviado ainda. A conclusão da OS ficará
-              bloqueada até o envio de pelo menos um anexo.
+              bloqueada até o envio de no mínimo 7 registros.
             </div>
           )}
         </div>
@@ -684,9 +702,11 @@ export default function OsDetalheClient({
           </button>
         </div>
 
-        {!temAnexoObrigatorio && os.os_status !== "concluida" ? (
+        {!temAnexosObrigatorios && os.os_status !== "concluida" ? (
           <p className="mt-3 text-center text-xs text-yellow-100">
-            Para concluir a OS, envie pelo menos uma foto ou vídeo.
+            {registrosFaltantesConclusao > 0
+              ? `Para concluir a OS, envie mais ${registrosFaltantesConclusao} registro(s) de foto ou vídeo.`
+              : "Mínimo de registros atingido. A OS já pode ser concluída."}
           </p>
         ) : null}
       </section>
