@@ -58,6 +58,24 @@ type PayloadValidacao = {
   registros: RegistroOs[];
 };
 
+type ImpactoValidacao = {
+  projeto_id: string;
+  os_id: string;
+  codigo_os: string | null;
+  codigo_cronograma: string | null;
+  servico: string | null;
+  status: string | null;
+  status_validacao: string | null;
+  inicio_previsto: string | null;
+  termino_previsto: string | null;
+  duracao_dias: number | null;
+  total_dias_ponderados: number | null;
+  peso_percentual: number | null;
+  progresso_validado_atual: number | null;
+  progresso_validado_se_aprovar: number | null;
+  impacto_aprovacao: number | null;
+};
+
 type AcaoValidacao = "aprovar" | "solicitar_ajuste";
 
 function formatStatus(status: string | null) {
@@ -109,6 +127,25 @@ function formatDateTime(date: string | null) {
   });
 }
 
+function toNumber(value: unknown) {
+  const number = Number(value ?? 0);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function formatPercent(value: unknown) {
+  return `${toNumber(value).toLocaleString("pt-BR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })}%`;
+}
+
+function formatNumber(value: unknown) {
+  return toNumber(value).toLocaleString("pt-BR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+}
+
 function nomeProjeto(os: OsValidacao) {
   const nome = os.cliente || os.shopping || "Projeto sem nome";
 
@@ -133,6 +170,7 @@ export default function ValidacaoOsClient({
     arquivos: [],
     registros: [],
   });
+  const [impacto, setImpacto] = useState<ImpactoValidacao | null>(null);
 
   async function carregar() {
     setCarregando(true);
@@ -153,6 +191,7 @@ export default function ValidacaoOsClient({
         arquivos: [],
         registros: [],
       });
+      setImpacto(null);
       setCarregando(false);
       return;
     }
@@ -164,6 +203,25 @@ export default function ValidacaoOsClient({
       arquivos: payload?.arquivos ?? [],
       registros: payload?.registros ?? [],
     });
+
+    const { data: impactoData, error: impactoError } = await supabase.rpc(
+      "fdl_obter_impacto_validacao_os",
+      {
+        p_projeto_id: projetoId,
+        p_os_id: osId,
+      }
+    );
+
+    if (impactoError) {
+      console.error("Erro ao carregar impacto da validação", impactoError);
+      setImpacto(null);
+    } else {
+      const impactoItem = Array.isArray(impactoData)
+        ? impactoData[0]
+        : impactoData;
+
+      setImpacto((impactoItem ?? null) as ImpactoValidacao | null);
+    }
 
     setCarregando(false);
   }
@@ -329,6 +387,66 @@ export default function ValidacaoOsClient({
                 </p>
               </div>
             </div>
+
+            {impacto ? (
+              <div className="mt-4 rounded-2xl border border-[var(--fdl-cream)]/30 bg-[var(--fdl-cream)]/10 p-4">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--fdl-cream)]">
+                      Impacto no progresso validado
+                    </p>
+
+                    <h3 className="mt-2 text-2xl font-black text-white">
+                      +{formatPercent(impacto.impacto_aprovacao)}
+                    </h3>
+
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-white/70">
+                      {toNumber(impacto.impacto_aprovacao) > 0
+                        ? "Ao aprovar esta OS, este será o avanço oficial no progresso validado do projeto."
+                        : "Esta OS já está aprovada ou não gera impacto adicional no progresso validado."}
+                    </p>
+                  </div>
+
+                  <div className="grid min-w-[260px] gap-3 sm:grid-cols-2">
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">
+                        Duração
+                      </p>
+                      <p className="mt-1 text-sm font-black text-white">
+                        {formatNumber(impacto.duracao_dias)} dia(s)
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">
+                        Peso da OS
+                      </p>
+                      <p className="mt-1 text-sm font-black text-white">
+                        {formatPercent(impacto.peso_percentual)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">
+                        Atual
+                      </p>
+                      <p className="mt-1 text-sm font-black text-white">
+                        {formatPercent(impacto.progresso_validado_atual)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">
+                        Após aprovação
+                      </p>
+                      <p className="mt-1 text-sm font-black text-white">
+                        {formatPercent(impacto.progresso_validado_se_aprovar)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             {os.observacao_montador ? (
               <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
