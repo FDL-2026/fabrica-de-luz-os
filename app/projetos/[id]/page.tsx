@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/require-user";
 import OsTableClient from "./os-table-client";
 import FilaValidacaoProjetoClient from "./fila-validacao-projeto-client";
+import HistoricoProjetoClient from "./historico-projeto-client";
 import ProgressoPonderadoProjeto from "@/components/progresso/progresso-ponderado-projeto";
 import ProgressoPonderadoKpi from "@/components/progresso/progresso-ponderado-kpi";
 
@@ -473,6 +474,8 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
         projetoId={projeto.id}
         ordensServico={ordensServicoSeguras}
       />
+
+      <HistoricoProjetoClient projetoId={projeto.id} />
 
         </section>
       </div>

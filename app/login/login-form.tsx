@@ -1,18 +1,41 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type LoginFormProps = {
   nextPath: string;
 };
 
+function traduzirErro(mensagem: string) {
+  const normalizada = mensagem.toLowerCase();
+
+  if (normalizada.includes("invalid login credentials")) {
+    return "E-mail ou senha incorretos. Confira os dados e tente novamente.";
+  }
+
+  if (normalizada.includes("email not confirmed")) {
+    return "E-mail ainda não confirmado. Verifique sua caixa de entrada.";
+  }
+
+  if (
+    normalizada.includes("too many requests") ||
+    normalizada.includes("rate limit")
+  ) {
+    return "Muitas tentativas seguidas. Aguarde alguns instantes e tente de novo.";
+  }
+
+  if (normalizada.includes("network") || normalizada.includes("fetch")) {
+    return "Falha de conexão. Verifique sua internet e tente novamente.";
+  }
+
+  return mensagem;
+}
+
 export default function LoginForm({ nextPath }: LoginFormProps) {
-  const router = useRouter();
   const supabase = createClient();
 
-  const [email, setEmail] = useState("gleiston.kenned@fabricadeluz.com.br");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
@@ -30,7 +53,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
 
     if (error) {
       setLoading(false);
-      setErro(error.message);
+      setErro(traduzirErro(error.message));
       return;
     }
 
@@ -57,6 +80,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
           id="email"
           name="email"
           type="email"
+          autoComplete="email"
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
@@ -66,17 +90,27 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
       </div>
 
       <div>
-        <label
-          htmlFor="password"
-          className="mb-2 block text-sm font-medium text-white/80"
-        >
-          Senha
-        </label>
+        <div className="mb-2 flex items-center justify-between">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-white/80"
+          >
+            Senha
+          </label>
+
+          <a
+            href="/auth/forgot-password"
+            className="text-xs font-semibold text-[var(--fdl-cream)] hover:underline"
+          >
+            Esqueci minha senha
+          </a>
+        </div>
 
         <input
           id="password"
           name="password"
           type="password"
+          autoComplete="current-password"
           required
           value={password}
           onChange={(event) => setPassword(event.target.value)}
@@ -86,9 +120,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
       </div>
 
       {erro ? (
-        <div className="rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-100">
-          {erro}
-        </div>
+        <div className="fdl-ui-alert fdl-ui-alert-error">{erro}</div>
       ) : null}
 
       <button

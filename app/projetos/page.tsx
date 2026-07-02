@@ -1,58 +1,48 @@
 import Image from "next/image";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/require-user";
-import ProgressoPonderadoCardProjeto from "@/components/progresso/progresso-ponderado-card-projeto";
+import ProjetosListaClient from "./projetos-lista-client";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-function formatStatus(status: string | null) {
-  if (!status) return "Sem status";
-
-  const labels: Record<string, string> = {
-    planejamento: "Planejamento",
-    em_montagem: "Em montagem",
-    pausado: "Pausado",
-    concluido: "Concluído",
-    cancelado: "Cancelado",
-  };
-
-  return labels[status] ?? status.replace("_", " ");
-}
-
-function statusClass(status: string | null) {
-  switch (status) {
-    case "em_montagem":
-      return "bg-green-100 text-green-700";
-    case "planejamento":
-      return "bg-blue-100 text-blue-700";
-    case "pausado":
-      return "bg-yellow-100 text-yellow-700";
-    case "concluido":
-      return "bg-[var(--fdl-cream)] text-[var(--fdl-purple-dark)]";
-    case "cancelado":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-white/20 text-white";
-  }
-}
-
-function formatDate(date: string | null) {
-  if (!date) return "Não informado";
-  return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
-}
+type ProjetoRow = {
+  id: string;
+  cliente: string | null;
+  shopping: string | null;
+  cidade: string | null;
+  uf: string | null;
+  temporada: string | null;
+  status: string | null;
+  data_inicio: string | null;
+  data_fim: string | null;
+  responsavel_comercial?: string | null;
+};
 
 export default async function ProjetosPage() {
   const { supabase, usuario } = await requireUser("/projetos");
 
-  const { data: projetos } = await supabase
+  const projetosResult = await supabase
     .from("projetos")
     .select(
-      "id, cliente, shopping, cidade, uf, temporada, status, data_inicio, data_fim"
+      "id, cliente, shopping, cidade, uf, temporada, status, data_inicio, data_fim, responsavel_comercial"
     )
     .order("criado_em", { ascending: false });
 
-  const totalProjetos = projetos?.length ?? 0;
+  let projetos = (projetosResult.data ?? []) as ProjetoRow[];
+
+  if (projetosResult.error) {
+    const fallbackResult = await supabase
+      .from("projetos")
+      .select(
+        "id, cliente, shopping, cidade, uf, temporada, status, data_inicio, data_fim"
+      )
+      .order("criado_em", { ascending: false });
+
+    projetos = (fallbackResult.data ?? []) as ProjetoRow[];
+  }
+
+  const totalProjetos = projetos.length;
 
   const projetosEmMontagem =
     projetos?.filter((projeto) => projeto.status === "em_montagem").length ?? 0;
@@ -181,92 +171,7 @@ export default async function ProjetosPage() {
             </div>
           </div>
 
-          <section className="mt-8">
-            <div className="mb-5">
-              <h2 className="text-xl font-semibold">Projetos cadastrados</h2>
-              <p className="mt-1 text-sm text-white/50">
-                Clique em um projeto para abrir o acompanhamento detalhado.
-              </p>
-            </div>
-
-            {projetos && projetos.length > 0 ? (
-              <div className="grid gap-4 xl:grid-cols-2">
-                {projetos.map((projeto) => (
-                  <article
-                    key={projeto.id}
-                    className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl transition hover:border-[var(--fdl-cream)]/50 hover:bg-white/[0.08]"
-                  >
-                    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
-                          {projeto.temporada}
-                        </p>
-
-                        <h3 className="mt-2 text-2xl font-bold">
-                          {projeto.cliente || projeto.shopping}
-                        </h3>
-
-                        <p className="fdl-section-subtitle">
-                           {projeto.uf}
-                        </p>
-                      </div>
-
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClass(
-                          projeto.status
-                        )}`}
-                      >
-                        {formatStatus(projeto.status)}
-                      </span>
-                    </div>
-
-                    <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm sm:grid-cols-2">
-                      <div>
-                        <p className="text-white/45">Início previsto</p>
-                        <p className="mt-1 font-semibold">
-                          {formatDate(projeto.data_inicio)}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-white/45">Fim previsto</p>
-                        <p className="mt-1 font-semibold">
-                          {formatDate(projeto.data_fim)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <ProgressoPonderadoCardProjeto projetoId={projeto.id} />
-
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      <a
-                        href={`/projetos/${projeto.id}`}
-                        className="rounded-2xl bg-[var(--fdl-cream)] px-5 py-3 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
-                      >
-                        Ver projeto
-                      </a>
-
-                      <a
-                        href={`/projetos/${projeto.id}/cronograma`}
-                        className="rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-                      >
-                        Cronograma
-                      </a>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-10 text-center">
-                <p className="text-lg font-semibold">
-                  Nenhum projeto encontrado.
-                </p>
-                <p className="mt-2 text-sm text-white/50">
-                  Importe um cronograma ou cadastre um projeto para começar.
-                </p>
-              </div>
-            )}
-          </section>
+          <ProjetosListaClient projetos={projetos} />
         </section>
       </div>
     </main>

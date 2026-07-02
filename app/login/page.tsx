@@ -61,11 +61,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-8 shadow-2xl backdrop-blur">
               <div className="mb-8">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--fdl-cream)] text-2xl text-[var(--fdl-purple-dark)]">
-                  ☆
+                  ✦
                 </div>
 
                 <p className="text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
-                  Acesso interno
+                  Acesso da gestão
                 </p>
 
                 <h2 className="mt-3 text-3xl font-semibold text-white">
@@ -80,14 +80,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
               <LoginForm nextPath={nextPath} />
 
-              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                <p className="text-sm text-white/65">Montador de campo?</p>
+              <div className="mt-6 border-t border-white/10 pt-5">
+                <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-white/40">
+                  Montador de campo?
+                </p>
 
                 <Link
-                  href="/montador/M1001"
-                  className="mt-2 inline-flex text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
+                  href="/montador"
+                  className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-[var(--fdl-cream)]/40 bg-[var(--fdl-cream)]/10 text-sm font-semibold text-[var(--fdl-cream)] transition hover:bg-[var(--fdl-cream)] hover:text-[var(--fdl-purple-dark)]"
                 >
-                  Acessar com PIN
+                  🔐 Entrar com Código + PIN
                 </Link>
               </div>
             </div>

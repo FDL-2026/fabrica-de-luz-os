@@ -2427,7 +2427,8 @@ select.fdl-field option,
 .fdl-form-card + .fdl-form-card,
 .fdl-form-card + .fdl-ui-validation-card,
 .fdl-ui-validation-card + .fdl-ui-page-block,
-.fdl-ui-page-block + .fdl-ui-page-block {
+.fdl-ui-page-block + .fdl-ui-page-block,
+.fdl-ui-page-block + .fdl-form-card {
   margin-top: 28px !important;
 }
 
