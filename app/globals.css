@@ -4548,3 +4548,61 @@ main:has(.fdl-mobile-card) a[href*="/montador/"][class*="bg-[var(--fdl-cream)]"]
     max-width: 100% !important;
   }
 }
+
+
+/* FDL RELATORIO DIARIO (one page executivo) */
+.fdl-report-backdrop {
+  min-height: 100vh;
+  background: var(--fdl-purple-dark);
+  padding: 24px 16px 48px;
+}
+
+.fdl-report-toolbar {
+  margin: 0 auto 16px;
+  display: flex;
+  max-width: 210mm;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fdl-report-sheet {
+  margin: 0 auto;
+  max-width: 210mm;
+  border-radius: 16px;
+  background: #ffffff;
+  color: var(--fdl-text-dark);
+  padding: 10mm 11mm;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+
+  .fdl-no-print {
+    display: none !important;
+  }
+
+  .fdl-report-backdrop {
+    min-height: auto;
+    background: #ffffff;
+    padding: 0;
+  }
+
+  .fdl-report-sheet {
+    max-width: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 9mm 10mm;
+  }
+}

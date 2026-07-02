@@ -402,6 +402,10 @@ export default function DashboardClient() {
           </div>
 
           <div className="fdl-ui-actions xl:justify-end">
+            <a href="/relatorios/diario" className="fdl-ui-btn fdl-ui-btn-ghost">
+              Relatório diário
+            </a>
+
             <a href="/projetos" className="fdl-ui-btn fdl-ui-btn-secondary">
               Ver projetos
             </a>
