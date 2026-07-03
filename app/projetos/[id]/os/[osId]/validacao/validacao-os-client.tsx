@@ -175,6 +175,32 @@ export default function ValidacaoOsClient({
     registros: [],
   });
   const [impacto, setImpacto] = useState<ImpactoValidacao | null>(null);
+  const [arquivoAberto, setArquivoAberto] = useState<number | null>(null);
+
+  const totalArquivos = dados.arquivos.length;
+
+  useEffect(() => {
+    if (arquivoAberto === null) return;
+
+    function aoTeclar(event: KeyboardEvent) {
+      if (event.key === "Escape") setArquivoAberto(null);
+
+      if (event.key === "ArrowRight") {
+        setArquivoAberto((atual) =>
+          atual === null ? null : (atual + 1) % totalArquivos
+        );
+      }
+
+      if (event.key === "ArrowLeft") {
+        setArquivoAberto((atual) =>
+          atual === null ? null : (atual - 1 + totalArquivos) % totalArquivos
+        );
+      }
+    }
+
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+  }, [arquivoAberto, totalArquivos]);
 
   async function carregar() {
     setCarregando(true);
@@ -489,7 +515,7 @@ export default function ValidacaoOsClient({
 
             <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {dados.arquivos.length > 0 ? (
-                dados.arquivos.map((arquivo) => {
+                dados.arquivos.map((arquivo, indice) => {
                   const miniatura = arquivo.external_file_id
                     ? `https://drive.google.com/thumbnail?id=${arquivo.external_file_id}&sz=w400`
                     : null;
@@ -499,12 +525,11 @@ export default function ValidacaoOsClient({
                     (arquivo.mime_type ?? "").startsWith("video/");
 
                   return (
-                    <a
+                    <button
                       key={arquivo.id}
-                      href={arquivo.url_visualizacao ?? undefined}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] transition hover:border-[var(--fdl-cream)]/60"
+                      type="button"
+                      onClick={() => setArquivoAberto(indice)}
+                      className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-left transition hover:border-[var(--fdl-cream)]/60"
                     >
                       <div className="relative flex h-32 w-full items-center justify-center bg-white/[0.03]">
                         {miniatura ? (
@@ -534,7 +559,7 @@ export default function ValidacaoOsClient({
                       <p className="truncate px-3 py-2 text-xs font-semibold text-white/70">
                         {arquivo.nome_arquivo || "Arquivo"}
                       </p>
-                    </a>
+                    </button>
                   );
                 })
               ) : (
@@ -545,7 +570,8 @@ export default function ValidacaoOsClient({
             </div>
 
             <p className="mt-3 text-xs text-white/40">
-              Clique em um registro para abrir o arquivo original em nova aba.
+              Clique em um registro para visualizar aqui mesmo. Use as setas do
+              teclado para alternar entre os anexos.
             </p>
           </section>
         </div>
@@ -650,6 +676,95 @@ export default function ValidacaoOsClient({
           </section>
         </aside>
       </section>
+
+      {arquivoAberto !== null && dados.arquivos[arquivoAberto] ? (
+        <div
+          className="fixed inset-0 z-50 flex flex-col bg-black/90 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Visualizador de anexos"
+        >
+          <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold text-white">
+                {dados.arquivos[arquivoAberto].nome_arquivo || "Arquivo"}
+              </p>
+              <p className="text-xs text-white/50">
+                {arquivoAberto + 1} de {totalArquivos} anexo(s)
+              </p>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2">
+              {dados.arquivos[arquivoAberto].url_visualizacao ? (
+                <a
+                  href={dados.arquivos[arquivoAberto].url_visualizacao ?? undefined}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-ghost"
+                >
+                  Abrir original
+                </a>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={() => setArquivoAberto(null)}
+                aria-label="Fechar visualizador"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-sm font-black text-white transition hover:bg-white/25"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <div className="relative flex-1 px-14 pb-4 sm:px-16">
+            {dados.arquivos[arquivoAberto].external_file_id ? (
+              <iframe
+                key={dados.arquivos[arquivoAberto].id}
+                src={`https://drive.google.com/file/d/${dados.arquivos[arquivoAberto].external_file_id}/preview`}
+                title={dados.arquivos[arquivoAberto].nome_arquivo || "Anexo"}
+                allow="autoplay"
+                className="h-full w-full rounded-2xl border border-white/10 bg-black"
+              />
+            ) : (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] text-white/60">
+                <span className="text-4xl">📄</span>
+                <p className="text-sm">
+                  Este arquivo não tem pré-visualização disponível.
+                </p>
+              </div>
+            )}
+
+            {totalArquivos > 1 ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setArquivoAberto(
+                      (arquivoAberto - 1 + totalArquivos) % totalArquivos
+                    )
+                  }
+                  aria-label="Anexo anterior"
+                  className="absolute left-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-xl font-black text-white transition hover:bg-[var(--fdl-cream)] hover:text-[var(--fdl-purple-dark)]"
+                >
+                  ‹
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setArquivoAberto((arquivoAberto + 1) % totalArquivos)
+                  }
+                  aria-label="Próximo anexo"
+                  className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-xl font-black text-white transition hover:bg-[var(--fdl-cream)] hover:text-[var(--fdl-purple-dark)]"
+                >
+                  ›
+                </button>
+              </>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       {acaoConfirmacao ? (
         <div
