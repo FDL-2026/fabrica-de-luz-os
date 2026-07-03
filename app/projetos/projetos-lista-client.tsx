@@ -76,6 +76,7 @@ export default function ProjetosListaClient({
   projetos,
 }: ProjetosListaClientProps) {
   const [busca, setBusca] = useState("");
+  const [visao, setVisao] = useState<"cards" | "tabela">("cards");
   const [ufFiltro, setUfFiltro] = useState("");
   const [statusFiltro, setStatusFiltro] = useState("");
   const [gestorFiltro, setGestorFiltro] = useState("");
@@ -145,9 +146,38 @@ export default function ProjetosListaClient({
           </p>
         </div>
 
-        <span className="fdl-ui-subtle-count">
-          {projetosFiltrados.length} de {projetos.length} projeto(s)
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="fdl-ui-subtle-count">
+            {projetosFiltrados.length} de {projetos.length} projeto(s)
+          </span>
+
+          <div className="flex overflow-hidden rounded-full border border-white/15">
+            <button
+              type="button"
+              onClick={() => setVisao("cards")}
+              aria-pressed={visao === "cards"}
+              className={`px-4 py-2 text-xs font-bold transition ${
+                visao === "cards"
+                  ? "bg-[var(--fdl-cream)] text-[var(--fdl-purple-dark)]"
+                  : "text-white/70 hover:bg-white/10"
+              }`}
+            >
+              Cards
+            </button>
+            <button
+              type="button"
+              onClick={() => setVisao("tabela")}
+              aria-pressed={visao === "tabela"}
+              className={`px-4 py-2 text-xs font-bold transition ${
+                visao === "tabela"
+                  ? "bg-[var(--fdl-cream)] text-[var(--fdl-purple-dark)]"
+                  : "text-white/70 hover:bg-white/10"
+              }`}
+            >
+              Tabela
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="fdl-ui-filter-box mt-0">
@@ -224,7 +254,76 @@ export default function ProjetosListaClient({
       </div>
 
       <div className="mt-6">
-        {projetosFiltrados.length > 0 ? (
+        {projetosFiltrados.length > 0 && visao === "tabela" ? (
+          <div className="fdl-ui-table-wrap mt-0">
+            <div className="fdl-ui-table-scroll">
+              <table className="min-w-[860px] fdl-ui-table">
+                <thead>
+                  <tr>
+                    <th>Projeto</th>
+                    <th>UF</th>
+                    <th>Status</th>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Gestor Comercial</th>
+                    <th className="text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projetosFiltrados.map((projeto) => (
+                    <tr key={projeto.id}>
+                      <td>
+                        <p className="fdl-ui-table-primary">
+                          {projeto.cliente || projeto.shopping}
+                        </p>
+                        <p className="fdl-ui-table-secondary">
+                          {[projeto.cidade, projeto.temporada]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </p>
+                      </td>
+                      <td className="font-bold text-white/80">
+                        {projeto.uf || "-"}
+                      </td>
+                      <td>
+                        <span
+                          className={`fdl-ui-badge ${statusClass(projeto.status)}`}
+                        >
+                          {formatStatus(projeto.status)}
+                        </span>
+                      </td>
+                      <td className="text-white/70">
+                        {formatDate(projeto.data_inicio)}
+                      </td>
+                      <td className="text-white/70">
+                        {formatDate(projeto.data_fim)}
+                      </td>
+                      <td className="text-white/70">
+                        {projeto.responsavel_comercial || "-"}
+                      </td>
+                      <td className="text-right">
+                        <div className="fdl-ui-table-actions">
+                          <a
+                            href={`/projetos/${projeto.id}`}
+                            className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary"
+                          >
+                            Abrir
+                          </a>
+                          <a
+                            href={`/projetos/${projeto.id}/cronograma`}
+                            className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-ghost"
+                          >
+                            Cronograma
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : projetosFiltrados.length > 0 ? (
           <div className="grid gap-4 xl:grid-cols-2">
             {projetosFiltrados.map((projeto) => (
               <article

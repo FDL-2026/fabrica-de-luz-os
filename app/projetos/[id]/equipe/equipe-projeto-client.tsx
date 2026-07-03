@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import FdlToast from "@/components/ui/fdl-toast";
 
 type EquipeProjetoClientProps = {
   projetoId: string;
@@ -223,11 +224,7 @@ export default function EquipeProjetoClient({
           <div className="fdl-ui-alert fdl-ui-alert-error mt-4">{erro}</div>
         ) : null}
 
-        {sucesso ? (
-          <div className="fdl-ui-alert fdl-ui-alert-success mt-4">
-            {sucesso}
-          </div>
-        ) : null}
+        <FdlToast mensagem={sucesso} onFechar={() => setSucesso("")} />
 
         <div className="mt-5">
           {carregando ? (

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import FdlToast from "@/components/ui/fdl-toast";
 
 type OsDetalheClientProps = {
   codigo: string;
@@ -465,8 +466,10 @@ export default function OsDetalheClient({
 
   if (carregando) {
     return (
-      <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 text-center text-white/60">
-        Carregando dados da OS...
+      <div className="space-y-5" aria-busy="true" aria-label="Carregando OS">
+        <div className="fdl-skeleton h-44 w-full" />
+        <div className="fdl-skeleton h-64 w-full" />
+        <div className="fdl-skeleton h-52 w-full" />
       </div>
     );
   }
@@ -766,11 +769,7 @@ export default function OsDetalheClient({
           </div>
         ) : null}
 
-        {sucesso ? (
-          <div className="mt-4 rounded-2xl border border-green-400/30 bg-green-500/10 p-4 text-sm text-green-100">
-            {sucesso}
-          </div>
-        ) : null}
+        <FdlToast mensagem={sucesso} onFechar={() => setSucesso("")} />
 
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           <button

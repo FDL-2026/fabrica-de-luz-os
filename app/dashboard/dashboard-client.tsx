@@ -411,8 +411,14 @@ export default function DashboardClient() {
 
   if (carregando) {
     return (
-      <div className="fdl-ui-section text-center text-white/60">
-        Carregando dashboard operacional...
+      <div className="space-y-6" aria-busy="true" aria-label="Carregando dashboard">
+        <div className="fdl-skeleton h-48 w-full" />
+        <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
+          {[0, 1, 2, 3, 4, 5].map((item) => (
+            <div key={item} className="fdl-skeleton h-32" />
+          ))}
+        </div>
+        <div className="fdl-skeleton h-64 w-full" />
       </div>
     );
   }

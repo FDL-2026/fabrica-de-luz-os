@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import FdlToast from "@/components/ui/fdl-toast";
 
 type ValidacaoOsClientProps = {
   projetoId: string;
@@ -277,8 +278,12 @@ export default function ValidacaoOsClient({
 
   if (carregando) {
     return (
-      <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 text-center text-white/60">
-        Carregando validação da OS...
+      <div className="space-y-6" aria-busy="true" aria-label="Carregando validação">
+        <div className="fdl-skeleton h-40 w-full" />
+        <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
+          <div className="fdl-skeleton h-96" />
+          <div className="fdl-skeleton h-96" />
+        </div>
       </div>
     );
   }
@@ -585,11 +590,7 @@ export default function ValidacaoOsClient({
               </div>
             ) : null}
 
-            {sucesso ? (
-              <div className="mt-4 rounded-2xl border border-green-400/30 bg-green-500/10 p-4 text-sm text-green-100">
-                {sucesso}
-              </div>
-            ) : null}
+            <FdlToast mensagem={sucesso} onFechar={() => setSucesso("")} />
 
             <div className="mt-5 space-y-3">
               <button

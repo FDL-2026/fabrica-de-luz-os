@@ -216,8 +216,13 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
 
   if (carregando) {
     return (
-      <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 text-center text-white/60">
-        Carregando OSs do projeto...
+      <div className="space-y-5" aria-busy="true" aria-label="Carregando projeto">
+        <div className="fdl-skeleton h-44 w-full" />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+          {[0, 1, 2, 3, 4].map((item) => (
+            <div key={item} className="fdl-skeleton h-28" />
+          ))}
+        </div>
       </div>
     );
   }
