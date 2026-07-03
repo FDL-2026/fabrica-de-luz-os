@@ -68,7 +68,12 @@ end $$;
 
 -- ------------------------------------------------------------
 -- 3. PROJETOS + OSs + VÍNCULOS
+--    Desativa temporariamente os gatilhos de negócio (ex.: a
+--    exigência de 7 registros para concluir OS) apenas durante
+--    a carga de dados de teste. Reativado na seção 4.
 -- ------------------------------------------------------------
+set session_replication_role = replica;
+
 do $$
 declare
   gestores text[] := array['Bruno Koga', 'Lucas Borges', 'Acácio Pires', 'Arthur Palhares', 'Hiron Mendes'];
@@ -237,8 +242,10 @@ begin
 end $$;
 
 -- ------------------------------------------------------------
--- 4. CONFERÊNCIA
+-- 4. REATIVA OS GATILHOS E CONFERE
 -- ------------------------------------------------------------
+set session_replication_role = origin;
+
 select responsavel_comercial as gestor,
        count(*) as projetos
   from projetos
