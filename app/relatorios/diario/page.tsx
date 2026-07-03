@@ -505,13 +505,13 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
               </h1>
             </div>
 
-            <div className="flex h-24 w-64 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--fdl-purple)] to-[var(--fdl-purple-deep)] px-5">
+            <div className="flex h-20 w-48 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--fdl-purple)] to-[var(--fdl-purple-deep)] p-1">
               <Image
                 src="/brand/H_TAGLINE_SF_ROXO.png"
                 alt="Fábrica de Luz"
                 width={300}
                 height={180}
-                className="h-auto max-h-[4.5rem] w-full object-contain"
+                className="h-full w-full scale-110 object-contain"
               />
             </div>
           </div>
