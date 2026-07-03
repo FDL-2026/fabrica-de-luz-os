@@ -717,7 +717,7 @@ export default function ValidacaoOsClient({
             </div>
           </div>
 
-          <div className="relative flex-1 px-14 pb-4 sm:px-16">
+          <div className="relative flex-1">
             {dados.arquivos[arquivoAberto].external_file_id ? (
               (dados.arquivos[arquivoAberto].tipo === "video" ||
                 (dados.arquivos[arquivoAberto].mime_type ?? "").startsWith(
@@ -729,21 +729,21 @@ export default function ValidacaoOsClient({
                   controls
                   autoPlay
                   playsInline
-                  className="h-full w-full rounded-2xl border border-white/10 bg-black object-contain"
+                  className="absolute bottom-4 left-14 right-14 top-0 sm:left-16 sm:right-16 h-auto rounded-2xl border border-white/10 bg-black object-contain"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black">
+                <div className="absolute bottom-4 left-14 right-14 top-0 sm:left-16 sm:right-16 flex items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     key={dados.arquivos[arquivoAberto].id}
                     src={`/api/anexos/${dados.arquivos[arquivoAberto].external_file_id}`}
                     alt={dados.arquivos[arquivoAberto].nome_arquivo || "Anexo"}
-                    className="max-h-full max-w-full object-contain"
+                    className="h-full w-full object-contain"
                   />
                 </div>
               )
             ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] text-white/60">
+              <div className="absolute bottom-4 left-14 right-14 top-0 sm:left-16 sm:right-16 flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] text-white/60">
                 <span className="text-4xl">📄</span>
                 <p className="text-sm">
                   Este arquivo não tem pré-visualização disponível.
