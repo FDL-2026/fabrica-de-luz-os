@@ -105,15 +105,18 @@ export default function PinForm({ codigo }: PinFormProps) {
   }
 
   useEffect(() => {
-    const storage = sessionStorage.getItem("fdl_montador");
+    const storage = localStorage.getItem("fdl_montador");
 
     if (!storage) return;
 
     try {
       const dados = JSON.parse(storage);
 
-      if (dados?.codigo?.toUpperCase() !== codigo.toUpperCase()) {
-        sessionStorage.removeItem("fdl_montador");
+      const sessaoExpirada =
+        typeof dados?.expiraEm === "number" && dados.expiraEm < Date.now();
+
+      if (sessaoExpirada || dados?.codigo?.toUpperCase() !== codigo.toUpperCase()) {
+        localStorage.removeItem("fdl_montador");
         return;
       }
 
@@ -127,7 +130,7 @@ export default function PinForm({ codigo }: PinFormProps) {
       setMontador(montadorSalvo);
       carregarProjetos(dados.usuarioId);
     } catch {
-      sessionStorage.removeItem("fdl_montador");
+      localStorage.removeItem("fdl_montador");
     }
   }, [codigo]);
 
@@ -166,12 +169,13 @@ export default function PinForm({ codigo }: PinFormProps) {
 
     const montadorValidado = resultado as MontadorValidado;
 
-    sessionStorage.setItem(
+    localStorage.setItem(
       "fdl_montador",
       JSON.stringify({
         usuarioId: montadorValidado.usuario_id,
         nome: montadorValidado.nome,
         codigo: montadorValidado.codigo_montador,
+        expiraEm: Date.now() + 12 * 60 * 60 * 1000,
       })
     );
 
@@ -317,7 +321,7 @@ export default function PinForm({ codigo }: PinFormProps) {
         <button
           type="button"
           onClick={() => {
-            sessionStorage.removeItem("fdl_montador");
+            localStorage.removeItem("fdl_montador");
             setMontador(null);
             setProjetos([]);
             setPin("");

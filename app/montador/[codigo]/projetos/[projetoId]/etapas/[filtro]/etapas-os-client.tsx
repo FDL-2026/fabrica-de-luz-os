@@ -312,7 +312,7 @@ function agruparPorEtapa(ordens: OsMontador[]) {
 
 function lerMontadorSession() {
   try {
-    const raw = sessionStorage.getItem("fdl_montador");
+    const raw = localStorage.getItem("fdl_montador");
 
     if (!raw) return null;
 
@@ -366,7 +366,7 @@ export default function EtapasOsClient({
       }
 
       if (montador?.codigo?.toUpperCase() !== codigo.toUpperCase()) {
-        sessionStorage.removeItem("fdl_montador");
+        localStorage.removeItem("fdl_montador");
         setErro("Código de montador divergente. Informe o PIN novamente.");
         setCarregando(false);
         return;

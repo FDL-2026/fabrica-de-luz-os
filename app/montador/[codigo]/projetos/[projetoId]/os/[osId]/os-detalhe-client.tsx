@@ -174,6 +174,31 @@ export default function OsDetalheClient({
   const [arquivosSelecionados, setArquivosSelecionados] = useState<File[]>([]);
   const [inputArquivosKey, setInputArquivosKey] = useState(0);
   const [enviandoArquivo, setEnviandoArquivo] = useState(false);
+  const [progressoUpload, setProgressoUpload] = useState("");
+
+  function adicionarArquivos(novos: FileList | null) {
+    if (!novos || novos.length === 0) return;
+
+    setArquivosSelecionados((atuais) => {
+      const lista = [...atuais];
+
+      for (const arquivo of Array.from(novos)) {
+        const duplicado = lista.some(
+          (item) => item.name === arquivo.name && item.size === arquivo.size
+        );
+
+        if (!duplicado) lista.push(arquivo);
+      }
+
+      return lista;
+    });
+  }
+
+  function removerArquivoSelecionado(indice: number) {
+    setArquivosSelecionados((atuais) =>
+      atuais.filter((_, posicao) => posicao !== indice)
+    );
+  }
   const [usuarioId, setUsuarioId] = useState("");
   const [montadorNome, setMontadorNome] = useState("");
   const [observacao, setObservacao] = useState("");
@@ -255,7 +280,7 @@ export default function OsDetalheClient({
       setCarregando(true);
       setErro("");
 
-      const storage = sessionStorage.getItem("fdl_montador");
+      const storage = localStorage.getItem("fdl_montador");
 
       if (!storage) {
         setErro("Acesso expirado. Volte e informe o PIN novamente.");
@@ -268,14 +293,17 @@ export default function OsDetalheClient({
       try {
         dados = JSON.parse(storage);
       } catch {
-        sessionStorage.removeItem("fdl_montador");
+        localStorage.removeItem("fdl_montador");
         setErro("Acesso inválido. Volte e informe o PIN novamente.");
         setCarregando(false);
         return;
       }
 
-      if (dados?.codigo?.toUpperCase() !== codigo.toUpperCase()) {
-        sessionStorage.removeItem("fdl_montador");
+      const sessaoExpirada =
+        typeof dados?.expiraEm === "number" && dados.expiraEm < Date.now();
+
+      if (sessaoExpirada || dados?.codigo?.toUpperCase() !== codigo.toUpperCase()) {
+        localStorage.removeItem("fdl_montador");
         setErro("Código de montador divergente. Informe o PIN novamente.");
         setCarregando(false);
         return;
@@ -376,47 +404,58 @@ export default function OsDetalheClient({
     setSucesso("");
     setEnviandoArquivo(true);
 
+    const total = arquivosSelecionados.length;
+    const naoEnviados: File[] = [];
     let enviados = 0;
+    let ultimoErro = "";
 
-    for (const arquivo of arquivosSelecionados) {
+    for (let indice = 0; indice < total; indice += 1) {
+      const arquivo = arquivosSelecionados[indice];
+
+      setProgressoUpload(`Enviando ${indice + 1} de ${total}: ${arquivo.name}`);
+
       const formData = new FormData();
       formData.append("usuarioId", usuarioId);
       formData.append("projetoId", projetoId);
       formData.append("osId", osId);
       formData.append("file", arquivo);
 
-      const response = await fetch("/api/montador/os/anexos/upload", {
-        method: "POST",
-        body: formData,
-      });
+      try {
+        const response = await fetch("/api/montador/os/anexos/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-      const payload = await response.json().catch(() => null);
+        const payload = await response.json().catch(() => null);
 
-      if (!response.ok) {
-        setErro(
-          `Falha ao enviar "${arquivo.name}": ${
-            payload?.error ?? "Não foi possível enviar o arquivo."
-          }`
-        );
+        if (!response.ok) {
+          naoEnviados.push(arquivo);
+          ultimoErro = payload?.error ?? "Não foi possível enviar o arquivo.";
+          continue;
+        }
 
-        await carregarArquivos(usuarioId);
-        await carregarRegistros(usuarioId);
-
-        setEnviandoArquivo(false);
-        return;
+        enviados += 1;
+      } catch {
+        naoEnviados.push(arquivo);
+        ultimoErro = "Falha de conexão durante o envio.";
       }
-
-      enviados += 1;
     }
 
-    setArquivosSelecionados([]);
+    setProgressoUpload("");
+    setArquivosSelecionados(naoEnviados);
     setInputArquivosKey((value) => value + 1);
 
-    setSucesso(
-      enviados === 1
-        ? "Arquivo enviado com sucesso."
-        : `${enviados} arquivos enviados com sucesso.`
-    );
+    if (naoEnviados.length > 0) {
+      setErro(
+        `${enviados} de ${total} arquivo(s) enviado(s). ${naoEnviados.length} falharam (${ultimoErro}). Os arquivos que falharam continuam selecionados — toque em enviar para tentar novamente.`
+      );
+    } else {
+      setSucesso(
+        enviados === 1
+          ? "Arquivo enviado com sucesso."
+          : `${enviados} arquivos enviados com sucesso.`
+      );
+    }
 
     await carregarArquivos(usuarioId);
     await carregarRegistros(usuarioId);
@@ -570,30 +609,79 @@ export default function OsDetalheClient({
         </p>
 
         <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-          <input
-            key={inputArquivosKey}
-            type="file"
-            multiple
-            accept="image/*,video/*"
-            onChange={(event) =>
-              setArquivosSelecionados(Array.from(event.target.files ?? []))
-            }
-            className="block w-full text-sm text-white/70 file:mr-4 file:rounded-xl file:border-0 file:bg-[var(--fdl-cream)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[var(--fdl-purple-dark)]"
-          />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[var(--fdl-cream)] text-sm font-bold text-[var(--fdl-purple-dark)] transition hover:brightness-95">
+              📷 Tirar foto agora
+              <input
+                key={`camera-${inputArquivosKey}`}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={(event) => adicionarArquivos(event.target.files)}
+                className="hidden"
+              />
+            </label>
+
+            <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/[0.06] text-sm font-bold text-white/85 transition hover:bg-white/10">
+              🖼 Escolher da galeria
+              <input
+                key={`galeria-${inputArquivosKey}`}
+                type="file"
+                multiple
+                accept="image/*,video/*"
+                onChange={(event) => adicionarArquivos(event.target.files)}
+                className="hidden"
+              />
+            </label>
+          </div>
 
           {arquivosSelecionados.length > 0 ? (
             <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
               <p className="text-xs font-semibold text-white/70">
-                {arquivosSelecionados.length} arquivo(s) selecionado(s):
+                {arquivosSelecionados.length} arquivo(s) pronto(s) para envio:
               </p>
 
-              <div className="mt-2 space-y-1">
-                {arquivosSelecionados.map((arquivo) => (
-                  <p key={`${arquivo.name}-${arquivo.size}`} className="text-xs text-white/45">
-                    {arquivo.name} · {formatBytes(arquivo.size)}
-                  </p>
+              <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {arquivosSelecionados.map((arquivo, indice) => (
+                  <div
+                    key={`${arquivo.name}-${arquivo.size}-${indice}`}
+                    className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
+                  >
+                    {arquivo.type.startsWith("image/") ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={URL.createObjectURL(arquivo)}
+                        alt={arquivo.name}
+                        className="h-20 w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-20 w-full items-center justify-center text-2xl">
+                        🎬
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      disabled={enviandoArquivo}
+                      onClick={() => removerArquivoSelecionado(indice)}
+                      aria-label={`Remover ${arquivo.name}`}
+                      className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-xs font-bold text-white"
+                    >
+                      ✕
+                    </button>
+
+                    <p className="truncate px-1.5 py-1 text-[10px] text-white/50">
+                      {formatBytes(arquivo.size)}
+                    </p>
+                  </div>
                 ))}
               </div>
+            </div>
+          ) : null}
+
+          {progressoUpload ? (
+            <div className="mt-3 rounded-2xl border border-[var(--fdl-cream)]/30 bg-[var(--fdl-cream)]/10 px-4 py-3 text-sm font-semibold text-[var(--fdl-cream)]">
+              {progressoUpload}
             </div>
           ) : null}
 
@@ -603,7 +691,9 @@ export default function OsDetalheClient({
             disabled={arquivosSelecionados.length === 0 || enviandoArquivo}
             className="mt-4 h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {enviandoArquivo ? "Enviando arquivos..." : "Enviar fotos/vídeos"}
+            {enviandoArquivo
+              ? "Enviando..."
+              : `Enviar ${arquivosSelecionados.length || ""} foto(s)/vídeo(s)`.replace("  ", " ")}
           </button>
         </div>
 

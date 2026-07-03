@@ -32,7 +32,7 @@ function formatDateTime(date: string | null) {
 
 function lerMontadorSession() {
   try {
-    const raw = sessionStorage.getItem("fdl_montador");
+    const raw = localStorage.getItem("fdl_montador");
 
     if (!raw) return null;
 

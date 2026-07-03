@@ -164,7 +164,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
       setCarregando(true);
       setErro("");
 
-      const storage = sessionStorage.getItem("fdl_montador");
+      const storage = localStorage.getItem("fdl_montador");
 
       if (!storage) {
         setErro("Acesso expirado. Volte e informe o PIN novamente.");
@@ -177,14 +177,17 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
       try {
         dados = JSON.parse(storage);
       } catch {
-        sessionStorage.removeItem("fdl_montador");
+        localStorage.removeItem("fdl_montador");
         setErro("Acesso inválido. Volte e informe o PIN novamente.");
         setCarregando(false);
         return;
       }
 
-      if (dados?.codigo?.toUpperCase() !== codigo.toUpperCase()) {
-        sessionStorage.removeItem("fdl_montador");
+      const sessaoExpirada =
+        typeof dados?.expiraEm === "number" && dados.expiraEm < Date.now();
+
+      if (sessaoExpirada || dados?.codigo?.toUpperCase() !== codigo.toUpperCase()) {
+        localStorage.removeItem("fdl_montador");
         setErro("Código de montador divergente. Informe o PIN novamente.");
         setCarregando(false);
         return;
@@ -288,13 +291,13 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-5">
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <a
           href={`/montador/${codigo}/projetos/${projetoId}/etapas/todas`}
           className={cardResumoClass("default")}
         >
           <p className="text-sm font-semibold text-white/60">Total de OSs</p>
-          <strong className="mt-2 block text-4xl font-black text-white">
+          <strong className="mt-2 block text-3xl font-black text-white md:text-4xl">
             {resumo.total}
           </strong>
           <span className="mt-2 block text-xs font-semibold text-white/45">
@@ -307,7 +310,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           className={cardResumoClass("warning")}
         >
           <p className="text-sm font-semibold text-white/60">Pendentes</p>
-          <strong className="mt-2 block text-4xl font-black text-white">
+          <strong className="mt-2 block text-3xl font-black text-white md:text-4xl">
             {resumo.pendentes}
           </strong>
           <span className="mt-2 block text-xs font-semibold text-yellow-100/70">
@@ -320,7 +323,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           className={cardResumoClass("success")}
         >
           <p className="text-sm font-semibold text-white/60">Em andamento</p>
-          <strong className="mt-2 block text-4xl font-black text-white">
+          <strong className="mt-2 block text-3xl font-black text-white md:text-4xl">
             {resumo.andamento}
           </strong>
           <span className="mt-2 block text-xs font-semibold text-green-100/70">
@@ -335,7 +338,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           <p className="text-sm font-semibold text-amber-50/75">
             Aguardando validação
           </p>
-          <strong className="mt-2 block text-4xl font-black text-white">
+          <strong className="mt-2 block text-3xl font-black text-white md:text-4xl">
             {resumo.aguardandoValidacao}
           </strong>
           <span className="mt-2 block text-xs font-semibold text-amber-100/75">
@@ -348,7 +351,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           className={cardResumoClass("default")}
         >
           <p className="text-sm font-semibold text-white/60">Concluídas</p>
-          <strong className="mt-2 block text-4xl font-black text-white">
+          <strong className="mt-2 block text-3xl font-black text-white md:text-4xl">
             {resumo.concluidas}
           </strong>
           <span className="mt-2 block text-xs font-semibold text-[var(--fdl-cream)]/80">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type ResumoDashboard = {
@@ -244,11 +245,42 @@ export default function DashboardClient() {
     Record<string, ProgressoPonderadoProjetoDashboard>
   >({});
 
-  const [gestorSelecionado, setGestorSelecionado] = useState("");
-  const [projetoSelecionado, setProjetoSelecionado] = useState("");
-  const [ufSelecionada, setUfSelecionada] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [gestorSelecionado, setGestorSelecionado] = useState(
+    () => searchParams.get("gestor") ?? ""
+  );
+  const [projetoSelecionado, setProjetoSelecionado] = useState(
+    () => searchParams.get("projeto") ?? ""
+  );
+  const [ufSelecionada, setUfSelecionada] = useState(
+    () => searchParams.get("uf") ?? ""
+  );
   const [statusOperacionalSelecionado, setStatusOperacionalSelecionado] =
-    useState("");
+    useState(() => searchParams.get("status") ?? "");
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (gestorSelecionado) params.set("gestor", gestorSelecionado);
+    if (projetoSelecionado) params.set("projeto", projetoSelecionado);
+    if (ufSelecionada) params.set("uf", ufSelecionada);
+    if (statusOperacionalSelecionado)
+      params.set("status", statusOperacionalSelecionado);
+
+    const query = params.toString();
+
+    router.replace(query ? `/dashboard?${query}` : "/dashboard", {
+      scroll: false,
+    });
+  }, [
+    gestorSelecionado,
+    projetoSelecionado,
+    ufSelecionada,
+    statusOperacionalSelecionado,
+    router,
+  ]);
 
   const progressoGeral = useMemo(() => {
     let totalDias = 0;

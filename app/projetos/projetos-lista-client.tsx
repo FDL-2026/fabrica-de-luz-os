@@ -303,6 +303,20 @@ export default function ProjetosListaClient({
                 ? "Ajuste a busca ou limpe os filtros para ver todos os projetos."
                 : "Importe um cronograma ou cadastre um projeto para começar."}
             </p>
+
+            {filtrosAtivos ? (
+              <button
+                type="button"
+                onClick={limparFiltros}
+                className="fdl-ui-btn fdl-ui-btn-ghost mt-5"
+              >
+                Limpar filtros
+              </button>
+            ) : (
+              <a href="/importar" className="fdl-ui-btn fdl-ui-btn-primary mt-5">
+                Importar cronograma
+              </a>
+            )}
           </div>
         )}
       </div>

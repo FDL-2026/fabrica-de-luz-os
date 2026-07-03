@@ -54,13 +54,14 @@ export default function MontadorLoginClient() {
       return;
     }
 
-    sessionStorage.setItem(
+    localStorage.setItem(
       "fdl_montador",
       JSON.stringify({
         usuarioId: resultado.usuario_id,
         nome: resultado.nome,
         perfil: resultado.perfil,
         codigo: resultado.codigo_montador,
+        expiraEm: Date.now() + 12 * 60 * 60 * 1000,
       })
     );
 

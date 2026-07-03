@@ -162,6 +162,9 @@ export default function ValidacaoOsClient({
 
   const [carregando, setCarregando] = useState(true);
   const [processando, setProcessando] = useState<AcaoValidacao | null>(null);
+  const [acaoConfirmacao, setAcaoConfirmacao] = useState<AcaoValidacao | null>(
+    null
+  );
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
   const [observacao, setObservacao] = useState("");
@@ -230,7 +233,7 @@ export default function ValidacaoOsClient({
     carregar();
   }, [projetoId, osId, supabase]);
 
-  async function executarAcao(acao: AcaoValidacao) {
+  function solicitarConfirmacao(acao: AcaoValidacao) {
     setErro("");
     setSucesso("");
 
@@ -239,14 +242,11 @@ export default function ValidacaoOsClient({
       return;
     }
 
-    const confirmar = window.confirm(
-      acao === "aprovar"
-        ? "Aprovar esta OS?"
-        : "Solicitar ajuste para esta OS?"
-    );
+    setAcaoConfirmacao(acao);
+  }
 
-    if (!confirmar) return;
-
+  async function executarAcao(acao: AcaoValidacao) {
+    setAcaoConfirmacao(null);
     setProcessando(acao);
 
     const { error } = await supabase.rpc("fdl_validar_os_gestao", {
@@ -474,45 +474,74 @@ export default function ValidacaoOsClient({
           </section>
 
           <section className="fdl-form-card p-6">
-            <h2 className="fdl-section-title">Fotos e vídeos enviados</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="fdl-section-title">Fotos e vídeos enviados</h2>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
+                {dados.arquivos.length} registro(s)
+              </span>
+            </div>
+
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {dados.arquivos.length > 0 ? (
-                dados.arquivos.map((arquivo) => (
-                  <article
-                    key={arquivo.id}
-                    className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
-                  >
-                    <p className="text-sm font-semibold text-white">
-                      {arquivo.nome_arquivo || "Arquivo"}
-                    </p>
+                dados.arquivos.map((arquivo) => {
+                  const miniatura = arquivo.external_file_id
+                    ? `https://drive.google.com/thumbnail?id=${arquivo.external_file_id}&sz=w400`
+                    : null;
 
-                    <p className="mt-1 text-xs text-white/45">
-                      {arquivo.tipo || arquivo.mime_type || "Arquivo"}
-                    </p>
+                  const ehVideo =
+                    arquivo.tipo === "video" ||
+                    (arquivo.mime_type ?? "").startsWith("video/");
 
-                    {arquivo.url_visualizacao ? (
-                      <a
-                        href={arquivo.url_visualizacao}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-4 inline-flex h-9 items-center justify-center rounded-full bg-[var(--fdl-cream)] px-4 text-xs font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
-                      >
-                        Abrir arquivo
-                      </a>
-                    ) : (
-                      <p className="mt-4 text-xs text-white/40">
-                        Link de visualização não disponível.
+                  return (
+                    <a
+                      key={arquivo.id}
+                      href={arquivo.url_visualizacao ?? undefined}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] transition hover:border-[var(--fdl-cream)]/60"
+                    >
+                      <div className="relative flex h-32 w-full items-center justify-center bg-white/[0.03]">
+                        {miniatura ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={miniatura}
+                            alt={arquivo.nome_arquivo || "Registro da OS"}
+                            loading="lazy"
+                            className="h-full w-full object-cover transition group-hover:scale-[1.03]"
+                            onError={(event) => {
+                              event.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <span className="text-3xl">
+                            {ehVideo ? "🎬" : "📷"}
+                          </span>
+                        )}
+
+                        {ehVideo ? (
+                          <span className="absolute bottom-1.5 right-1.5 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white">
+                            ▶ vídeo
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <p className="truncate px-3 py-2 text-xs font-semibold text-white/70">
+                        {arquivo.nome_arquivo || "Arquivo"}
                       </p>
-                    )}
-                  </article>
-                ))
+                    </a>
+                  );
+                })
               ) : (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-sm text-white/50 md:col-span-2">
+                <div className="col-span-full rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-sm text-white/50">
                   Nenhuma foto ou vídeo vinculado a esta OS.
                 </div>
               )}
             </div>
+
+            <p className="mt-3 text-xs text-white/40">
+              Clique em um registro para abrir o arquivo original em nova aba.
+            </p>
           </section>
         </div>
 
@@ -566,7 +595,7 @@ export default function ValidacaoOsClient({
               <button
                 type="button"
                 disabled={Boolean(processando) || osAprovada}
-                onClick={() => executarAcao("aprovar")}
+                onClick={() => solicitarConfirmacao("aprovar")}
                 className="h-12 w-full rounded-2xl bg-green-100 text-sm font-semibold text-green-700 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {processando === "aprovar" ? "Aprovando..." : "Aprovar OS"}
@@ -575,7 +604,7 @@ export default function ValidacaoOsClient({
               <button
                 type="button"
                 disabled={Boolean(processando) || osAprovada}
-                onClick={() => executarAcao("solicitar_ajuste")}
+                onClick={() => solicitarConfirmacao("solicitar_ajuste")}
                 className="h-12 w-full rounded-2xl bg-red-100 text-sm font-semibold text-red-700 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {processando === "solicitar_ajuste"
@@ -620,6 +649,66 @@ export default function ValidacaoOsClient({
           </section>
         </aside>
       </section>
+
+      {acaoConfirmacao ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-md rounded-3xl border border-white/15 bg-[var(--fdl-purple-deep)] p-6 shadow-2xl">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
+              Confirmação
+            </p>
+
+            <h3 className="mt-2 text-xl font-bold text-white">
+              {acaoConfirmacao === "aprovar"
+                ? "Aprovar esta OS?"
+                : "Solicitar ajuste desta OS?"}
+            </h3>
+
+            <p className="mt-2 text-sm leading-6 text-white/65">
+              {acaoConfirmacao === "aprovar"
+                ? "A OS será marcada como aprovada e o progresso validado do projeto será atualizado. Esta ação bloqueia novas validações da OS."
+                : "A OS voltará para o montador com a orientação escrita na observação."}
+            </p>
+
+            {acaoConfirmacao === "aprovar" && impacto?.impacto_aprovacao ? (
+              <p className="mt-3 rounded-2xl border border-[var(--fdl-cream)]/30 bg-[var(--fdl-cream)]/10 px-4 py-2.5 text-sm font-semibold text-[var(--fdl-cream)]">
+                Impacto: +{formatNumber(impacto.impacto_aprovacao)} p.p. no
+                progresso do projeto ({formatPercent(
+                  impacto.progresso_validado_atual
+                )}{" "}
+                → {formatPercent(impacto.progresso_validado_se_aprovar)})
+              </p>
+            ) : null}
+
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setAcaoConfirmacao(null)}
+                className="h-12 flex-1 rounded-2xl border border-white/15 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                onClick={() => executarAcao(acaoConfirmacao)}
+                className={`h-12 flex-1 rounded-2xl text-sm font-bold transition hover:brightness-95 ${
+                  acaoConfirmacao === "aprovar"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {acaoConfirmacao === "aprovar"
+                  ? "Confirmar aprovação"
+                  : "Confirmar ajuste"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
