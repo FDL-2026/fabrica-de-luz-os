@@ -27,21 +27,44 @@ truncate table projetos cascade;
 --    (p_auth_user_id null); para dar acesso real a eles depois,
 --    cadastre pela tela Usuários. Montadores já logam com PIN.
 -- ------------------------------------------------------------
-select fdl_salvar_usuario_gestao('Bruno Koga',      'bruno.koga@fabricadeluz.com.br',      'gestor_comercial',    'email', null, null, null, true);
-select fdl_salvar_usuario_gestao('Lucas Borges',    'lucas.borges@fabricadeluz.com.br',    'gestor_comercial',    'email', null, null, null, true);
-select fdl_salvar_usuario_gestao('Acácio Pires',    'acacio.pires@fabricadeluz.com.br',    'gestor_comercial',    'email', null, null, null, true);
-select fdl_salvar_usuario_gestao('Arthur Palhares', 'arthur.palhares@fabricadeluz.com.br', 'gestor_comercial',    'email', null, null, null, true);
-select fdl_salvar_usuario_gestao('Hiron Mendes',    'hiron.mendes@fabricadeluz.com.br',    'gestor_comercial',    'email', null, null, null, true);
-select fdl_salvar_usuario_gestao('Wagner Vilela',   'wagner.vilela@fabricadeluz.com.br',   'gerente_operacional', 'email', null, null, null, true);
-select fdl_salvar_usuario_gestao('Bruno Cruz',      'bruno.cruz@fabricadeluz.com.br',      'diretor',             'email', null, null, null, true);
-select fdl_salvar_usuario_gestao('Pedro Minasi',    'pedro.minasi@fabricadeluz.com.br',    'diretor',             'email', null, null, null, true);
+do $$
+declare
+  u record;
+begin
+  for u in
+    select * from (values
+      ('Bruno Koga',      'bruno.koga@fabricadeluz.com.br',      'gestor_comercial',    'email', null::text, null::text),
+      ('Lucas Borges',    'lucas.borges@fabricadeluz.com.br',    'gestor_comercial',    'email', null, null),
+      ('Acácio Pires',    'acacio.pires@fabricadeluz.com.br',    'gestor_comercial',    'email', null, null),
+      ('Arthur Palhares', 'arthur.palhares@fabricadeluz.com.br', 'gestor_comercial',    'email', null, null),
+      ('Hiron Mendes',    'hiron.mendes@fabricadeluz.com.br',    'gestor_comercial',    'email', null, null),
+      ('Wagner Vilela',   'wagner.vilela@fabricadeluz.com.br',   'gerente_operacional', 'email', null, null),
+      ('Bruno Cruz',      'bruno.cruz@fabricadeluz.com.br',      'diretor',             'email', null, null),
+      ('Pedro Minasi',    'pedro.minasi@fabricadeluz.com.br',    'diretor',             'email', null, null),
+      ('Marcos Maia',     null,                                  'montador',            'pin',   'M0001', '1234'),
+      ('Aryane',          null,                                  'montador',            'pin',   'M0002', '1234'),
+      ('Judson',          null,                                  'montador',            'pin',   'M0003', '1234'),
+      ('Daniel',          null,                                  'montador',            'pin',   'M0004', '1234'),
+      ('Carlos Magno',    null,                                  'montador',            'pin',   'M0005', '1234'),
+      ('Patrick',         null,                                  'montador',            'pin',   'M0006', '1234')
+    ) as t(nome, email, perfil, tipo_login, codigo, pin)
+  loop
+    -- pula quem já existe (por e-mail ou por código de acesso)
+    if u.email is not null
+       and exists (select 1 from usuarios where lower(email) = lower(u.email)) then
+      continue;
+    end if;
 
-select fdl_salvar_usuario_gestao('Marcos Maia',  null, 'montador', 'pin', 'M0001', '1234', null, true);
-select fdl_salvar_usuario_gestao('Aryane',       null, 'montador', 'pin', 'M0002', '1234', null, true);
-select fdl_salvar_usuario_gestao('Judson',       null, 'montador', 'pin', 'M0003', '1234', null, true);
-select fdl_salvar_usuario_gestao('Daniel',       null, 'montador', 'pin', 'M0004', '1234', null, true);
-select fdl_salvar_usuario_gestao('Carlos Magno', null, 'montador', 'pin', 'M0005', '1234', null, true);
-select fdl_salvar_usuario_gestao('Patrick',      null, 'montador', 'pin', 'M0006', '1234', null, true);
+    if u.codigo is not null
+       and exists (select 1 from usuarios where upper(codigo_acesso) = upper(u.codigo)) then
+      continue;
+    end if;
+
+    perform fdl_salvar_usuario_gestao(
+      u.nome, u.email, u.perfil, u.tipo_login, u.codigo, u.pin, null, true
+    );
+  end loop;
+end $$;
 
 -- ------------------------------------------------------------
 -- 3. PROJETOS + OSs + VÍNCULOS
