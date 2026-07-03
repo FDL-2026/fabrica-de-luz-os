@@ -517,7 +517,7 @@ export default function ValidacaoOsClient({
               {dados.arquivos.length > 0 ? (
                 dados.arquivos.map((arquivo, indice) => {
                   const miniatura = arquivo.external_file_id
-                    ? `https://drive.google.com/thumbnail?id=${arquivo.external_file_id}&sz=w400`
+                    ? `/api/anexos/${arquivo.external_file_id}?thumb=1`
                     : null;
 
                   const ehVideo =
@@ -719,13 +719,29 @@ export default function ValidacaoOsClient({
 
           <div className="relative flex-1 px-14 pb-4 sm:px-16">
             {dados.arquivos[arquivoAberto].external_file_id ? (
-              <iframe
-                key={dados.arquivos[arquivoAberto].id}
-                src={`https://drive.google.com/file/d/${dados.arquivos[arquivoAberto].external_file_id}/preview`}
-                title={dados.arquivos[arquivoAberto].nome_arquivo || "Anexo"}
-                allow="autoplay"
-                className="h-full w-full rounded-2xl border border-white/10 bg-black"
-              />
+              (dados.arquivos[arquivoAberto].tipo === "video" ||
+                (dados.arquivos[arquivoAberto].mime_type ?? "").startsWith(
+                  "video/"
+                )) ? (
+                <video
+                  key={dados.arquivos[arquivoAberto].id}
+                  src={`/api/anexos/${dados.arquivos[arquivoAberto].external_file_id}`}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="h-full w-full rounded-2xl border border-white/10 bg-black object-contain"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    key={dados.arquivos[arquivoAberto].id}
+                    src={`/api/anexos/${dados.arquivos[arquivoAberto].external_file_id}`}
+                    alt={dados.arquivos[arquivoAberto].nome_arquivo || "Anexo"}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+              )
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] text-white/60">
                 <span className="text-4xl">📄</span>
