@@ -493,28 +493,38 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
       </div>
 
       <div className="fdl-report-sheet">
-        <header className="flex items-start justify-between gap-4 border-b-2 border-[var(--fdl-purple)] pb-3">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--fdl-purple)]">
-              Fábrica de Luz · Central de Comando
-            </p>
+        <header className="border-b-2 border-[var(--fdl-purple)] pb-3">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--fdl-purple)]">
+                Fábrica de Luz · Central de Comando
+              </p>
 
-            <h1 className="mt-1 text-2xl font-black text-[var(--fdl-text-dark)]">
-              Relatório Diário de Projetos
-            </h1>
+              <h1 className="mt-1 text-2xl font-black text-[var(--fdl-text-dark)]">
+                Relatório Diário de Projetos
+              </h1>
+            </div>
 
-            <p className="mt-1 text-xs font-semibold capitalize text-[#7d6488]">
-              {dataRelatorio} · gerado às {horaRelatorio}
-            </p>
+            <div className="flex h-16 w-44 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--fdl-purple)] to-[var(--fdl-purple-deep)] px-4">
+              <Image
+                src="/brand/H_TAGLINE_SF_ROXO.png"
+                alt="Fábrica de Luz"
+                width={300}
+                height={180}
+                className="h-auto max-h-12 w-full object-contain"
+              />
+            </div>
           </div>
 
-          <Image
-            src="/brand/H_TAGLINE_SF_ROXO.png"
-            alt="Fábrica de Luz"
-            width={300}
-            height={180}
-            className="h-auto w-32 object-contain"
-          />
+          <div className="mt-2 flex flex-wrap items-center gap-x-2 text-[10px] font-semibold text-[#7d6488]">
+            <span className="capitalize">{dataRelatorio}</span>
+            <span aria-hidden="true">·</span>
+            <span>Gerado às {horaRelatorio}</span>
+            <span aria-hidden="true">·</span>
+            <span>Temporada 2026</span>
+            <span aria-hidden="true">·</span>
+            <span>{relatorio.length} projeto(s) ativo(s)</span>
+          </div>
         </header>
 
         <section className="mt-4 overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--fdl-purple)] to-[var(--fdl-purple-deep)] p-5 text-white">
@@ -618,7 +628,8 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
         </section>
 
         <section className="mt-4">
-          <h2 className="text-xs font-black uppercase tracking-[0.18em] text-[var(--fdl-purple)]">
+          <h2 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--fdl-purple)]">
+            <span className="inline-block h-3.5 w-1 rounded-full bg-[var(--fdl-purple)]" />
             Progresso por Gestor Comercial
           </h2>
 
@@ -695,6 +706,7 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
 
         <section className="mt-4">
           <h2 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-red-700">
+            <span className="inline-block h-3.5 w-1 rounded-full bg-red-600" />
             ⚠ Avisos críticos
           </h2>
 
@@ -727,7 +739,8 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
         </section>
 
         <section className="mt-4">
-          <h2 className="text-xs font-black uppercase tracking-[0.18em] text-[var(--fdl-purple)]">
+          <h2 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--fdl-purple)]">
+            <span className="inline-block h-3.5 w-1 rounded-full bg-[var(--fdl-purple)]" />
             Evolução por projeto
           </h2>
 
