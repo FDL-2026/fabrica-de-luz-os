@@ -44,6 +44,7 @@ type ProjetoRelatorio = {
   nome: string;
   uf: string;
   gestor: string;
+  pesoTotal: number;
   planejado: number;
   real: number;
   desvio: number;
@@ -57,9 +58,20 @@ type ProjetoRelatorio = {
   avisos: string[];
 };
 
+type GestorRelatorio = {
+  nome: string;
+  projetos: number;
+  pesoTotal: number;
+  real: number;
+  planejado: number;
+  desvio: number;
+  criticos: number;
+  atencao: number;
+};
+
 const DIA_MS = 86400000;
 const JANELA_RITMO_DIAS = 7;
-const LIMITE_LINHAS_PADRAO = 18;
+const LIMITE_LINHAS_PADRAO = 14;
 
 function toNumber(value: unknown) {
   const numero = Number(value ?? 0);
@@ -314,7 +326,8 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
       id: projeto.id,
       nome: projeto.cliente || projeto.shopping || "Projeto sem nome",
       uf: projeto.uf || "—",
-      gestor: projeto.responsavel_comercial || "—",
+      gestor: projeto.responsavel_comercial || "Sem gestor definido",
+      pesoTotal,
       planejado,
       real,
       desvio,
@@ -338,29 +351,80 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
     return b.desvio - a.desvio;
   });
 
-  const pesoTotalGeral = relatorio.length;
-  const mediaReal =
-    pesoTotalGeral > 0
-      ? relatorio.reduce((soma, item) => soma + item.real, 0) / pesoTotalGeral
+  const pesoGeral = relatorio.reduce((soma, item) => soma + item.pesoTotal, 0);
+
+  const realAcumulado =
+    pesoGeral > 0
+      ? relatorio.reduce((soma, item) => soma + item.real * item.pesoTotal, 0) /
+        pesoGeral
       : 0;
-  const mediaPlanejado =
-    pesoTotalGeral > 0
-      ? relatorio.reduce((soma, item) => soma + item.planejado, 0) /
-        pesoTotalGeral
+
+  const planejadoAcumulado =
+    pesoGeral > 0
+      ? relatorio.reduce(
+          (soma, item) => soma + item.planejado * item.pesoTotal,
+          0
+        ) / pesoGeral
       : 0;
-  const avancoMedio24h =
-    pesoTotalGeral > 0
-      ? relatorio.reduce((soma, item) => soma + item.avanco24h, 0) /
-        pesoTotalGeral
+
+  const avanco24hAcumulado =
+    pesoGeral > 0
+      ? relatorio.reduce(
+          (soma, item) => soma + item.avanco24h * item.pesoTotal,
+          0
+        ) / pesoGeral
       : 0;
+
+  const desvioAcumulado = planejadoAcumulado - realAcumulado;
 
   const criticos = relatorio.filter((item) => item.classificacao === "critico");
   const atencao = relatorio.filter((item) => item.classificacao === "atencao");
   const noPrazo = relatorio.filter((item) => item.classificacao === "ok");
 
+  const gestoresMap = new Map<string, ProjetoRelatorio[]>();
+
+  for (const item of relatorio) {
+    const lista = gestoresMap.get(item.gestor) ?? [];
+    lista.push(item);
+    gestoresMap.set(item.gestor, lista);
+  }
+
+  const gestores: GestorRelatorio[] = Array.from(gestoresMap.entries())
+    .map(([nome, itens]) => {
+      const peso = itens.reduce((soma, item) => soma + item.pesoTotal, 0);
+
+      const real =
+        peso > 0
+          ? itens.reduce((soma, item) => soma + item.real * item.pesoTotal, 0) /
+            peso
+          : 0;
+
+      const planejado =
+        peso > 0
+          ? itens.reduce(
+              (soma, item) => soma + item.planejado * item.pesoTotal,
+              0
+            ) / peso
+          : 0;
+
+      return {
+        nome,
+        projetos: itens.length,
+        pesoTotal: peso,
+        real,
+        planejado,
+        desvio: planejado - real,
+        criticos: itens.filter((item) => item.classificacao === "critico")
+          .length,
+        atencao: itens.filter((item) => item.classificacao === "atencao")
+          .length,
+      };
+    })
+    .sort((a, b) => b.desvio - a.desvio);
+
   const avisosCriticos = [...criticos, ...atencao]
     .filter((item) => item.avisos.length > 0)
-    .slice(0, 8);
+    .slice(0, 6);
 
   const linhasTabela = mostrarTodos
     ? relatorio
@@ -429,7 +493,7 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
       </div>
 
       <div className="fdl-report-sheet">
-        <header className="flex items-start justify-between gap-4 border-b-2 border-[var(--fdl-purple)] pb-4">
+        <header className="flex items-start justify-between gap-4 border-b-2 border-[var(--fdl-purple)] pb-3">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--fdl-purple)]">
               Fábrica de Luz · Central de Comando
@@ -453,71 +517,184 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
           />
         </header>
 
-        <section className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
-          <div className="rounded-xl border border-[#e8e0f0] bg-[#faf7fd] p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#7d6488]">
-              Projetos ativos
-            </p>
-            <strong className="mt-1 block text-2xl font-black text-[var(--fdl-text-dark)]">
-              {relatorio.length}
-            </strong>
-            <p className="mt-0.5 text-[10px] font-semibold text-[#7d6488]">
+        <section className="mt-4 overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--fdl-purple)] to-[var(--fdl-purple-deep)] p-5 text-white">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
+                Progresso acumulado da operação
+              </p>
+
+              <div className="mt-2 flex items-baseline gap-3">
+                <strong className="text-5xl font-black leading-none">
+                  {formatPontos(realAcumulado)}%
+                </strong>
+
+                <span className="text-sm font-bold text-white/70">
+                  real validado
+                </span>
+              </div>
+
+              <p className="mt-1.5 text-xs font-semibold text-white/75">
+                Planejado até hoje: {formatPontos(planejadoAcumulado)}% ·{" "}
+                {desvioAcumulado >= 0.5 ? (
+                  <span className="text-[var(--fdl-cream)]">
+                    {formatPontos(desvioAcumulado)} p.p. atrás do cronograma
+                  </span>
+                ) : desvioAcumulado <= -0.5 ? (
+                  <span className="text-green-300">
+                    {formatPontos(Math.abs(desvioAcumulado))} p.p. à frente do
+                    cronograma
+                  </span>
+                ) : (
+                  <span className="text-green-300">em linha com o cronograma</span>
+                )}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-xl bg-white/10 px-3 py-2">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-white/60">
+                  Projetos
+                </p>
+                <strong className="block text-xl font-black">
+                  {relatorio.length}
+                </strong>
+              </div>
+
+              <div className="rounded-xl bg-white/10 px-3 py-2">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-white/60">
+                  Avanço 24h
+                </p>
+                <strong className="block text-xl font-black text-[var(--fdl-cream)]">
+                  +{formatPontos(avanco24hAcumulado)}
+                </strong>
+              </div>
+
+              <div
+                className={`rounded-xl px-3 py-2 ${
+                  criticos.length > 0 ? "bg-red-500/30" : "bg-white/10"
+                }`}
+              >
+                <p className="text-[9px] font-bold uppercase tracking-wider text-white/60">
+                  Críticos
+                </p>
+                <strong
+                  className={`block text-xl font-black ${
+                    criticos.length > 0 ? "text-red-200" : "text-green-300"
+                  }`}
+                >
+                  {criticos.length}
+                </strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative mt-4 h-4 overflow-hidden rounded-full bg-white/15">
+            <div
+              className="h-full rounded-full bg-[var(--fdl-cream)]"
+              style={{ width: `${clamp(realAcumulado, 0, 100)}%` }}
+            />
+            <div
+              className="absolute top-0 h-full w-[2.5px] bg-white"
+              style={{ left: `${clamp(planejadoAcumulado, 0, 100)}%` }}
+              title="Planejado até hoje"
+            />
+          </div>
+
+          <div className="mt-1.5 flex items-center gap-4 text-[9px] font-bold uppercase tracking-wider text-white/65">
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-2 w-4 rounded-full bg-[var(--fdl-cream)]" />
+              Real validado
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-3 w-[2.5px] bg-white" />
+              Planejado até hoje
+            </span>
+            <span className="ml-auto normal-case tracking-normal">
               {criticos.length} crítico(s) · {atencao.length} em atenção ·{" "}
               {noPrazo.length} no prazo
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-[#e8e0f0] bg-[#faf7fd] p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#7d6488]">
-              Planejado x Real (média)
-            </p>
-            <strong className="mt-1 block text-2xl font-black text-[var(--fdl-text-dark)]">
-              {formatPontos(mediaPlanejado)}%{" "}
-              <span className="text-base font-bold text-[#7d6488]">vs</span>{" "}
-              {formatPontos(mediaReal)}%
-            </strong>
-            <p className="mt-0.5 text-[10px] font-semibold text-[#7d6488]">
-              desvio médio de {formatPontos(mediaPlanejado - mediaReal)} p.p.
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-[#e8e0f0] bg-[#faf7fd] p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#7d6488]">
-              Avanço nas últimas 24h
-            </p>
-            <strong className="mt-1 block text-2xl font-black text-[var(--fdl-text-dark)]">
-              +{formatPontos(avancoMedio24h)} p.p.
-            </strong>
-            <p className="mt-0.5 text-[10px] font-semibold text-[#7d6488]">
-              média por projeto (OSs aprovadas)
-            </p>
-          </div>
-
-          <div
-            className={`rounded-xl border p-3 ${
-              criticos.length > 0
-                ? "border-red-200 bg-red-50"
-                : "border-green-200 bg-green-50"
-            }`}
-          >
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#7d6488]">
-              Projetos críticos
-            </p>
-            <strong
-              className={`mt-1 block text-2xl font-black ${
-                criticos.length > 0 ? "text-red-700" : "text-green-700"
-              }`}
-            >
-              {criticos.length}
-            </strong>
-            <p className="mt-0.5 text-[10px] font-semibold text-[#7d6488]">
-              exigem ação imediata da operação
-            </p>
+            </span>
           </div>
         </section>
 
         <section className="mt-4">
-          <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-red-700">
+          <h2 className="text-xs font-black uppercase tracking-[0.18em] text-[var(--fdl-purple)]">
+            Progresso por Gestor Comercial
+          </h2>
+
+          <div className="mt-2 space-y-1.5">
+            {gestores.map((gestor) => (
+              <div
+                key={gestor.nome}
+                className="flex items-center gap-3 rounded-xl border border-[#e8e0f0] bg-[#faf7fd] px-3 py-2"
+              >
+                <div className="w-40 min-w-0 shrink-0">
+                  <p className="truncate text-[11px] font-black text-[var(--fdl-text-dark)]">
+                    {gestor.nome}
+                  </p>
+                  <p className="text-[9px] font-semibold text-[#9c88ab]">
+                    {gestor.projetos} projeto(s)
+                    {gestor.criticos > 0 ? (
+                      <span className="font-black text-red-600">
+                        {" "}
+                        · {gestor.criticos} crítico(s)
+                      </span>
+                    ) : gestor.atencao > 0 ? (
+                      <span className="font-black text-yellow-600">
+                        {" "}
+                        · {gestor.atencao} em atenção
+                      </span>
+                    ) : null}
+                  </p>
+                </div>
+
+                <div className="relative h-3 flex-1 overflow-hidden rounded-full bg-[#eee7f4]">
+                  <div
+                    className="h-full rounded-full bg-[var(--fdl-purple)]"
+                    style={{ width: `${clamp(gestor.real, 0, 100)}%` }}
+                  />
+                  <div
+                    className="absolute top-0 h-full w-[2px] bg-[var(--fdl-text-dark)]"
+                    style={{ left: `${clamp(gestor.planejado, 0, 100)}%` }}
+                  />
+                </div>
+
+                <div className="w-28 shrink-0 text-right">
+                  <p className="text-[11px] font-black text-[var(--fdl-text-dark)]">
+                    {formatPontos(gestor.real)}%{" "}
+                    <span className="font-semibold text-[#9c88ab]">
+                      / {formatPontos(gestor.planejado)}%
+                    </span>
+                  </p>
+                  <p
+                    className={`text-[9px] font-black ${
+                      gestor.desvio >= 10
+                        ? "text-red-600"
+                        : gestor.desvio <= -0.5
+                          ? "text-green-600"
+                          : "text-[#9c88ab]"
+                    }`}
+                  >
+                    {gestor.desvio >= 0.5
+                      ? `${formatPontos(gestor.desvio)} p.p. atrás`
+                      : gestor.desvio <= -0.5
+                        ? `${formatPontos(Math.abs(gestor.desvio))} p.p. à frente`
+                        : "em linha"}
+                  </p>
+                </div>
+              </div>
+            ))}
+
+            {gestores.length === 0 ? (
+              <p className="rounded-xl border border-[#e8e0f0] bg-[#faf7fd] px-3 py-2 text-[11px] font-semibold text-[#7d6488]">
+                Nenhum projeto ativo com OSs cadastradas.
+              </p>
+            ) : null}
+          </div>
+        </section>
+
+        <section className="mt-4">
+          <h2 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-red-700">
             ⚠ Avisos críticos
           </h2>
 
@@ -526,14 +703,14 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
               {avisosCriticos.map((item) => (
                 <div
                   key={item.id}
-                  className={`rounded-lg border-l-4 py-1.5 pl-3 pr-2 text-[11px] leading-snug ${
+                  className={`rounded-lg border-l-4 py-1.5 pl-3 pr-2 text-[10.5px] leading-snug ${
                     item.classificacao === "critico"
                       ? "border-red-500 bg-red-50"
                       : "border-yellow-500 bg-yellow-50"
                   }`}
                 >
                   <strong className="font-black text-[var(--fdl-text-dark)]">
-                    {item.nome} ({item.uf}):
+                    {item.nome} ({item.uf}) · {item.gestor}:
                   </strong>{" "}
                   <span className="text-[#4b3a56]">
                     {item.avisos.join(" · ")}
@@ -550,7 +727,7 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
         </section>
 
         <section className="mt-4">
-          <h2 className="text-sm font-black uppercase tracking-wider text-[var(--fdl-purple)]">
+          <h2 className="text-xs font-black uppercase tracking-[0.18em] text-[var(--fdl-purple)]">
             Evolução por projeto
           </h2>
 
@@ -652,8 +829,8 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
 
           {projetosOcultos > 0 ? (
             <p className="mt-2 rounded-lg bg-[#faf7fd] px-3 py-1.5 text-[10px] font-semibold text-[#7d6488]">
-              + {projetosOcultos} projeto(s) no prazo não listados (progresso
-              médio de {formatPontos(mediaReal)}%). Use &quot;Listar todos os
+              + {projetosOcultos} projeto(s) no prazo não listados (o progresso
+              deles já está no acumulado acima). Use &quot;Listar todos os
               projetos&quot; para o relatório completo.
             </p>
           ) : null}
@@ -662,10 +839,11 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
         <footer className="mt-4 border-t border-[#e8e0f0] pt-2 text-[9px] leading-snug text-[#9c88ab]">
           <p>
             <strong>Metodologia:</strong> progresso real considera apenas OSs
-            aprovadas pela gestão, ponderadas pela duração planejada. Planejado
-            = evolução esperada do cronograma até hoje. Previsão de término
-            projetada pelo ritmo de aprovação dos últimos {JANELA_RITMO_DIAS}{" "}
-            dias.
+            aprovadas pela gestão, ponderadas pela duração planejada; o
+            acumulado e a abertura por gestor ponderam cada projeto pelo seu
+            volume de dias. Planejado = evolução esperada do cronograma até
+            hoje. Previsão de término projetada pelo ritmo de aprovação dos
+            últimos {JANELA_RITMO_DIAS} dias.
             {!historicoDisponivel
               ? " Avanço diário indisponível: histórico de validação não encontrado."
               : ""}
