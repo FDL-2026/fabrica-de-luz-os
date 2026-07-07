@@ -10,17 +10,14 @@ type LoginPageProps = {
 
 const destaques = [
   {
-    icone: "🗓",
     titulo: "Cronogramas e OSs",
     descricao: "Importados da planilha, acompanhados noite a noite",
   },
   {
-    icone: "📷",
     titulo: "Execução comprovada",
     descricao: "Montadores registram fotos e vídeos de cada etapa",
   },
   {
-    icone: "📊",
     titulo: "Relatório executivo",
     descricao: "Planejado x real e previsão de término, todo dia",
   },
@@ -56,7 +53,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               width={500}
               height={300}
               priority
-              className="h-auto w-56 object-contain"
+              className="h-auto w-72 object-contain"
             />
           </div>
 
@@ -78,21 +75,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               {destaques.map((item) => (
                 <div
                   key={item.titulo}
-                  className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.07] px-4 py-3 backdrop-blur"
+                  className="rounded-2xl border border-white/10 border-l-[3px] border-l-[var(--fdl-cream)]/70 bg-white/[0.07] px-5 py-3 backdrop-blur"
                 >
-                  <span
-                    aria-hidden="true"
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--fdl-cream)]/15 text-lg"
-                  >
-                    {item.icone}
-                  </span>
-
-                  <div>
-                    <p className="text-sm font-bold text-white">
-                      {item.titulo}
-                    </p>
-                    <p className="text-xs text-white/55">{item.descricao}</p>
-                  </div>
+                  <p className="text-sm font-bold text-white">{item.titulo}</p>
+                  <p className="mt-0.5 text-xs text-white/55">
+                    {item.descricao}
+                  </p>
                 </div>
               ))}
             </div>
@@ -118,12 +106,17 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
             <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-8 shadow-2xl backdrop-blur">
               <div className="mb-8">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--fdl-cream)] to-[#d9c485] text-2xl text-[var(--fdl-purple-dark)] shadow-lg shadow-[var(--fdl-cream)]/10">
-                  ✦
-                </div>
+                <Image
+                  src="/brand/SIMBOLO_FDL.png"
+                  alt=""
+                  aria-hidden="true"
+                  width={321}
+                  height={321}
+                  className="mb-4 h-14 w-14 object-contain"
+                />
 
                 <p className="text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
-                  Acesso da gestão
+                  Central de Comando
                 </p>
 
                 <h2 className="mt-3 text-3xl font-semibold text-white">
@@ -147,7 +140,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   href="/montador"
                   className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-[var(--fdl-cream)]/40 bg-[var(--fdl-cream)]/10 text-sm font-semibold text-[var(--fdl-cream)] transition hover:bg-[var(--fdl-cream)] hover:text-[var(--fdl-purple-dark)]"
                 >
-                  🔐 Entrar com Código + PIN
+                  Entrar com Código + PIN
                 </Link>
               </div>
             </div>
