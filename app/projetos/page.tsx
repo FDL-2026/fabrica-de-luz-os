@@ -88,7 +88,7 @@ export default async function ProjetosPage() {
             </div>
           </header>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 [&>*:last-child]:col-span-2 md:[&>*:last-child]:col-span-1">
             <div className="fdl-projects-kpi-card">
               <p className="fdl-projects-kpi-label">Total de projetos</p>
               <strong className="fdl-projects-kpi-value">{totalProjetos}</strong>

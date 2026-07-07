@@ -222,7 +222,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
             </div>
           </header>
 
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
             <div className="fdl-project-kpi-card">
               <p className="fdl-project-kpi-label">Noites previstas</p>
               <strong className="fdl-project-kpi-value">{totalNoites}</strong>
