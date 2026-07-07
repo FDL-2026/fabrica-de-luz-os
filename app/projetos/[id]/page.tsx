@@ -175,13 +175,13 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
-      <div className="grid min-h-screen lg:grid-cols-[264px_1fr]">
+      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[264px_1fr]">
         <SidebarGestao
           usuarioNome={usuario.nome}
           usuarioPerfil={usuario.perfil}
         />
 
-        <section className="p-4 pb-12 sm:p-6 lg:p-8">
+        <section className="min-w-0 p-4 pb-12 sm:p-6 lg:p-8">
           <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <a

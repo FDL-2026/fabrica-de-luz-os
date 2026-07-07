@@ -10,13 +10,13 @@ export default async function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
-      <div className="grid min-h-screen lg:grid-cols-[264px_1fr]">
+      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[264px_1fr]">
         <SidebarGestao
           usuarioNome={usuario.nome}
           usuarioPerfil={usuario.perfil}
         />
 
-        <section className="p-4 pb-12 sm:p-6 lg:p-8">
+        <section className="min-w-0 p-4 pb-12 sm:p-6 lg:p-8">
           <DashboardClient />
         </section>
       </div>
