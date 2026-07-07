@@ -10,7 +10,7 @@ const PERFIS_GERENCIAM_USUARIOS = [
   "gestor_comercial",
 ];
 
-const PERFIS_GERENCIAM_TODOS = ["admin", "diretor"];
+const PERFIS_GERENCIAM_TODOS = ["admin", "diretor", "gerente_operacional"];
 
 const PERFIS_VALIDOS = [
   "admin",

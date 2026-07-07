@@ -48,7 +48,7 @@ function gerarCodigoMontador(totalUsuarios: number) {
 export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
   const supabase = useMemo(() => createClient(), []);
 
-  const podeGerenciarTodosPerfis = ["admin", "diretor"].includes(usuarioPerfil);
+  const podeGerenciarTodosPerfis = ["admin", "diretor", "gerente_operacional"].includes(usuarioPerfil);
   const perfisPermitidos = podeGerenciarTodosPerfis
     ? perfis
     : perfis.filter((item) => item.value === "montador");
