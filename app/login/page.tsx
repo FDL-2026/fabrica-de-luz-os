@@ -63,7 +63,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </p>
 
             <h1 className="mt-4 text-4xl font-black leading-[1.15] tracking-tight">
-              Toda a operação de Natal em um só painel.
+              Toda a montagem da temporada em um só painel.
             </h1>
 
             <p className="mt-4 text-sm leading-7 text-white/70">
