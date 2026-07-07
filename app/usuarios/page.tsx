@@ -16,7 +16,7 @@ export default async function UsuariosPage() {
           usuarioPerfil={usuario.perfil}
         />
 
-        <section className="p-8">
+        <section className="p-4 pb-12 sm:p-6 lg:p-8">
           <UsuariosClient usuarioPerfil={usuario.perfil} />
         </section>
       </div>

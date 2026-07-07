@@ -50,6 +50,10 @@ export default function FilaValidacaoProjetoClient({
     return null;
   }
 
+  if (ordensAguardandoValidacao.length === 0) {
+    return null;
+  }
+
   return (
     <section className="fdl-ui-validation-card">
       <div className="fdl-ui-section-head">

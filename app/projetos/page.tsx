@@ -58,7 +58,7 @@ export default async function ProjetosPage() {
           usuarioPerfil={usuario.perfil}
         />
 
-        <section className="p-8">
+        <section className="p-4 pb-12 sm:p-6 lg:p-8">
           <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">

@@ -597,6 +597,7 @@ export default function DashboardClient() {
         </div>
       </section>
 
+      {dados.oss_aguardando_validacao.length > 0 ? (
       <section className="fdl-ui-validation-card">
         <div className="fdl-ui-section-head">
           <div>
@@ -666,12 +667,9 @@ export default function DashboardClient() {
               </table>
             </div>
           </div>
-        ) : (
-          <div className="fdl-ui-empty">
-            Nenhuma OS aguardando validação para os filtros selecionados.
-          </div>
-        )}
+        ) : null}
       </section>
+      ) : null}
 
       <section className="fdl-ui-section">
         <div className="fdl-ui-section-head mb-5">
