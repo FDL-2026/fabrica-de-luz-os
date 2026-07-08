@@ -33,7 +33,7 @@ export default function SidebarGestao({
   return (
     <>
       {/* Barra superior compacta (mobile) */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[var(--fdl-purple)] lg:hidden">
+      <header className="relative sticky top-0 z-40 bg-[var(--fdl-purple)] shadow-[0_10px_24px_-18px_rgba(0,0,0,0.85)] after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[linear-gradient(to_right,transparent,rgba(255,255,255,0.16)_22%,rgba(255,255,255,0.16)_78%,transparent)] after:content-[''] lg:hidden">
         <div className="flex h-16 items-center justify-between gap-3 px-4">
           <Link href="/dashboard" className="flex items-center gap-3">
             <Image
@@ -112,7 +112,7 @@ export default function SidebarGestao({
       </header>
 
       {/* Sidebar (desktop) */}
-      <aside className="hidden border-r border-white/10 bg-[var(--fdl-purple)] p-6 lg:block">
+      <aside className="relative hidden bg-[var(--fdl-purple)] p-6 shadow-[10px_0_30px_-18px_rgba(0,0,0,0.85)] after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-[linear-gradient(to_bottom,transparent,rgba(255,255,255,0.16)_18%,rgba(255,255,255,0.16)_82%,transparent)] after:content-[''] lg:block">
         <div className="mb-10 flex items-center justify-center rounded-3xl bg-white/5 p-4">
           <Image
             src="/brand/H_TAGLINE_SF_ROXO.png"
