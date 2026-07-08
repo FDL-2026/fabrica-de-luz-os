@@ -4953,3 +4953,87 @@ html {
   line-height: 1.6 !important;
   color: rgba(255, 255, 255, 0.6) !important;
 }
+
+
+/* FDL TYPOGRAPHY SYSTEM 2026 — hierarquia por tamanho + cor + peso,
+   no lugar de peso 900–950 em tudo. Corpo leve, títulos firmes,
+   rótulos discretos. Mesma fonte (Geist). */
+
+/* Kickers / eyebrows: etiqueta discreta, não grito */
+.fdl-ui-kicker,
+.fdl-ui-dashboard .fdl-ui-kicker {
+  font-weight: 600 !important;
+  letter-spacing: 0.16em !important;
+}
+
+/* Título de página (H1): firme, porém sóbrio (menos "marketing") */
+.fdl-ui-title,
+.fdl-ui-dashboard .fdl-ui-title {
+  font-weight: 700 !important;
+  font-size: clamp(1.85rem, 3vw, 2.5rem) !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.06 !important;
+}
+
+/* Descrição / subtítulo: corpo leve que respira */
+.fdl-ui-description,
+.fdl-ui-dashboard .fdl-ui-description {
+  font-weight: 400 !important;
+  font-size: 0.94rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Título de seção (H2) */
+.fdl-ui-section-title {
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* Valores de KPI: o tamanho carrega o peso visual, não o font-weight */
+.fdl-ui-kpi-value,
+.fdl-ui-dashboard .fdl-ui-kpi-value,
+.fdl-projects-kpi-value {
+  font-weight: 700 !important;
+  font-size: clamp(1.7rem, 3vw, 2.1rem) !important;
+  letter-spacing: -0.02em !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* Rótulos de KPI, campos e filtros: etiquetas discretas e uniformes */
+.fdl-ui-kpi-label,
+.fdl-ui-dashboard .fdl-ui-kpi-label,
+.fdl-projects-kpi-label,
+.fdl-ui-label,
+.fdl-ui-dashboard .fdl-ui-label {
+  font-weight: 600 !important;
+  letter-spacing: 0.10em !important;
+}
+
+/* Textos de apoio dos KPIs */
+.fdl-ui-kpi-help,
+.fdl-ui-dashboard .fdl-ui-kpi-help,
+.fdl-projects-kpi-help {
+  font-weight: 400 !important;
+}
+
+/* Cabeçalhos de tabela: etiqueta, não grito */
+.fdl-ui-table th,
+.fdl-data-table th,
+.fdl-dashboard-table th,
+.fdl-ui-page-block .fdl-ui-table th {
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+}
+
+/* Célula primária da tabela: firme, mas em contraste com o corpo (400) */
+.fdl-ui-table-primary,
+.fdl-ui-dashboard .fdl-ui-table-primary,
+.fdl-ui-page-block .fdl-ui-table-primary {
+  font-weight: 600 !important;
+}
+
+/* Badges / chips */
+.fdl-ui-badge,
+.fdl-chip {
+  font-weight: 600 !important;
+}
