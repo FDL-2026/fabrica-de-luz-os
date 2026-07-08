@@ -54,13 +54,13 @@ function ProgressBar({
     <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-bold text-white">{label}</p>
+          <p className="text-sm font-semibold text-white">{label}</p>
           <p className="mt-1 text-xs font-semibold text-white/50">
             {description}
           </p>
         </div>
 
-        <strong className="text-2xl font-black text-white">
+        <strong className="text-2xl font-bold tabular-nums text-white">
           {formatPercent(value)}
         </strong>
       </div>
@@ -157,11 +157,11 @@ export default function ProgressoPonderadoProjeto({
   return (
     <section className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 text-white shadow-2xl shadow-black/10">
       <div className="mb-5">
-        <p className="text-xs font-black uppercase tracking-[0.24em] text-[var(--fdl-cream)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--fdl-cream)]">
           Progresso validado
         </p>
 
-        <h2 className="mt-2 text-2xl font-black">
+        <h2 className="mt-2 text-2xl font-bold">
           Evolução aprovada pela gestão
         </h2>
 
@@ -181,28 +181,28 @@ export default function ProgressoPonderadoProjeto({
 
       <div className="mt-5 grid gap-3 md:grid-cols-4">
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/45">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/45">
             Total de OSs
           </p>
-          <strong className="mt-2 block text-2xl font-black">
+          <strong className="mt-2 block text-2xl font-bold tabular-nums">
             {formatNumber(resultado.total_os)}
           </strong>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/45">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/45">
             Volume planejado
           </p>
-          <strong className="mt-2 block text-2xl font-black">
+          <strong className="mt-2 block text-2xl font-bold tabular-nums">
             {formatNumber(resultado.total_dias_ponderados)}
           </strong>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/45">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/45">
             Aguardando validação
           </p>
-          <strong className="mt-2 block text-2xl font-black">
+          <strong className="mt-2 block text-2xl font-bold tabular-nums">
             {formatNumber(resultado.os_aguardando_validacao)}
           </strong>
         </div>
@@ -214,10 +214,10 @@ export default function ProgressoPonderadoProjeto({
               : "border-white/10 bg-white/[0.04]"
           }`}
         >
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/45">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/45">
             OSs sem data
           </p>
-          <strong className="mt-2 block text-2xl font-black">
+          <strong className="mt-2 block text-2xl font-bold tabular-nums">
             {formatNumber(resultado.total_os_sem_data)}
           </strong>
         </div>

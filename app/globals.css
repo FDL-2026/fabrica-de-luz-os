@@ -5077,3 +5077,18 @@ html {
 .fdl-montador-layout .fdl-form-card .fdl-section-title {
   font-weight: 800 !important;
 }
+
+
+/* FDL PROJECT (DETALHE) KPI FIX 2026 — a página do projeto usa a família
+   .fdl-project-kpi-* (singular), que ficou de fora do sistema e seguia em 950.
+   Alinha ao mesmo padrão dos demais KPIs. */
+.fdl-project-kpi-label {
+  font-weight: 600 !important;
+  letter-spacing: 0.10em !important;
+}
+
+.fdl-project-kpi-value {
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  font-variant-numeric: tabular-nums !important;
+}
