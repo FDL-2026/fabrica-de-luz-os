@@ -53,6 +53,22 @@ type ResultadoImportacao = {
   os_atualizadas: number;
 };
 
+type VinculosImportacao = {
+  gestor: string | null;
+  montadores: string[];
+};
+
+type AlertasImportacao = {
+  gestorNaoReconhecido: string | null;
+  equipesNaoReconhecidas: string[];
+};
+
+type RevisaoImportacao = {
+  projetoId: string;
+  vinculos: VinculosImportacao;
+  alertas: AlertasImportacao;
+};
+
 function limparTexto(valor: CellValue) {
   if (valor === null || valor === undefined) return "";
 
@@ -337,6 +353,7 @@ export default function ImportarClient() {
   const [carregando, setCarregando] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
   const [resultado, setResultado] = useState<ResultadoImportacao | null>(null);
+  const [revisao, setRevisao] = useState<RevisaoImportacao | null>(null);
 
   const resumo = useMemo(() => {
     if (!preview) {
@@ -366,6 +383,7 @@ export default function ImportarClient() {
     setErro("");
     setPreview(null);
     setResultado(null);
+    setRevisao(null);
 
     if (!file) return;
 
@@ -406,6 +424,7 @@ export default function ImportarClient() {
 
     setErro("");
     setResultado(null);
+    setRevisao(null);
     setConfirmando(true);
 
     try {
@@ -427,6 +446,32 @@ export default function ImportarClient() {
 
       if (!resultadoImportacao?.projeto_id) {
         throw new Error("A importação foi concluída, mas o projeto não foi retornado.");
+      }
+
+      const vinculos: VinculosImportacao = json?.vinculos ?? {
+        gestor: null,
+        montadores: [],
+      };
+
+      const alertas: AlertasImportacao = json?.alertas ?? {
+        gestorNaoReconhecido: null,
+        equipesNaoReconhecidas: [],
+      };
+
+      const precisaRevisar =
+        Boolean(alertas.gestorNaoReconhecido) ||
+        alertas.equipesNaoReconhecidas.length > 0;
+
+      // Quando há algo a revisar (gestor/montador não reconhecido), mantém a
+      // pessoa na tela com o resumo, em vez de redirecionar direto ao projeto.
+      if (precisaRevisar) {
+        setRevisao({
+          projetoId: resultadoImportacao.projeto_id,
+          vinculos,
+          alertas,
+        });
+        setConfirmando(false);
+        return;
       }
 
       setResultado(resultadoImportacao);
@@ -507,6 +552,73 @@ export default function ImportarClient() {
             {resultado ? (
               <div className="mt-5 rounded-2xl border border-green-400/30 bg-green-500/10 p-4 text-sm text-green-100">
                 Importação concluída. Abrindo projeto...
+              </div>
+            ) : null}
+
+            {revisao ? (
+              <div className="mt-5 space-y-4 rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+                <div>
+                  <p className="text-base font-semibold text-white">
+                    Importação concluída
+                  </p>
+                  <p className="mt-1 text-sm text-white/55">
+                    O projeto foi criado. Revise os vínculos automáticos abaixo
+                    antes de continuar.
+                  </p>
+                </div>
+
+                {revisao.vinculos.gestor ? (
+                  <div className="rounded-xl border border-green-400/25 bg-green-500/10 p-3 text-sm text-green-100">
+                    Gestor comercial vinculado:{" "}
+                    <strong>{revisao.vinculos.gestor}</strong>
+                  </div>
+                ) : null}
+
+                {revisao.vinculos.montadores.length > 0 ? (
+                  <div className="rounded-xl border border-green-400/25 bg-green-500/10 p-3 text-sm text-green-100">
+                    Montadores vinculados:{" "}
+                    <strong>{revisao.vinculos.montadores.join(", ")}</strong>
+                  </div>
+                ) : null}
+
+                {revisao.alertas.gestorNaoReconhecido ? (
+                  <div className="rounded-xl border border-yellow-400/30 bg-yellow-500/10 p-3 text-sm text-yellow-100">
+                    Gestor comercial não reconhecido:{" "}
+                    <strong>{revisao.alertas.gestorNaoReconhecido}</strong>. O
+                    projeto foi criado com esse nome como texto, mas sem vínculo.
+                    Cadastre o gestor e vincule pela tela de Equipe do projeto.
+                  </div>
+                ) : null}
+
+                {revisao.alertas.equipesNaoReconhecidas.length > 0 ? (
+                  <div className="rounded-xl border border-yellow-400/30 bg-yellow-500/10 p-3 text-sm text-yellow-100">
+                    <p>
+                      Equipes sem montador reconhecido (cadastre e vincule
+                      manualmente):
+                    </p>
+                    <ul className="mt-2 list-inside list-disc space-y-1 text-yellow-100/85">
+                      {revisao.alertas.equipesNaoReconhecidas.map((nome) => (
+                        <li key={nome}>{nome}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <a
+                    href={`/projetos/${revisao.projetoId}`}
+                    className="h-11 flex-1 rounded-2xl bg-[var(--fdl-cream)] px-5 text-center text-sm font-semibold leading-[2.75rem] text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                  >
+                    Abrir projeto
+                  </a>
+
+                  <a
+                    href={`/projetos/${revisao.projetoId}/equipe`}
+                    className="h-11 flex-1 rounded-2xl border border-white/15 px-5 text-center text-sm font-semibold leading-[2.75rem] text-white/80 transition hover:bg-white/10 hover:text-white"
+                  >
+                    Ir para Equipe do projeto
+                  </a>
+                </div>
               </div>
             ) : null}
           </div>
@@ -731,12 +843,18 @@ export default function ImportarClient() {
               <button
                 type="button"
                 onClick={handleConfirmarImportacao}
-                disabled={confirmando || preview.ordensServico.length === 0}
+                disabled={
+                  confirmando ||
+                  preview.ordensServico.length === 0 ||
+                  Boolean(revisao)
+                }
                 className="mt-6 h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {confirmando
                   ? "Confirmando importação..."
-                  : "Confirmar importação e criar projeto"}
+                  : revisao
+                    ? "Importação concluída"
+                    : "Confirmar importação e criar projeto"}
               </button>
 
               <p className="mt-3 text-center text-xs text-white/40">

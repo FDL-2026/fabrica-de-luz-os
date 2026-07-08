@@ -2,9 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
   montadoresNaEquipe,
+  normalizarNome,
   resolverUsuario,
   type UsuarioVinculo,
 } from "@/lib/importacao/vinculos";
+
+// Rótulos genéricos de "Equipe" que não representam uma pessoa e, portanto, não
+// devem ser reportados como "montador não reconhecido".
+const EQUIPES_PLACEHOLDER = new Set([
+  "",
+  "nao informada",
+  "nao informado",
+  "sem equipe",
+  "a definir",
+  "a confirmar",
+]);
 
 type OsPayload = {
   responsavelComercial?: string | null;
@@ -146,6 +158,14 @@ export async function POST(request: NextRequest) {
   // Reconhece o gestor comercial pelo texto do cronograma (que pode vir
   // abreviado, ex.: "Koga" -> "Bruno Koga") e grava o nome canônico em
   // responsavelComercial, para o relatório/filtros agruparem corretamente.
+  // Guardamos o texto original (antes de sobrescrever) para avisar caso não
+  // tenha sido reconhecido.
+  const responsavelInformado = String(
+    payloadComTemporada.responsavelComercial ?? ""
+  )
+    .replace(/\s+/g, " ")
+    .trim();
+
   const gestorResolvido = escolherGestor(
     [
       payloadComTemporada.responsavelComercial,
@@ -200,6 +220,8 @@ export async function POST(request: NextRequest) {
     montadores: [],
   };
 
+  let equipesSemVinculo: string[] = [];
+
   if (resultado?.projeto_id) {
     if (gestorResolvido) {
       const { error: erroGestor } = await supabase.rpc(
@@ -217,21 +239,40 @@ export async function POST(request: NextRequest) {
     }
 
     // Reúne os montadores citados nas equipes das OSs (e no nível do projeto),
-    // sem duplicatas, e vincula cada um ao projeto.
+    // sem duplicatas, e vincula cada um ao projeto. Ao mesmo tempo, guarda as
+    // equipes que não casaram com nenhum montador cadastrado, para avisar o
+    // usuário (ex.: montador ainda não cadastrado no sistema).
     const montadoresPorId = new Map<string, UsuarioVinculo>();
+    const equipesNaoReconhecidas = new Map<string, string>();
 
-    for (const os of ordensServico) {
-      for (const montador of montadoresNaEquipe(os?.equipe, montadores)) {
+    const registrarEquipe = (textoEquipe: string | null | undefined) => {
+      const original = String(textoEquipe ?? "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      if (!original) return;
+      if (EQUIPES_PLACEHOLDER.has(normalizarNome(original))) return;
+
+      const encontrados = montadoresNaEquipe(original, montadores);
+
+      for (const montador of encontrados) {
         montadoresPorId.set(montador.usuario_id, montador);
       }
+
+      // Só reporta "não reconhecida" se conseguimos carregar a lista de
+      // montadores; sem a lista, não há como afirmar que não casou.
+      if (encontrados.length === 0 && montadores.length > 0) {
+        equipesNaoReconhecidas.set(normalizarNome(original), original);
+      }
+    };
+
+    for (const os of ordensServico) {
+      registrarEquipe(os?.equipe);
     }
 
-    for (const montador of montadoresNaEquipe(
-      payloadComTemporada.equipe,
-      montadores
-    )) {
-      montadoresPorId.set(montador.usuario_id, montador);
-    }
+    registrarEquipe(payloadComTemporada.equipe);
+
+    equipesSemVinculo = [...equipesNaoReconhecidas.values()];
 
     for (const montador of montadoresPorId.values()) {
       const { error: erroMontador } = await supabase.rpc(
@@ -249,9 +290,24 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Avisa o usuário sobre quem não foi reconhecido/vinculado automaticamente,
+  // para que ele cadastre e vincule manualmente pela tela de Equipe.
+  const responsavelEhPlaceholder = EQUIPES_PLACEHOLDER.has(
+    normalizarNome(responsavelInformado)
+  );
+
+  const alertas = {
+    gestorNaoReconhecido:
+      !gestorResolvido && responsavelInformado && !responsavelEhPlaceholder
+        ? responsavelInformado
+        : null,
+    equipesNaoReconhecidas: equipesSemVinculo,
+  };
+
   return NextResponse.json({
     success: true,
     resultado,
     vinculos,
+    alertas,
   });
 }
