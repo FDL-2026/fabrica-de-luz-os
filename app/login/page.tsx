@@ -28,24 +28,33 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const nextPath = params?.next ?? "/dashboard";
 
   return (
-    <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
-      <div className="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="relative hidden overflow-hidden bg-[var(--fdl-purple)] lg:flex lg:flex-col lg:justify-between lg:p-14">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(237,224,177,0.20),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.12),transparent_34%)]" />
+    <main className="relative min-h-screen overflow-hidden bg-[var(--fdl-purple-dark)] text-white">
+      {/* Fundo contínuo: um só plano de luz atravessando a tela */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[linear-gradient(108deg,#6a3f97_0%,#4c2c6f_28%,#2b123a_58%,#16051f_100%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[radial-gradient(62%_78%_at_14%_16%,rgba(237,224,177,0.16),transparent_60%),radial-gradient(46%_58%_at_88%_92%,rgba(255,255,255,0.05),transparent_58%)]"
+      />
 
-          {/* pontos de luz */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
-          >
-            <span className="absolute left-[12%] top-[18%] h-1.5 w-1.5 rounded-full bg-[var(--fdl-cream)] opacity-70 blur-[1px]" />
-            <span className="absolute left-[78%] top-[12%] h-1 w-1 rounded-full bg-white opacity-50 blur-[1px]" />
-            <span className="absolute left-[64%] top-[34%] h-2 w-2 rounded-full bg-[var(--fdl-cream)] opacity-40 blur-[2px]" />
-            <span className="absolute left-[22%] top-[58%] h-1 w-1 rounded-full bg-white opacity-40 blur-[1px]" />
-            <span className="absolute left-[86%] top-[64%] h-1.5 w-1.5 rounded-full bg-[var(--fdl-cream)] opacity-60 blur-[1px]" />
-            <span className="absolute left-[40%] top-[82%] h-1 w-1 rounded-full bg-white opacity-35 blur-[1px]" />
-          </div>
+      {/* pontos de luz espalhados por toda a superfície */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+      >
+        <span className="absolute left-[8%] top-[16%] h-1.5 w-1.5 rounded-full bg-[var(--fdl-cream)] opacity-70 blur-[1px]" />
+        <span className="absolute left-[33%] top-[10%] h-1 w-1 rounded-full bg-white opacity-45 blur-[1px]" />
+        <span className="absolute left-[46%] top-[30%] h-2 w-2 rounded-full bg-[var(--fdl-cream)] opacity-30 blur-[2px]" />
+        <span className="absolute left-[16%] top-[54%] h-1 w-1 rounded-full bg-white opacity-40 blur-[1px]" />
+        <span className="absolute left-[28%] top-[80%] h-1 w-1 rounded-full bg-[var(--fdl-cream)] opacity-45 blur-[1px]" />
+        <span className="absolute left-[68%] top-[22%] h-1 w-1 rounded-full bg-white opacity-30 blur-[1px]" />
+        <span className="absolute left-[90%] top-[70%] h-1.5 w-1.5 rounded-full bg-[var(--fdl-cream)] opacity-35 blur-[1px]" />
+      </div>
 
+      <div className="relative z-10 grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="hidden lg:flex lg:flex-col lg:justify-between lg:p-14">
           <div className="relative z-10">
             <Image
               src="/brand/H_TAGLINE_SF_ROXO.png"
