@@ -4781,3 +4781,21 @@ main:has(.fdl-mobile-card) a[href*="/montador/"][class*="bg-[var(--fdl-cream)]"]
     font-size: 1.6rem !important;
   }
 }
+
+
+/* FDL RELATORIO MOBILE (somente tela; impressao permanece A4) */
+@media screen and (max-width: 767px) {
+  .fdl-report-backdrop {
+    padding: 12px 8px 40px;
+  }
+
+  .fdl-report-toolbar {
+    margin-bottom: 12px;
+    padding: 0 4px;
+  }
+
+  .fdl-report-sheet {
+    border-radius: 14px;
+    padding: 16px 14px;
+  }
+}

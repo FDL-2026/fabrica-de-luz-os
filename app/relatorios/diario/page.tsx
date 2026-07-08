@@ -500,12 +500,12 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
                 Fábrica de Luz · Central de Comando
               </p>
 
-              <h1 className="mt-1 text-2xl font-black text-[var(--fdl-text-dark)]">
+              <h1 className="mt-1 text-lg font-black leading-tight text-[var(--fdl-text-dark)] sm:text-2xl">
                 Relatório Diário de Projetos
               </h1>
             </div>
 
-            <div className="flex h-20 w-48 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--fdl-purple)] to-[var(--fdl-purple-deep)] p-1">
+            <div className="flex h-12 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[var(--fdl-purple)] to-[var(--fdl-purple-deep)] p-1 sm:h-20 sm:w-48 sm:rounded-2xl">
               <Image
                 src="/brand/H_TAGLINE_SF_ROXO.png"
                 alt="Fábrica de Luz"
@@ -535,7 +535,7 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
               </p>
 
               <div className="mt-2 flex items-baseline gap-3">
-                <strong className="text-5xl font-black leading-none">
+                <strong className="text-4xl font-black leading-none sm:text-5xl">
                   {formatPontos(realAcumulado)}%
                 </strong>
 
@@ -637,9 +637,9 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
             {gestores.map((gestor) => (
               <div
                 key={gestor.nome}
-                className="flex items-center gap-3 rounded-xl border border-[#e8e0f0] bg-[#faf7fd] px-3 py-2"
+                className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-xl border border-[#e8e0f0] bg-[#faf7fd] px-3 py-2 sm:flex-nowrap"
               >
-                <div className="w-40 min-w-0 shrink-0">
+                <div className="order-1 min-w-0 flex-1 sm:order-none sm:w-40 sm:flex-none">
                   <p className="truncate text-[11px] font-black text-[var(--fdl-text-dark)]">
                     {gestor.nome}
                   </p>
@@ -659,7 +659,7 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
                   </p>
                 </div>
 
-                <div className="relative h-3 flex-1 overflow-hidden rounded-full bg-[#eee7f4]">
+                <div className="relative order-3 h-3 w-full overflow-hidden rounded-full bg-[#eee7f4] sm:order-none sm:w-auto sm:flex-1">
                   <div
                     className="h-full rounded-full bg-[var(--fdl-purple)]"
                     style={{ width: `${clamp(gestor.real, 0, 100)}%` }}
@@ -670,7 +670,7 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
                   />
                 </div>
 
-                <div className="w-28 shrink-0 text-right">
+                <div className="order-2 shrink-0 text-right sm:order-none sm:w-28">
                   <p className="text-[11px] font-black text-[var(--fdl-text-dark)]">
                     {formatPontos(gestor.real)}%{" "}
                     <span className="font-semibold text-[#9c88ab]">
@@ -744,7 +744,8 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
             Evolução por projeto
           </h2>
 
-          <table className="mt-2 w-full border-collapse text-[10.5px] leading-tight">
+          <div className="mt-2 overflow-x-auto">
+          <table className="w-full min-w-[620px] border-collapse text-[10.5px] leading-tight">
             <thead>
               <tr className="border-b-2 border-[var(--fdl-purple)] text-left text-[9px] font-black uppercase tracking-wider text-[#7d6488]">
                 <th className="py-1.5 pr-2">Projeto</th>
@@ -839,6 +840,7 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
               ))}
             </tbody>
           </table>
+          </div>
 
           {projetosOcultos > 0 ? (
             <p className="mt-2 rounded-lg bg-[#faf7fd] px-3 py-1.5 text-[10px] font-semibold text-[#7d6488]">
