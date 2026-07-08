@@ -4799,3 +4799,39 @@ main:has(.fdl-mobile-card) a[href*="/montador/"][class*="bg-[var(--fdl-cream)]"]
     padding: 16px 14px;
   }
 }
+
+
+/* FDL SURFACE SYSTEM 2026 — mesma disciplina da sidebar em todo o painel:
+   borda fina (hairline), realce sutil no topo e elevação suave e direcional
+   (luz vindo de cima). Aplica a KPIs, filtros, painéis e seções. O card âmbar
+   de validação fica de fora de propósito (é um alerta). */
+.fdl-form-card,
+.fdl-ui-form-panel,
+.fdl-ui-panel,
+.fdl-ui-section,
+.fdl-ui-page-block,
+.fdl-soft-card,
+.fdl-mobile-card,
+.fdl-form-section,
+.fdl-ui-meta-card,
+.fdl-mobile-list-item,
+.fdl-projects-kpi-card,
+.fdl-ui-project-toolbar,
+.fdl-ui-dashboard .fdl-ui-panel,
+.fdl-ui-dashboard .fdl-ui-kpi,
+.fdl-ui-dashboard .fdl-ui-filter-box {
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  box-shadow:
+    0 12px 30px -14px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Superfícies interativas (KPIs): leve elevação no hover, sem "acender". */
+.fdl-ui-dashboard .fdl-ui-kpi:hover,
+.fdl-projects-kpi-card:hover {
+  background: rgba(255, 255, 255, 0.062) !important;
+  box-shadow:
+    0 16px 34px -14px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
