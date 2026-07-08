@@ -5062,3 +5062,18 @@ html {
 .fdl-montador-layout .fdl-etapa-toggle:active {
   transform: translateY(1px) !important;
 }
+
+
+/* FDL SECTION TITLE FIX 2026 — regras mais específicas (dashboard e cards)
+   ainda vinham em 850/950 e venciam o sistema. Alinha os títulos de seção
+   ao peso 700 do sistema; no montador, mantém-se um degrau acima (800). */
+.fdl-ui-dashboard .fdl-ui-section-title,
+.fdl-form-card .fdl-ui-section-title,
+.fdl-ui-page-block .fdl-ui-section-title {
+  font-weight: 700 !important;
+}
+
+.fdl-montador-layout .fdl-section-title,
+.fdl-montador-layout .fdl-form-card .fdl-section-title {
+  font-weight: 800 !important;
+}
