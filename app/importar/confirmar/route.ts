@@ -166,6 +166,10 @@ export async function POST(request: NextRequest) {
     .replace(/\s+/g, " ")
     .trim();
 
+  const responsavelEhPlaceholder = EQUIPES_PLACEHOLDER.has(
+    normalizarNome(responsavelInformado)
+  );
+
   const gestorResolvido = escolherGestor(
     [
       payloadComTemporada.responsavelComercial,
@@ -223,6 +227,21 @@ export async function POST(request: NextRequest) {
   let equipesSemVinculo: string[] = [];
 
   if (resultado?.projeto_id) {
+    // Grava o gestor comercial direto na tabela projetos (o que a tela do
+    // projeto lê), sem depender do que a RPC de importação faz com o payload.
+    // Usa o nome canônico quando reconhecido; senão, o texto informado — nunca
+    // sobrescreve com um placeholder ("Não informado").
+    const responsavelParaGravar =
+      gestorResolvido?.nome ??
+      (responsavelEhPlaceholder ? null : responsavelInformado || null);
+
+    if (responsavelParaGravar) {
+      await supabase
+        .from("projetos")
+        .update({ responsavel_comercial: responsavelParaGravar })
+        .eq("id", resultado.projeto_id);
+    }
+
     if (gestorResolvido) {
       const { error: erroGestor } = await supabase.rpc(
         "fdl_adicionar_usuario_projeto",
@@ -292,10 +311,6 @@ export async function POST(request: NextRequest) {
 
   // Avisa o usuário sobre quem não foi reconhecido/vinculado automaticamente,
   // para que ele cadastre e vincule manualmente pela tela de Equipe.
-  const responsavelEhPlaceholder = EQUIPES_PLACEHOLDER.has(
-    normalizarNome(responsavelInformado)
-  );
-
   const alertas = {
     gestorNaoReconhecido:
       !gestorResolvido && responsavelInformado && !responsavelEhPlaceholder
