@@ -1159,18 +1159,18 @@ body {
 
 .fdl-mobile-kicker {
   font-size: 0.72rem;
-  font-weight: 950;
-  letter-spacing: 0.22em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fdl-cream);
 }
 
 .fdl-mobile-title {
   margin-top: 6px;
-  font-size: clamp(1.5rem, 7vw, 2.1rem);
-  font-weight: 950;
-  line-height: 1.05;
-  letter-spacing: -0.04em;
+  font-size: clamp(1.45rem, 6.5vw, 1.85rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
   color: #ffffff;
 }
 
@@ -3757,16 +3757,16 @@ main:has(.fdl-mobile-card) p[class*="uppercase"],
 main:has(.fdl-mobile-card) .fdl-mobile-kicker {
   color: var(--fdl-cream) !important;
   font-size: 0.68rem !important;
-  font-weight: 850 !important;
-  letter-spacing: 0.18em !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.14em !important;
 }
 
 /* Títulos mais sóbrios */
 main:has(.fdl-mobile-card) h1,
 main:has(.fdl-mobile-card) h2,
 main:has(.fdl-mobile-card) .fdl-mobile-title {
-  font-weight: 850 !important;
-  letter-spacing: -0.035em !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
 }
 
 /* Textos auxiliares */
@@ -5036,4 +5036,29 @@ html {
 .fdl-ui-badge,
 .fdl-chip {
   font-weight: 600 !important;
+}
+
+
+/* FDL MONTADOR (CAMPO) 2026 — mesma linguagem tipográfica, calibrada para o
+   celular no campo: um degrau mais firme que o desktop. */
+
+/* Título de seção compartilhado: base alinhada ao desktop (700) — isso também
+   corrige telas de gestão (usuários, validação, OS, cronograma) que ainda
+   usavam 950 nesta classe. */
+.fdl-section-title {
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* No montador, os títulos de card ficam um pouco mais firmes (campo/sol). */
+.fdl-montador-layout .fdl-section-title {
+  font-weight: 800 !important;
+}
+
+/* Botões do montador: mesmo feedback tátil de clique dos demais. */
+.fdl-mobile-btn:active:not(:disabled):not([aria-disabled="true"]),
+.fdl-montador-layout .fdl-open-os-btn:active,
+.fdl-montador-layout .fdl-etapa-action-btn:active,
+.fdl-montador-layout .fdl-etapa-toggle:active {
+  transform: translateY(1px) !important;
 }
