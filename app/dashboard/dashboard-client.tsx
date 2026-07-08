@@ -733,7 +733,7 @@ export default function DashboardClient() {
                           {projeto.responsavel_comercial || "Não informado"}
                         </td>
 
-                        <td className="text-center font-black text-white">
+                        <td className="text-center font-bold text-white">
                           {projeto.total_os}
                         </td>
 
@@ -761,7 +761,7 @@ export default function DashboardClient() {
                                 style={{ width: `${progresso}%` }}
                               />
                             </div>
-                            <span className="w-10 text-xs font-black text-white">
+                            <span className="w-10 text-xs font-bold tabular-nums text-white">
                               {formatPercentual(progresso)}%
                             </span>
                           </div>

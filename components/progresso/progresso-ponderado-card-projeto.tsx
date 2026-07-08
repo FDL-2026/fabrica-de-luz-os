@@ -53,15 +53,15 @@ export default function ProgressoPonderadoCardProjeto({
     <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--fdl-cream)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--fdl-cream)]">
             Progresso validado
           </p>
-          <p className="mt-1 text-xs font-semibold text-white/45">
+          <p className="mt-1 text-xs font-medium text-white/45">
             aprovado pelo gestor
           </p>
         </div>
 
-        <strong className="text-xl font-black text-white">
+        <strong className="text-xl font-bold tabular-nums text-white">
           {carregando ? "..." : `${formatPercent(validado)}%`}
         </strong>
       </div>

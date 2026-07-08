@@ -423,11 +423,11 @@ export default function ValidacaoOsClient({
               <div className="mt-4 rounded-2xl border border-[var(--fdl-cream)]/30 bg-[var(--fdl-cream)]/10 p-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--fdl-cream)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--fdl-cream)]">
                       Impacto no progresso validado
                     </p>
 
-                    <h3 className="mt-2 text-2xl font-black text-white">
+                    <h3 className="mt-2 text-2xl font-bold tabular-nums text-white">
                       +{formatPercent(impacto.impacto_aprovacao)}
                     </h3>
 
@@ -443,7 +443,7 @@ export default function ValidacaoOsClient({
                       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">
                         Duração
                       </p>
-                      <p className="mt-1 text-sm font-black text-white">
+                      <p className="mt-1 text-sm font-semibold tabular-nums text-white">
                         {formatNumber(impacto.duracao_dias)} dia(s)
                       </p>
                     </div>
@@ -452,7 +452,7 @@ export default function ValidacaoOsClient({
                       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">
                         Peso da OS
                       </p>
-                      <p className="mt-1 text-sm font-black text-white">
+                      <p className="mt-1 text-sm font-semibold tabular-nums text-white">
                         {formatPercent(impacto.peso_percentual)}
                       </p>
                     </div>
@@ -461,7 +461,7 @@ export default function ValidacaoOsClient({
                       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">
                         Atual
                       </p>
-                      <p className="mt-1 text-sm font-black text-white">
+                      <p className="mt-1 text-sm font-semibold tabular-nums text-white">
                         {formatPercent(impacto.progresso_validado_atual)}
                       </p>
                     </div>
@@ -470,7 +470,7 @@ export default function ValidacaoOsClient({
                       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">
                         Após aprovação
                       </p>
-                      <p className="mt-1 text-sm font-black text-white">
+                      <p className="mt-1 text-sm font-semibold tabular-nums text-white">
                         {formatPercent(impacto.progresso_validado_se_aprovar)}
                       </p>
                     </div>
@@ -789,7 +789,7 @@ export default function ValidacaoOsClient({
           aria-modal="true"
         >
           <div className="w-full max-w-md rounded-3xl border border-white/15 bg-[var(--fdl-purple-deep)] p-6 shadow-2xl">
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--fdl-cream)]">
               Confirmação
             </p>
 

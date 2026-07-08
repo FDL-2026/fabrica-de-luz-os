@@ -302,7 +302,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           className={cardResumoClass("default")}
         >
           <p className="text-sm font-semibold text-white/60">Total de OSs</p>
-          <strong className="mt-2 block text-3xl font-black text-white md:text-4xl">
+          <strong className="mt-2 block text-3xl font-extrabold tabular-nums text-white md:text-4xl">
             {resumo.total}
           </strong>
           <span className="mt-2 block text-xs font-semibold text-white/45">
@@ -315,7 +315,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           className={cardResumoClass("warning")}
         >
           <p className="text-sm font-semibold text-white/60">Pendentes</p>
-          <strong className="mt-2 block text-3xl font-black text-white md:text-4xl">
+          <strong className="mt-2 block text-3xl font-extrabold tabular-nums text-white md:text-4xl">
             {resumo.pendentes}
           </strong>
           <span className="mt-2 block text-xs font-semibold text-yellow-100/70">
@@ -328,7 +328,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           className={cardResumoClass("success")}
         >
           <p className="text-sm font-semibold text-white/60">Em andamento</p>
-          <strong className="mt-2 block text-3xl font-black text-white md:text-4xl">
+          <strong className="mt-2 block text-3xl font-extrabold tabular-nums text-white md:text-4xl">
             {resumo.andamento}
           </strong>
           <span className="mt-2 block text-xs font-semibold text-green-100/70">
@@ -343,7 +343,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           <p className="text-sm font-semibold text-amber-50/75">
             Aguardando validação
           </p>
-          <strong className="mt-2 block text-3xl font-black text-white md:text-4xl">
+          <strong className="mt-2 block text-3xl font-extrabold tabular-nums text-white md:text-4xl">
             {resumo.aguardandoValidacao}
           </strong>
           <span className="mt-2 block text-xs font-semibold text-amber-100/75">
@@ -356,7 +356,7 @@ export default function OsClient({ codigo, projetoId }: OsClientProps) {
           className={cardResumoClass("default")}
         >
           <p className="text-sm font-semibold text-white/60">Concluídas</p>
-          <strong className="mt-2 block text-3xl font-black text-white md:text-4xl">
+          <strong className="mt-2 block text-3xl font-extrabold tabular-nums text-white md:text-4xl">
             {resumo.concluidas}
           </strong>
           <span className="mt-2 block text-xs font-semibold text-[var(--fdl-cream)]/80">

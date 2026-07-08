@@ -500,7 +500,7 @@ export default function EtapasOsClient({
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
-                        <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
+                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
                           {labelGrupo(grupo)}
                         </p>
 
@@ -540,7 +540,7 @@ export default function EtapasOsClient({
                         >
                           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                             <div className="min-w-0">
-                              <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--fdl-cream)]">
+                              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fdl-cream)]">
                                 {labelCodigo(codigoOs(os))}
                               </p>
 

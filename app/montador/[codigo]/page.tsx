@@ -36,7 +36,7 @@ export default async function MontadorPage({ params }: PageProps) {
             Código de acesso
           </p>
 
-          <p className="mt-2 text-2xl font-black text-[var(--fdl-cream)]">
+          <p className="mt-2 text-2xl font-extrabold tracking-wide text-[var(--fdl-cream)]">
             {codigo.toUpperCase()}
           </p>
         </div>

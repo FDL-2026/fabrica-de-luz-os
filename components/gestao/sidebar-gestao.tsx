@@ -44,7 +44,7 @@ export default function SidebarGestao({
               priority
               className="h-9 w-9 object-contain"
             />
-            <span className="text-sm font-black tracking-tight text-white">
+            <span className="text-sm font-bold tracking-tight text-white">
               Central de Comando
             </span>
           </Link>

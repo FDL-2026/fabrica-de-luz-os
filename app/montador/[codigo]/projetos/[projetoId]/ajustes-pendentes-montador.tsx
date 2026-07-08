@@ -100,7 +100,7 @@ export default function AjustesPendentesMontador({
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-red-100">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-100">
               Ajustes pendentes
             </p>
 
