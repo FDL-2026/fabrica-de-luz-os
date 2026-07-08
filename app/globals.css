@@ -4926,3 +4926,30 @@ html {
 .fdl-dashboard-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.055) !important;
 }
+
+
+/* FDL BUTTONS & EMPTY STATES POLISH 2026 */
+
+/* Feedback tátil no clique: o botão "afunda" abaixo da base (hover é -1px). */
+.fdl-ui-btn:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(1px) !important;
+}
+
+/* Estados vazios como zona intencional: mais respiro, centralizados e calmos,
+   em vez de uma faixa de texto apertada. */
+.fdl-empty-state,
+.fdl-ui-empty,
+.fdl-dashboard-empty,
+.fdl-mobile-empty {
+  display: flex !important;
+  min-height: 120px !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 32px 24px !important;
+  border: 1px dashed rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+  line-height: 1.6 !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
