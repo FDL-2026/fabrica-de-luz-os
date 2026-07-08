@@ -33,7 +33,7 @@ export default function SidebarGestao({
   return (
     <>
       {/* Barra superior compacta (mobile) */}
-      <header className="relative sticky top-0 z-40 bg-[var(--fdl-purple)] shadow-[0_10px_24px_-18px_rgba(0,0,0,0.85)] after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[linear-gradient(to_right,transparent,rgba(255,255,255,0.16)_22%,rgba(255,255,255,0.16)_78%,transparent)] after:content-[''] lg:hidden">
+      <header className="relative sticky top-0 z-40 bg-[linear-gradient(100deg,#6a3f97_0%,#4c2c6f_60%,#2b123a_100%)] shadow-[0_12px_28px_-18px_rgba(0,0,0,0.9)] after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-20 after:h-[2px] after:bg-[linear-gradient(to_right,transparent,rgba(237,224,177,0.7)_22%,rgba(237,224,177,0.7)_78%,transparent)] after:content-[''] lg:hidden">
         <div className="flex h-16 items-center justify-between gap-3 px-4">
           <Link href="/dashboard" className="flex items-center gap-3">
             <Image
@@ -111,9 +111,20 @@ export default function SidebarGestao({
         ) : null}
       </header>
 
-      {/* Sidebar (desktop) */}
-      <aside className="relative hidden bg-[var(--fdl-purple)] p-6 shadow-[10px_0_30px_-18px_rgba(0,0,0,0.85)] after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-[linear-gradient(to_bottom,transparent,rgba(255,255,255,0.16)_18%,rgba(255,255,255,0.16)_82%,transparent)] after:content-[''] lg:block">
-        <div className="mb-10 flex items-center justify-center rounded-3xl bg-white/5 p-4">
+      {/* Sidebar (desktop) — "plano de luz" contínuo, na mesma linguagem do login */}
+      <aside className="relative hidden overflow-hidden bg-[linear-gradient(168deg,#6a3f97_0%,#4c2c6f_46%,#2b123a_100%)] p-6 shadow-[16px_0_44px_-24px_rgba(0,0,0,0.95)] after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:z-20 after:w-[2px] after:bg-[linear-gradient(to_bottom,transparent,rgba(237,224,177,0.75)_20%,rgba(237,224,177,0.75)_80%,transparent)] after:content-[''] lg:block">
+        {/* Brilho creme + pontos de luz (decorativo, ecoa o login) */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(72%_32%_at_28%_6%,rgba(237,224,177,0.16),transparent_60%),radial-gradient(52%_40%_at_94%_100%,rgba(255,255,255,0.05),transparent_58%)]"
+        />
+        <span aria-hidden className="pointer-events-none absolute left-[16%] top-[6%] z-0 h-1.5 w-1.5 rounded-full bg-[var(--fdl-cream)] opacity-70 blur-[1px]" />
+        <span aria-hidden className="pointer-events-none absolute left-[42%] top-[3%] z-0 h-1 w-1 rounded-full bg-[var(--fdl-cream)] opacity-40 blur-[1px]" />
+        <span aria-hidden className="pointer-events-none absolute left-[64%] top-[9%] z-0 h-1 w-1 rounded-full bg-white opacity-45 blur-[1px]" />
+        <span aria-hidden className="pointer-events-none absolute left-[82%] top-[17%] z-0 h-1 w-1 rounded-full bg-[var(--fdl-cream)] opacity-35 blur-[1px]" />
+
+        <div className="relative z-10">
+          <div className="mb-10 flex items-center justify-center rounded-3xl bg-white/5 p-4">
           <Image
             src="/brand/H_TAGLINE_SF_ROXO.png"
             alt="Fábrica de Luz"
@@ -148,12 +159,13 @@ export default function SidebarGestao({
           </p>
         </div>
 
-        <a
-          href="/logout"
-          className="mt-4 block rounded-2xl border border-white/15 px-4 py-3 text-center text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-        >
-          Sair
-        </a>
+          <a
+            href="/logout"
+            className="mt-4 block rounded-2xl border border-white/15 px-4 py-3 text-center text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+          >
+            Sair
+          </a>
+        </div>
       </aside>
     </>
   );
