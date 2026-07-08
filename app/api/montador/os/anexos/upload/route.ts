@@ -26,6 +26,20 @@ function env(name: string) {
   return value;
 }
 
+// Erro específico de credencial do Drive (expirada/revogada ou mal configurada).
+// Serve para diferenciar "problema de configuração do sistema" de "erro do montador".
+class GoogleDriveAuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GoogleDriveAuthError";
+  }
+}
+
+// Cache em memória do access token do Google. O refresh token gera um access
+// token válido por ~1h; sem cache, cada arquivo de um lote (ex.: 7 fotos) faz uma
+// nova chamada ao endpoint de token do Google, o que é lento e desnecessário.
+let cachedGoogleToken: { token: string; expiresAt: number } | null = null;
+
 function sanitizeFolderName(value: string) {
   return value
     .replace(/[\\/:*?"<>|]/g, "-")
@@ -38,7 +52,7 @@ function escapeDriveQuery(value: string) {
   return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
-async function getGoogleAccessToken() {
+async function requestGoogleAccessToken() {
   const body = new URLSearchParams({
     client_id: env("GOOGLE_CLIENT_ID"),
     client_secret: env("GOOGLE_CLIENT_SECRET"),
@@ -54,17 +68,51 @@ async function getGoogleAccessToken() {
     body,
   });
 
-  const data = await response.json();
+  const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(
+    // invalid_grant = refresh token expirado ou revogado. É a causa do
+    // "Token has been expired or revoked." que chegava até a tela do montador.
+    // Trocamos por uma mensagem que deixa claro ser configuração do sistema.
+    if (data?.error === "invalid_grant") {
+      throw new GoogleDriveAuthError(
+        "A conexão com o Google Drive expirou. Isto é uma configuração do sistema (não é problema do seu acesso). " +
+          "Avise o administrador para renovar a conexão do Drive — suas fotos continuam selecionadas para reenviar."
+      );
+    }
+
+    throw new GoogleDriveAuthError(
       data?.error_description ||
         data?.error ||
         "Não foi possível autenticar no Google Drive."
     );
   }
 
-  return data.access_token as string;
+  return {
+    token: data.access_token as string,
+    expiresIn: Number(data.expires_in ?? 3600),
+  };
+}
+
+async function getGoogleAccessToken() {
+  // Reaproveita o token enquanto faltarem mais de 60s para expirar.
+  if (cachedGoogleToken && cachedGoogleToken.expiresAt > Date.now() + 60_000) {
+    return cachedGoogleToken.token;
+  }
+
+  const { token, expiresIn } = await requestGoogleAccessToken();
+
+  // Renova 2 min antes do vencimento real para evitar corrida com a expiração.
+  cachedGoogleToken = {
+    token,
+    expiresAt: Date.now() + Math.max(60, expiresIn - 120) * 1000,
+  };
+
+  return token;
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function driveFetch<T>(
@@ -72,21 +120,62 @@ async function driveFetch<T>(
   url: string,
   init: RequestInit = {}
 ): Promise<T> {
-  const response = await fetch(url, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      ...(init.headers ?? {}),
-    },
-  });
+  // Até 3 tentativas para falhas transitórias (rede instável em campo, 429 e
+  // 5xx do Drive). Erros definitivos (4xx que não 429) falham na hora.
+  const maxTentativas = 3;
+  let ultimoErro: unknown = null;
 
-  const text = await response.text();
+  for (let tentativa = 1; tentativa <= maxTentativas; tentativa += 1) {
+    let response: Response;
 
-  if (!response.ok) {
+    try {
+      response = await fetch(url, {
+        ...init,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          ...(init.headers ?? {}),
+        },
+      });
+    } catch (networkError) {
+      // Falha de rede antes de obter resposta: vale tentar de novo.
+      ultimoErro = networkError;
+
+      if (tentativa < maxTentativas) {
+        await sleep(500 * tentativa);
+        continue;
+      }
+
+      throw new Error(
+        "Falha de conexão com o Google Drive. Verifique a internet e tente enviar novamente."
+      );
+    }
+
+    const text = await response.text();
+
+    if (response.ok) {
+      return text ? (JSON.parse(text) as T) : ({} as T);
+    }
+
+    // 401/403 de credencial: o access token em cache pode ter sido revogado.
+    // Descarta o cache para forçar renovação numa próxima chamada.
+    if (response.status === 401 || response.status === 403) {
+      cachedGoogleToken = null;
+    }
+
+    const ehTransitorio = response.status === 429 || response.status >= 500;
+
+    if (ehTransitorio && tentativa < maxTentativas) {
+      ultimoErro = new Error(text);
+      await sleep(500 * tentativa);
+      continue;
+    }
+
     throw new Error(text || "Erro na comunicação com Google Drive.");
   }
 
-  return text ? (JSON.parse(text) as T) : ({} as T);
+  throw ultimoErro instanceof Error
+    ? ultimoErro
+    : new Error("Erro na comunicação com Google Drive.");
 }
 
 async function findFolder(
@@ -370,6 +459,15 @@ export async function POST(request: Request) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Erro inesperado no upload.";
+
+    // Falha de credencial do Drive: 502 + código próprio para o painel/monitoria
+    // distinguir "sistema precisa reconectar o Drive" de erro comum de upload.
+    if (error instanceof GoogleDriveAuthError) {
+      return Response.json(
+        { error: message, codigo: "drive_auth" },
+        { status: 502 }
+      );
+    }
 
     return Response.json({ error: message }, { status: 500 });
   }
