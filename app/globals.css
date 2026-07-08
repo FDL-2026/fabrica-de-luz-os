@@ -4895,3 +4895,34 @@ html {
     scroll-behavior: auto !important;
   }
 }
+
+
+/* FDL TABLE POLISH 2026 — leitura de tabelas operacionais densas */
+
+/* Números tabulares: colunas de contagem/percentual alinham verticalmente
+   e ficam muito mais fáceis de varrer. */
+.fdl-ui-table,
+.fdl-data-table,
+.fdl-dashboard-table {
+  font-variant-numeric: tabular-nums !important;
+  font-feature-settings: "tnum" 1 !important;
+}
+
+/* Zebra bem discreta para guiar o olho em tabelas longas (ex.: 82 projetos) */
+.fdl-ui-table tbody tr:nth-child(even),
+.fdl-data-table tbody tr:nth-child(even),
+.fdl-dashboard-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.022) !important;
+}
+
+/* Transição suave + hover um pouco mais legível (respeita reduced-motion) */
+.fdl-ui-table tbody tr,
+.fdl-data-table tbody tr,
+.fdl-dashboard-table tbody tr {
+  transition: background-color 0.15s ease !important;
+}
+.fdl-ui-table tbody tr:hover,
+.fdl-data-table tbody tr:hover,
+.fdl-dashboard-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.055) !important;
+}
