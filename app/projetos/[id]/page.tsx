@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import SidebarGestao from "@/components/gestao/sidebar-gestao";
 import OsTableClient from "./os-table-client";
 import FilaValidacaoProjetoClient from "./fila-validacao-projeto-client";
+import ExcluirProjetoClient from "./excluir-projeto-client";
 import HistoricoProjetoClient from "./historico-projeto-client";
 import ProgressoPonderadoProjeto from "@/components/progresso/progresso-ponderado-projeto";
 import ProgressoPonderadoKpi from "@/components/progresso/progresso-ponderado-kpi";
@@ -423,6 +424,13 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
       />
 
       <HistoricoProjetoClient projetoId={projeto.id} />
+
+          {usuario.perfil === "admin" ? (
+            <ExcluirProjetoClient
+              projetoId={projeto.id}
+              projetoNome={projeto.cliente || projeto.shopping || "Projeto"}
+            />
+          ) : null}
 
         </section>
       </div>
