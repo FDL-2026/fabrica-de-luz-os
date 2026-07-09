@@ -18,7 +18,7 @@ export default function BrandLogo({ className }: BrandLogoProps) {
 
   const light = mounted && resolvedTheme === "light";
   const src = light
-    ? "/brand/H_TAGLINE_CF_ROXO.png"
+    ? "/brand/H_TAGLINE_SF_BEGE.png"
     : "/brand/H_TAGLINE_SF_ROXO.png";
 
   return (

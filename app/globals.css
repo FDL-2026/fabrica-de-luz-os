@@ -5398,3 +5398,16 @@ html {
   background-color: #ffffff !important;
   border-color: var(--fdl-line) !important;
 }
+
+/* Robustez: qualquer <main>/elemento do montador com fundo roxo-escuro
+   (várias telas têm o seu próprio) é iluminado no claro. */
+.light .fdl-content [class*="bg-[var(--fdl-purple-dark)]"],
+.light .fdl-content [class*="bg-[var(--fdl-purple-deep)]"] {
+  background-color: var(--fdl-canvas) !important;
+}
+
+/* Catch-all para qualquer opacidade de texto branco (o montador usa muitas
+   variações inline: /45, /60, /66, /74, /80...) — evita texto claro no claro. */
+.light .fdl-content [class*="text-white/"] {
+  color: var(--fdl-ink-soft) !important;
+}
