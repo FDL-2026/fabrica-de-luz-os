@@ -1,5 +1,5 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
+import BrandLogo from "@/components/brand-logo";
 
 type MontadorShellProps = {
   children: ReactNode;
@@ -29,14 +29,7 @@ export default function MontadorShell({
         } ${center ? "justify-center" : ""}`}
       >
         <header className="mb-8 flex justify-center">
-          <Image
-            src="/brand/H_TAGLINE_SF_ROXO.png"
-            alt="Fábrica de Luz"
-            width={500}
-            height={300}
-            priority
-            className="h-auto max-h-28 w-full max-w-sm object-contain"
-          />
+          <BrandLogo className="h-auto max-h-28 w-full max-w-sm object-contain" />
         </header>
 
         <div className="w-full">{children}</div>

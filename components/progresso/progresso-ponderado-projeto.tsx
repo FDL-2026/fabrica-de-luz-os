@@ -67,7 +67,7 @@ function ProgressBar({
 
       <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/10">
         <div
-          className="h-full rounded-full bg-[var(--fdl-cream)]"
+          className="fdl-bar-fill h-full rounded-full"
           style={{ width: `${width}%` }}
         />
       </div>

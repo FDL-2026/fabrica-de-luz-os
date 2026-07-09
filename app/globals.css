@@ -5114,6 +5114,12 @@ html {
   color: var(--fdl-ink);
 }
 
+/* Ilumina o fundo da página quando o conteúdo é tematizado (telas sem sidebar
+   não deixam margens escuras). A sidebar, quando existe, cobre sua coluna. */
+.light main:has(.fdl-content) {
+  background: var(--fdl-canvas) !important;
+}
+
 /* Superfícies translúcidas (Tailwind bg-white/..) viram claras — vem antes das
    regras específicas de card para que os cards vençam com o branco cheio. */
 .light .fdl-content [class*="bg-white/"] {
@@ -5157,6 +5163,7 @@ html {
 .light .fdl-content .fdl-ui-project-toolbar {
   background: var(--fdl-card) !important;
   border-color: var(--fdl-line) !important;
+  color: var(--fdl-ink) !important;
   box-shadow:
     0 12px 30px -16px rgba(35, 19, 41, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
@@ -5176,6 +5183,8 @@ html {
 .light .fdl-content .fdl-projects-kpi-label,
 .light .fdl-content .fdl-projects-kpi-help,
 .light .fdl-content .fdl-project-kpi-label,
+.light .fdl-content .fdl-project-kpi-help,
+.light .fdl-content .fdl-project-kpi-warning,
 .light .fdl-content .fdl-ui-label,
 .light .fdl-content .fdl-ui-section-desc {
   color: var(--fdl-ink-soft) !important;
@@ -5238,9 +5247,31 @@ html {
   color: var(--fdl-ink) !important;
 }
 
-/* Progresso */
+/* Progresso: trilho claro + preenchimento roxo (o creme some no claro) */
 .light .fdl-content .fdl-ui-progress {
   background: rgba(35, 19, 41, 0.08) !important;
+}
+.light .fdl-content .fdl-ui-progress-fill {
+  background: var(--fdl-purple-strong) !important;
+}
+
+/* Textos em tons de status claros (nível 50-300, com ou sem opacidade tipo
+   /70 /75) somem no fundo claro. Seletores de atributo pegam TODAS as
+   variações (ex.: text-yellow-100/70, text-amber-50/75) e puxam para tons
+   escuros legíveis. Tons -600/-700/-800 (já escuros) ficam iguais/próximos. */
+.light .fdl-content [class*="text-yellow-"],
+.light .fdl-content [class*="text-amber-"] {
+  color: #a16207 !important;
+}
+.light .fdl-content [class*="text-green-"],
+.light .fdl-content [class*="text-emerald-"] {
+  color: #15803d !important;
+}
+.light .fdl-content [class*="text-blue-"] {
+  color: #1d4ed8 !important;
+}
+.light .fdl-content .fdl-projects-kpi-success {
+  color: #15803d !important;
 }
 
 /* Estados vazios */
@@ -5270,4 +5301,268 @@ html {
 }
 .light .fdl-content .fdl-ui-validation-card .fdl-ui-table thead {
   background: #fdefd3 !important;
+}
+
+/* Acentos creme inline (text-[var(--fdl-cream)]): baixo contraste no claro,
+   viram roxo da marca. */
+.light .fdl-content [class*="text-[var(--fdl-cream)]"] {
+  color: var(--fdl-purple-strong) !important;
+}
+
+/* Botões/links com fundo creme inline: viram roxo sólido com texto branco. */
+.light .fdl-content a[class*="bg-[var(--fdl-cream)]"],
+.light .fdl-content button[class*="bg-[var(--fdl-cream)]"] {
+  background-color: var(--fdl-purple-strong) !important;
+  color: #ffffff !important;
+}
+
+/* Preenchimento de barras de progresso (creme no escuro; roxo no claro) */
+.fdl-bar-fill {
+  background: var(--fdl-cream);
+}
+.light .fdl-content .fdl-bar-fill,
+.light .fdl-content .fdl-project-progress-fill,
+.light .fdl-content .fdl-ui-progress-fill {
+  background: var(--fdl-purple-strong) !important;
+}
+.light .fdl-content .fdl-project-progress {
+  background: rgba(35, 19, 41, 0.08) !important;
+}
+
+/* Link "Voltar para projetos": creme some no claro -> roxo da marca */
+.light .fdl-content .fdl-project-back-link {
+  color: var(--fdl-purple-strong) !important;
+}
+
+/* Chip de contagem ("80 de 80 projeto(s)") */
+.light .fdl-content .fdl-ui-subtle-count {
+  background: rgba(35, 19, 41, 0.05) !important;
+  border-color: var(--fdl-line) !important;
+  color: var(--fdl-ink-soft) !important;
+}
+
+/* Campo de busca e demais inputs: fundo e texto visíveis no claro */
+.light .fdl-content input,
+.light .fdl-content select,
+.light .fdl-content textarea,
+.light .fdl-content .fdl-field,
+.light .fdl-content .fdl-ui-select,
+.light .fdl-content .fdl-ui-field {
+  background: #ffffff !important;
+  border: 1px solid rgba(35, 19, 41, 0.16) !important;
+  color: var(--fdl-ink) !important;
+}
+.light .fdl-content input::placeholder,
+.light .fdl-content textarea::placeholder,
+.light .fdl-content .fdl-field::placeholder {
+  color: rgba(35, 19, 41, 0.4) !important;
+}
+
+/* Títulos dentro de cards: a regra .fdl-form-card h2/h3 força branco (some no
+   claro). Traz para tinta. */
+.light .fdl-content .fdl-form-card h2,
+.light .fdl-content .fdl-form-card h3 {
+  color: var(--fdl-ink) !important;
+}
+
+/* Zona de exclusão: vermelhos claros (feitos p/ fundo escuro) -> vermelho forte */
+.light .fdl-content .text-red-100,
+.light .fdl-content .text-red-200,
+.light .fdl-content .text-red-300 {
+  color: #b91c1c !important;
+}
+
+/* ---- Montador no claro (classes proprias fdl-mobile e fdl-section) ---- */
+.light .fdl-content .fdl-mobile-title,
+.light .fdl-content .fdl-section-title {
+  color: var(--fdl-ink) !important;
+}
+.light .fdl-content .fdl-mobile-kicker {
+  color: var(--fdl-purple-strong) !important;
+}
+.light .fdl-content .fdl-mobile-description,
+.light .fdl-content .fdl-section-subtitle {
+  color: var(--fdl-ink-soft) !important;
+}
+.light .fdl-content .fdl-mobile-card,
+.light .fdl-content .fdl-mobile-card-strong {
+  background: var(--fdl-card) !important;
+  border-color: var(--fdl-line) !important;
+  color: var(--fdl-ink) !important;
+}
+
+/* O MontadorShell tem seu próprio <main> com fundo roxo-escuro: ilumina. */
+.light .fdl-content .fdl-montador-main {
+  background: var(--fdl-canvas) !important;
+  color: var(--fdl-ink) !important;
+}
+
+/* No montador, as caixas usam bg-white inline (cartões E insets). No claro,
+   vira cartão branco com borda visível — legível sobre o fundo claro. */
+.light .fdl-content .fdl-montador-main [class*="bg-white/"] {
+  background-color: #ffffff !important;
+  border-color: var(--fdl-line) !important;
+}
+
+/* Robustez: qualquer <main>/elemento do montador com fundo roxo-escuro
+   (várias telas têm o seu próprio) é iluminado no claro. */
+.light .fdl-content [class*="bg-[var(--fdl-purple-dark)]"],
+.light .fdl-content [class*="bg-[var(--fdl-purple-deep)]"] {
+  background-color: var(--fdl-canvas) !important;
+}
+
+/* Catch-all para qualquer opacidade de texto branco (o montador usa muitas
+   variações inline: /45, /60, /66, /74, /80...) — evita texto claro no claro. */
+.light .fdl-content [class*="text-white/"] {
+  color: var(--fdl-ink-soft) !important;
+}
+
+
+/* ============================================================================
+   MONTADOR NO CLARO — override definitivo
+   Todas as telas do montador usam MontadorShell (.fdl-montador-main), que tem
+   <main> escuro próprio e um bloco de regras `main:has(.fdl-mobile-card)` com
+   !important. Aqui espelhamos com prefixo .light (especificidade maior) e
+   escopamos por .fdl-montador-main (cobre TODAS as telas do montador).
+   ========================================================================== */
+
+/* Fundo claro em todo o montador */
+.light .fdl-montador-main,
+.light main:has(.fdl-mobile-card),
+.light main:has(.fdl-mobile-shell) {
+  background: var(--fdl-canvas) !important;
+  color: var(--fdl-ink) !important;
+}
+
+/* Cartões brancos com borda visível */
+.light .fdl-montador-main [class*="bg-white/"],
+.light .fdl-montador-main .fdl-mobile-card,
+.light main:has(.fdl-mobile-card) section.rounded-3xl,
+.light main:has(.fdl-mobile-card) form.rounded-3xl,
+.light main:has(.fdl-mobile-card) div.rounded-3xl {
+  background: #ffffff !important;
+  border-color: var(--fdl-line) !important;
+}
+
+.light .fdl-montador-main [class*="border-white/"] {
+  border-color: var(--fdl-line) !important;
+}
+
+/* Texto branco cheio -> tinta escura */
+.light .fdl-montador-main [class~="text-white"],
+.light main:has(.fdl-mobile-card) [class~="text-white"] {
+  color: var(--fdl-ink) !important;
+}
+
+/* Texto branco com opacidade (/45, /60, /66...) -> tinta suave */
+.light .fdl-montador-main [class*="text-white/"],
+.light main:has(.fdl-mobile-card) [class*="text-white/"] {
+  color: var(--fdl-ink-soft) !important;
+}
+
+/* Títulos e headings do montador -> tinta */
+.light .fdl-montador-main h1,
+.light .fdl-montador-main h2,
+.light .fdl-montador-main h3,
+.light .fdl-montador-main h4,
+.light .fdl-montador-main .fdl-mobile-title,
+.light .fdl-montador-main .fdl-section-title,
+.light main:has(.fdl-mobile-card) h1,
+.light main:has(.fdl-mobile-card) h2 {
+  color: var(--fdl-ink) !important;
+}
+
+/* Kickers (uppercase) e acentos creme -> roxo da marca */
+.light .fdl-montador-main [class*="text-[var(--fdl-cream)]"],
+.light .fdl-montador-main .fdl-mobile-kicker,
+.light main:has(.fdl-mobile-card) p[class*="uppercase"],
+.light main:has(.fdl-mobile-card) .fdl-mobile-kicker {
+  color: var(--fdl-purple-strong) !important;
+}
+
+/* Inputs do montador */
+.light .fdl-montador-main input,
+.light .fdl-montador-main select,
+.light .fdl-montador-main textarea,
+.light main:has(.fdl-mobile-card) input,
+.light main:has(.fdl-mobile-card) select,
+.light main:has(.fdl-mobile-card) textarea {
+  background: #ffffff !important;
+  color: var(--fdl-ink) !important;
+  border-color: rgba(35, 19, 41, 0.16) !important;
+}
+.light .fdl-montador-main input::placeholder,
+.light .fdl-montador-main textarea::placeholder {
+  color: rgba(35, 19, 41, 0.4) !important;
+}
+
+/* Rodapé */
+.light .fdl-montador-main footer {
+  color: var(--fdl-ink-soft) !important;
+}
+
+/* ----------------------------------------------------------------------------
+   Espelho do bloco escuro .fdl-montador-main (linhas ~3922-4000): aquelas
+   regras têm especificidade maior que as gerais e forçavam o texto das caixas
+   internas para branco/creme. Aqui repetimos os MESMOS seletores com prefixo
+   .light (especificidade +1 classe) para vencer de forma garantida.
+   ---------------------------------------------------------------------------- */
+.light .fdl-montador-main div[class*="bg-white"],
+.light .fdl-montador-main section[class*="bg-white"],
+.light .fdl-montador-main .grid > div[class*="bg-white"] {
+  background-color: #ffffff !important;
+  border-color: var(--fdl-line) !important;
+  color: var(--fdl-ink) !important;
+}
+
+.light .fdl-montador-main div[class*="bg-white"] p,
+.light .fdl-montador-main .grid > div[class*="bg-white"] p {
+  color: var(--fdl-ink-soft) !important;
+}
+
+.light .fdl-montador-main div[class*="bg-white"] strong,
+.light .fdl-montador-main div[class*="bg-white"] span,
+.light .fdl-montador-main .grid > div[class*="bg-white"] strong,
+.light .fdl-montador-main .grid > div[class*="bg-white"] span {
+  color: var(--fdl-ink) !important;
+}
+
+/* Kicker do montador (era cream via .fdl-montador-main p[uppercase]) -> roxo */
+.light .fdl-montador-main p[class*="uppercase"],
+.light .fdl-montador-main .fdl-mobile-kicker {
+  color: var(--fdl-purple-strong) !important;
+}
+
+/* Valores coloridos de status (verde/amarelo/etc.) dentro das caixas mantêm
+   contraste no claro, sobrepondo o strong/span -> ink acima. */
+.light .fdl-montador-main [class*="text-green-"] {
+  color: #15803d !important;
+}
+.light .fdl-montador-main [class*="text-yellow-"],
+.light .fdl-montador-main [class*="text-amber-"] {
+  color: #a16207 !important;
+}
+
+/* Botões de foto (são <label>, escapavam do override de creme).
+   "Tirar foto" (creme) -> roxo sólido; "Escolher da galeria" (borda) -> lilás. */
+.light .fdl-content label[class*="bg-[var(--fdl-cream)]"],
+.light .fdl-montador-main label[class*="bg-[var(--fdl-cream)]"] {
+  background-color: var(--fdl-purple-strong) !important;
+  color: #ffffff !important;
+}
+.light .fdl-montador-main label[class*="border-white"] {
+  background-color: #ece3f5 !important;
+  border-color: rgba(100, 59, 143, 0.25) !important;
+  color: var(--fdl-purple-strong) !important;
+}
+.light .fdl-montador-main label[class*="border-white"] * {
+  color: var(--fdl-purple-strong) !important;
+}
+
+/* Botão "Ver OSs"/"Ocultar" das etapas (.fdl-etapa-action-btn): no escuro é
+   branco translúcido + texto branco -> some no claro. Vira secundário lilás. */
+.light .fdl-montador-main .fdl-etapa-action-btn {
+  background: #ece3f5 !important;
+  color: var(--fdl-purple-strong) !important;
+  border: 1px solid rgba(100, 59, 143, 0.25) !important;
 }
