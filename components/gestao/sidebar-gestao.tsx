@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import ThemeToggle from "./theme-toggle";
 
 type SidebarGestaoProps = {
   usuarioNome: string;
@@ -107,6 +108,10 @@ export default function SidebarGestao({
                 Sair
               </a>
             </div>
+
+            <div className="mt-3">
+              <ThemeToggle />
+            </div>
           </nav>
         ) : null}
       </header>
@@ -141,7 +146,11 @@ export default function SidebarGestao({
           ))}
         </nav>
 
-        <div className="mt-10 rounded-3xl border border-white/10 bg-white/10 p-4">
+        <div className="mt-10">
+          <ThemeToggle />
+        </div>
+
+        <div className="mt-4 rounded-3xl border border-white/10 bg-white/10 p-4">
           <p className="text-sm font-semibold">{usuarioNome}</p>
           <p className="mt-1 text-xs text-white/60">
             {usuarioPerfil.replace("_", " ")}

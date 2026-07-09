@@ -16,7 +16,7 @@ export default async function DashboardPage() {
           usuarioPerfil={usuario.perfil}
         />
 
-        <section className="min-w-0 p-4 pb-12 sm:p-6 lg:p-8">
+        <section className="fdl-content min-w-0 p-4 pb-12 sm:p-6 lg:p-8">
           <DashboardClient />
         </section>
       </div>

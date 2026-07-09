@@ -5092,3 +5092,182 @@ html {
   letter-spacing: -0.02em !important;
   font-variant-numeric: tabular-nums !important;
 }
+
+
+/* ============================================================================
+   TEMA CLARO 2026 — Fase 1 (opt-in; o padrão continua escuro)
+   A sidebar permanece roxa (assinatura). Só a área de conteúdo marcada com
+   .fdl-content responde ao tema claro; telas sem essa marca seguem escuras.
+   ========================================================================== */
+:root {
+  --fdl-canvas: #f4f1f9;
+  --fdl-ink: #231329;
+  --fdl-ink-soft: #6f5f7c;
+  --fdl-line: rgba(35, 19, 41, 0.1);
+  --fdl-card: #ffffff;
+  --fdl-purple-strong: #643b8f;
+}
+
+/* Palco claro */
+.light .fdl-content {
+  background: var(--fdl-canvas);
+  color: var(--fdl-ink);
+}
+
+/* Superfícies translúcidas (Tailwind bg-white/..) viram claras — vem antes das
+   regras específicas de card para que os cards vençam com o branco cheio. */
+.light .fdl-content [class*="bg-white/"] {
+  background-color: rgba(35, 19, 41, 0.03) !important;
+}
+.light .fdl-content [class*="border-white/"] {
+  border-color: var(--fdl-line) !important;
+}
+
+/* Texto: converte os brancos do Tailwind para tinta */
+.light .fdl-content .text-white,
+.light .fdl-content .text-white\/90,
+.light .fdl-content .text-white\/80,
+.light .fdl-content .text-white\/75,
+.light .fdl-content .text-white\/74,
+.light .fdl-content .text-white\/70 {
+  color: var(--fdl-ink) !important;
+}
+.light .fdl-content .text-white\/65,
+.light .fdl-content .text-white\/60,
+.light .fdl-content .text-white\/58,
+.light .fdl-content .text-white\/55,
+.light .fdl-content .text-white\/50,
+.light .fdl-content .text-white\/48,
+.light .fdl-content .text-white\/45,
+.light .fdl-content .text-white\/40,
+.light .fdl-content .text-white\/35 {
+  color: var(--fdl-ink-soft) !important;
+}
+
+/* Cards, painéis, KPIs e filtros: branco cheio + borda/sombra claras */
+.light .fdl-content .fdl-form-card,
+.light .fdl-content .fdl-form-section,
+.light .fdl-content .fdl-ui-panel,
+.light .fdl-content .fdl-ui-section,
+.light .fdl-content .fdl-ui-page-block,
+.light .fdl-content .fdl-ui-kpi,
+.light .fdl-content .fdl-projects-kpi-card,
+.light .fdl-content .fdl-project-kpi-card,
+.light .fdl-content .fdl-ui-filter-box,
+.light .fdl-content .fdl-ui-project-toolbar {
+  background: var(--fdl-card) !important;
+  border-color: var(--fdl-line) !important;
+  box-shadow:
+    0 12px 30px -16px rgba(35, 19, 41, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Títulos e valores em tinta; kicker no roxo da marca */
+.light .fdl-content .fdl-ui-title,
+.light .fdl-content .fdl-ui-section-title,
+.light .fdl-content .fdl-ui-kpi-value,
+.light .fdl-content .fdl-projects-kpi-value,
+.light .fdl-content .fdl-project-kpi-value {
+  color: var(--fdl-ink) !important;
+}
+.light .fdl-content .fdl-ui-description,
+.light .fdl-content .fdl-ui-kpi-label,
+.light .fdl-content .fdl-ui-kpi-help,
+.light .fdl-content .fdl-projects-kpi-label,
+.light .fdl-content .fdl-projects-kpi-help,
+.light .fdl-content .fdl-project-kpi-label,
+.light .fdl-content .fdl-ui-label,
+.light .fdl-content .fdl-ui-section-desc {
+  color: var(--fdl-ink-soft) !important;
+}
+.light .fdl-content .fdl-ui-kicker {
+  color: var(--fdl-purple-strong) !important;
+}
+
+/* Tabelas */
+.light .fdl-content .fdl-ui-table thead {
+  background: #efeaf5 !important;
+}
+.light .fdl-content .fdl-ui-table th {
+  color: var(--fdl-ink-soft) !important;
+}
+.light .fdl-content .fdl-ui-table td {
+  border-top-color: var(--fdl-line) !important;
+}
+.light .fdl-content .fdl-ui-table-primary {
+  color: var(--fdl-ink) !important;
+}
+.light .fdl-content .fdl-ui-table-secondary {
+  color: var(--fdl-ink-soft) !important;
+}
+.light .fdl-content .fdl-ui-table tbody tr:nth-child(even) {
+  background: rgba(35, 19, 41, 0.02) !important;
+}
+.light .fdl-content .fdl-ui-table tbody tr:hover {
+  background: rgba(100, 59, 143, 0.06) !important;
+}
+.light .fdl-content .fdl-ui-table-wrap {
+  border-color: var(--fdl-line) !important;
+}
+
+/* Campos e selects */
+.light .fdl-content .fdl-ui-select,
+.light .fdl-content .fdl-ui-field,
+.light .fdl-content .fdl-field,
+.light .fdl-content input,
+.light .fdl-content select,
+.light .fdl-content textarea {
+  background: #faf8fc !important;
+  border-color: var(--fdl-line) !important;
+  color: var(--fdl-ink) !important;
+}
+
+/* Botões: creme tem baixo contraste no claro -> primário roxo sólido */
+.light .fdl-content .fdl-ui-btn-primary {
+  background: var(--fdl-purple-strong) !important;
+  color: #ffffff !important;
+  box-shadow: 0 12px 24px -12px rgba(100, 59, 143, 0.4) !important;
+}
+.light .fdl-content .fdl-ui-btn-secondary {
+  background: #ece3f5 !important;
+  color: var(--fdl-purple-strong) !important;
+}
+.light .fdl-content .fdl-ui-btn-ghost {
+  background: rgba(35, 19, 41, 0.03) !important;
+  border-color: var(--fdl-line) !important;
+  color: var(--fdl-ink) !important;
+}
+
+/* Progresso */
+.light .fdl-content .fdl-ui-progress {
+  background: rgba(35, 19, 41, 0.08) !important;
+}
+
+/* Estados vazios */
+.light .fdl-content .fdl-ui-empty,
+.light .fdl-content .fdl-empty-state {
+  border-color: var(--fdl-line) !important;
+  background: rgba(35, 19, 41, 0.02) !important;
+  color: var(--fdl-ink-soft) !important;
+}
+
+/* Badge neutro */
+.light .fdl-content .fdl-ui-badge-muted {
+  background: rgba(35, 19, 41, 0.06) !important;
+  color: var(--fdl-ink-soft) !important;
+}
+
+/* Fila de validação (âmbar claro) */
+.light .fdl-content .fdl-ui-validation-card {
+  background: #fff7e8 !important;
+  border-color: rgba(180, 83, 9, 0.32) !important;
+}
+.light .fdl-content .fdl-ui-validation-title {
+  color: var(--fdl-ink) !important;
+}
+.light .fdl-content .fdl-ui-validation-desc {
+  color: rgba(120, 53, 15, 0.8) !important;
+}
+.light .fdl-content .fdl-ui-validation-card .fdl-ui-table thead {
+  background: #fdefd3 !important;
+}
