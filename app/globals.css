@@ -5255,16 +5255,21 @@ html {
   background: var(--fdl-purple-strong) !important;
 }
 
-/* Números coloridos das colunas (Pend./And./Val./Conc.): os tons nível-100
-   são feitos para fundo escuro e somem no claro — puxa para tons legíveis. */
-.light .fdl-content .text-yellow-100 {
+/* Textos em tons de status claros (nível 50-300, com ou sem opacidade tipo
+   /70 /75) somem no fundo claro. Seletores de atributo pegam TODAS as
+   variações (ex.: text-yellow-100/70, text-amber-50/75) e puxam para tons
+   escuros legíveis. Tons -600/-700/-800 (já escuros) ficam iguais/próximos. */
+.light .fdl-content [class*="text-yellow-"],
+.light .fdl-content [class*="text-amber-"] {
   color: #a16207 !important;
 }
-.light .fdl-content .text-blue-100 {
+.light .fdl-content [class*="text-green-"],
+.light .fdl-content [class*="text-emerald-"] {
+  color: #15803d !important;
+}
+.light .fdl-content [class*="text-blue-"] {
   color: #1d4ed8 !important;
 }
-.light .fdl-content .text-green-100,
-.light .fdl-content .text-green-200,
 .light .fdl-content .fdl-projects-kpi-success {
   color: #15803d !important;
 }
