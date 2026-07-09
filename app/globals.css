@@ -5157,6 +5157,7 @@ html {
 .light .fdl-content .fdl-ui-project-toolbar {
   background: var(--fdl-card) !important;
   border-color: var(--fdl-line) !important;
+  color: var(--fdl-ink) !important;
   box-shadow:
     0 12px 30px -16px rgba(35, 19, 41, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
@@ -5176,6 +5177,8 @@ html {
 .light .fdl-content .fdl-projects-kpi-label,
 .light .fdl-content .fdl-projects-kpi-help,
 .light .fdl-content .fdl-project-kpi-label,
+.light .fdl-content .fdl-project-kpi-help,
+.light .fdl-content .fdl-project-kpi-warning,
 .light .fdl-content .fdl-ui-label,
 .light .fdl-content .fdl-ui-section-desc {
   color: var(--fdl-ink-soft) !important;
@@ -5300,4 +5303,36 @@ html {
 .light .fdl-content button[class*="bg-[var(--fdl-cream)]"] {
   background-color: var(--fdl-purple-strong) !important;
   color: #ffffff !important;
+}
+
+/* Preenchimento de barras de progresso (creme no escuro; roxo no claro) */
+.fdl-bar-fill {
+  background: var(--fdl-cream);
+}
+.light .fdl-content .fdl-bar-fill {
+  background: var(--fdl-purple-strong) !important;
+}
+
+/* Chip de contagem ("80 de 80 projeto(s)") */
+.light .fdl-content .fdl-ui-subtle-count {
+  background: rgba(35, 19, 41, 0.05) !important;
+  border-color: var(--fdl-line) !important;
+  color: var(--fdl-ink-soft) !important;
+}
+
+/* Campo de busca e demais inputs: fundo e texto visíveis no claro */
+.light .fdl-content input,
+.light .fdl-content select,
+.light .fdl-content textarea,
+.light .fdl-content .fdl-field,
+.light .fdl-content .fdl-ui-select,
+.light .fdl-content .fdl-ui-field {
+  background: #ffffff !important;
+  border: 1px solid rgba(35, 19, 41, 0.16) !important;
+  color: var(--fdl-ink) !important;
+}
+.light .fdl-content input::placeholder,
+.light .fdl-content textarea::placeholder,
+.light .fdl-content .fdl-field::placeholder {
+  color: rgba(35, 19, 41, 0.4) !important;
 }

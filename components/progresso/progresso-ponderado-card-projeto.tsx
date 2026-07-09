@@ -68,7 +68,7 @@ export default function ProgressoPonderadoCardProjeto({
 
       <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/10">
         <div
-          className="h-full rounded-full bg-[var(--fdl-cream)]"
+          className="fdl-bar-fill h-full rounded-full"
           style={{ width: carregando ? "0%" : `${widthValidado}%` }}
         />
       </div>
