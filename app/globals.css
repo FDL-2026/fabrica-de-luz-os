@@ -5238,9 +5238,26 @@ html {
   color: var(--fdl-ink) !important;
 }
 
-/* Progresso */
+/* Progresso: trilho claro + preenchimento roxo (o creme some no claro) */
 .light .fdl-content .fdl-ui-progress {
   background: rgba(35, 19, 41, 0.08) !important;
+}
+.light .fdl-content .fdl-ui-progress-fill {
+  background: var(--fdl-purple-strong) !important;
+}
+
+/* Números coloridos das colunas (Pend./And./Val./Conc.): os tons nível-100
+   são feitos para fundo escuro e somem no claro — puxa para tons legíveis. */
+.light .fdl-content .text-yellow-100 {
+  color: #a16207 !important;
+}
+.light .fdl-content .text-blue-100 {
+  color: #1d4ed8 !important;
+}
+.light .fdl-content .text-green-100,
+.light .fdl-content .text-green-200,
+.light .fdl-content .fdl-projects-kpi-success {
+  color: #15803d !important;
 }
 
 /* Estados vazios */
@@ -5270,4 +5287,17 @@ html {
 }
 .light .fdl-content .fdl-ui-validation-card .fdl-ui-table thead {
   background: #fdefd3 !important;
+}
+
+/* Acentos creme inline (text-[var(--fdl-cream)]): baixo contraste no claro,
+   viram roxo da marca. */
+.light .fdl-content [class*="text-[var(--fdl-cream)]"] {
+  color: var(--fdl-purple-strong) !important;
+}
+
+/* Botões/links com fundo creme inline: viram roxo sólido com texto branco. */
+.light .fdl-content a[class*="bg-[var(--fdl-cream)]"],
+.light .fdl-content button[class*="bg-[var(--fdl-cream)]"] {
+  background-color: var(--fdl-purple-strong) !important;
+  color: #ffffff !important;
 }
