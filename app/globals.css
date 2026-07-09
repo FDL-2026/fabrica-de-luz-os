@@ -5416,3 +5416,87 @@ html {
 .light .fdl-content [class*="text-white/"] {
   color: var(--fdl-ink-soft) !important;
 }
+
+
+/* ============================================================================
+   MONTADOR NO CLARO — override definitivo
+   Todas as telas do montador usam MontadorShell (.fdl-montador-main), que tem
+   <main> escuro próprio e um bloco de regras `main:has(.fdl-mobile-card)` com
+   !important. Aqui espelhamos com prefixo .light (especificidade maior) e
+   escopamos por .fdl-montador-main (cobre TODAS as telas do montador).
+   ========================================================================== */
+
+/* Fundo claro em todo o montador */
+.light .fdl-montador-main,
+.light main:has(.fdl-mobile-card),
+.light main:has(.fdl-mobile-shell) {
+  background: var(--fdl-canvas) !important;
+  color: var(--fdl-ink) !important;
+}
+
+/* Cartões brancos com borda visível */
+.light .fdl-montador-main [class*="bg-white/"],
+.light .fdl-montador-main .fdl-mobile-card,
+.light main:has(.fdl-mobile-card) section.rounded-3xl,
+.light main:has(.fdl-mobile-card) form.rounded-3xl,
+.light main:has(.fdl-mobile-card) div.rounded-3xl {
+  background: #ffffff !important;
+  border-color: var(--fdl-line) !important;
+}
+
+.light .fdl-montador-main [class*="border-white/"] {
+  border-color: var(--fdl-line) !important;
+}
+
+/* Texto branco cheio -> tinta escura */
+.light .fdl-montador-main [class~="text-white"],
+.light main:has(.fdl-mobile-card) [class~="text-white"] {
+  color: var(--fdl-ink) !important;
+}
+
+/* Texto branco com opacidade (/45, /60, /66...) -> tinta suave */
+.light .fdl-montador-main [class*="text-white/"],
+.light main:has(.fdl-mobile-card) [class*="text-white/"] {
+  color: var(--fdl-ink-soft) !important;
+}
+
+/* Títulos e headings do montador -> tinta */
+.light .fdl-montador-main h1,
+.light .fdl-montador-main h2,
+.light .fdl-montador-main h3,
+.light .fdl-montador-main h4,
+.light .fdl-montador-main .fdl-mobile-title,
+.light .fdl-montador-main .fdl-section-title,
+.light main:has(.fdl-mobile-card) h1,
+.light main:has(.fdl-mobile-card) h2 {
+  color: var(--fdl-ink) !important;
+}
+
+/* Kickers (uppercase) e acentos creme -> roxo da marca */
+.light .fdl-montador-main [class*="text-[var(--fdl-cream)]"],
+.light .fdl-montador-main .fdl-mobile-kicker,
+.light main:has(.fdl-mobile-card) p[class*="uppercase"],
+.light main:has(.fdl-mobile-card) .fdl-mobile-kicker {
+  color: var(--fdl-purple-strong) !important;
+}
+
+/* Inputs do montador */
+.light .fdl-montador-main input,
+.light .fdl-montador-main select,
+.light .fdl-montador-main textarea,
+.light main:has(.fdl-mobile-card) input,
+.light main:has(.fdl-mobile-card) select,
+.light main:has(.fdl-mobile-card) textarea {
+  background: #ffffff !important;
+  color: var(--fdl-ink) !important;
+  border-color: rgba(35, 19, 41, 0.16) !important;
+}
+.light .fdl-montador-main input::placeholder,
+.light .fdl-montador-main textarea::placeholder {
+  color: rgba(35, 19, 41, 0.4) !important;
+}
+
+/* Rodapé */
+.light .fdl-montador-main footer {
+  color: var(--fdl-ink-soft) !important;
+}
