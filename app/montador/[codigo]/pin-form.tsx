@@ -288,7 +288,7 @@ export default function PinForm({ codigo }: PinFormProps) {
 
                         <div className="mt-3 h-2 rounded-full bg-white/10">
                           <div
-                            className="h-2 rounded-full bg-[var(--fdl-cream)]"
+                            className="fdl-bar-fill h-2 rounded-full"
                             style={{ width: `${progresso}%` }}
                           />
                         </div>

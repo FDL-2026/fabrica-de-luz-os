@@ -5385,3 +5385,16 @@ html {
   border-color: var(--fdl-line) !important;
   color: var(--fdl-ink) !important;
 }
+
+/* O MontadorShell tem seu próprio <main> com fundo roxo-escuro: ilumina. */
+.light .fdl-content .fdl-montador-main {
+  background: var(--fdl-canvas) !important;
+  color: var(--fdl-ink) !important;
+}
+
+/* No montador, as caixas usam bg-white inline (cartões E insets). No claro,
+   vira cartão branco com borda visível — legível sobre o fundo claro. */
+.light .fdl-content .fdl-montador-main [class*="bg-white/"] {
+  background-color: #ffffff !important;
+  border-color: var(--fdl-line) !important;
+}
