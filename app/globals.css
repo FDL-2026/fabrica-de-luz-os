@@ -5114,6 +5114,12 @@ html {
   color: var(--fdl-ink);
 }
 
+/* Ilumina o fundo da página quando o conteúdo é tematizado (telas sem sidebar
+   não deixam margens escuras). A sidebar, quando existe, cobre sua coluna. */
+.light main:has(.fdl-content) {
+  background: var(--fdl-canvas) !important;
+}
+
 /* Superfícies translúcidas (Tailwind bg-white/..) viram claras — vem antes das
    regras específicas de card para que os cards vençam com o branco cheio. */
 .light .fdl-content [class*="bg-white/"] {
@@ -5309,8 +5315,18 @@ html {
 .fdl-bar-fill {
   background: var(--fdl-cream);
 }
-.light .fdl-content .fdl-bar-fill {
+.light .fdl-content .fdl-bar-fill,
+.light .fdl-content .fdl-project-progress-fill,
+.light .fdl-content .fdl-ui-progress-fill {
   background: var(--fdl-purple-strong) !important;
+}
+.light .fdl-content .fdl-project-progress {
+  background: rgba(35, 19, 41, 0.08) !important;
+}
+
+/* Link "Voltar para projetos": creme some no claro -> roxo da marca */
+.light .fdl-content .fdl-project-back-link {
+  color: var(--fdl-purple-strong) !important;
 }
 
 /* Chip de contagem ("80 de 80 projeto(s)") */

@@ -222,7 +222,7 @@ export default async function CronogramaProjetoPage({ params }: PageProps) {
           </a>
         </aside>
 
-        <section className="p-6 sm:p-8">
+        <section className="fdl-content p-6 sm:p-8">
           <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <Link
