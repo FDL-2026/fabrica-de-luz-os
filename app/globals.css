@@ -5352,3 +5352,36 @@ html {
 .light .fdl-content .fdl-field::placeholder {
   color: rgba(35, 19, 41, 0.4) !important;
 }
+
+/* Títulos dentro de cards: a regra .fdl-form-card h2/h3 força branco (some no
+   claro). Traz para tinta. */
+.light .fdl-content .fdl-form-card h2,
+.light .fdl-content .fdl-form-card h3 {
+  color: var(--fdl-ink) !important;
+}
+
+/* Zona de exclusão: vermelhos claros (feitos p/ fundo escuro) -> vermelho forte */
+.light .fdl-content .text-red-100,
+.light .fdl-content .text-red-200,
+.light .fdl-content .text-red-300 {
+  color: #b91c1c !important;
+}
+
+/* ---- Montador no claro (classes proprias fdl-mobile e fdl-section) ---- */
+.light .fdl-content .fdl-mobile-title,
+.light .fdl-content .fdl-section-title {
+  color: var(--fdl-ink) !important;
+}
+.light .fdl-content .fdl-mobile-kicker {
+  color: var(--fdl-purple-strong) !important;
+}
+.light .fdl-content .fdl-mobile-description,
+.light .fdl-content .fdl-section-subtitle {
+  color: var(--fdl-ink-soft) !important;
+}
+.light .fdl-content .fdl-mobile-card,
+.light .fdl-content .fdl-mobile-card-strong {
+  background: var(--fdl-card) !important;
+  border-color: var(--fdl-line) !important;
+  color: var(--fdl-ink) !important;
+}
