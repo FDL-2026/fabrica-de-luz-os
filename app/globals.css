@@ -5542,3 +5542,19 @@ html {
 .light .fdl-montador-main [class*="text-amber-"] {
   color: #a16207 !important;
 }
+
+/* Botões de foto (são <label>, escapavam do override de creme).
+   "Tirar foto" (creme) -> roxo sólido; "Escolher da galeria" (borda) -> lilás. */
+.light .fdl-content label[class*="bg-[var(--fdl-cream)]"],
+.light .fdl-montador-main label[class*="bg-[var(--fdl-cream)]"] {
+  background-color: var(--fdl-purple-strong) !important;
+  color: #ffffff !important;
+}
+.light .fdl-montador-main label[class*="border-white"] {
+  background-color: #ece3f5 !important;
+  border-color: rgba(100, 59, 143, 0.25) !important;
+  color: var(--fdl-purple-strong) !important;
+}
+.light .fdl-montador-main label[class*="border-white"] * {
+  color: var(--fdl-purple-strong) !important;
+}
