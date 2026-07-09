@@ -5500,3 +5500,45 @@ html {
 .light .fdl-montador-main footer {
   color: var(--fdl-ink-soft) !important;
 }
+
+/* ----------------------------------------------------------------------------
+   Espelho do bloco escuro .fdl-montador-main (linhas ~3922-4000): aquelas
+   regras têm especificidade maior que as gerais e forçavam o texto das caixas
+   internas para branco/creme. Aqui repetimos os MESMOS seletores com prefixo
+   .light (especificidade +1 classe) para vencer de forma garantida.
+   ---------------------------------------------------------------------------- */
+.light .fdl-montador-main div[class*="bg-white"],
+.light .fdl-montador-main section[class*="bg-white"],
+.light .fdl-montador-main .grid > div[class*="bg-white"] {
+  background-color: #ffffff !important;
+  border-color: var(--fdl-line) !important;
+  color: var(--fdl-ink) !important;
+}
+
+.light .fdl-montador-main div[class*="bg-white"] p,
+.light .fdl-montador-main .grid > div[class*="bg-white"] p {
+  color: var(--fdl-ink-soft) !important;
+}
+
+.light .fdl-montador-main div[class*="bg-white"] strong,
+.light .fdl-montador-main div[class*="bg-white"] span,
+.light .fdl-montador-main .grid > div[class*="bg-white"] strong,
+.light .fdl-montador-main .grid > div[class*="bg-white"] span {
+  color: var(--fdl-ink) !important;
+}
+
+/* Kicker do montador (era cream via .fdl-montador-main p[uppercase]) -> roxo */
+.light .fdl-montador-main p[class*="uppercase"],
+.light .fdl-montador-main .fdl-mobile-kicker {
+  color: var(--fdl-purple-strong) !important;
+}
+
+/* Valores coloridos de status (verde/amarelo/etc.) dentro das caixas mantêm
+   contraste no claro, sobrepondo o strong/span -> ink acima. */
+.light .fdl-montador-main [class*="text-green-"] {
+  color: #15803d !important;
+}
+.light .fdl-montador-main [class*="text-yellow-"],
+.light .fdl-montador-main [class*="text-amber-"] {
+  color: #a16207 !important;
+}
