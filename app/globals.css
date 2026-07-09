@@ -2266,12 +2266,14 @@ select.fdl-field option,
   display: block !important;
   color: rgba(255, 255, 255, 0.54) !important;
   font-size: 0.84rem !important;
+  font-weight: 500 !important;
   line-height: 1.4 !important;
 }
 
+/* Mantém só a cor de status; tamanho/peso seguem o padrão do help. */
 .fdl-project-kpi-warning {
   color: #fde68a !important;
-  font-weight: 800 !important;
+  font-weight: 500 !important;
 }
 
 .fdl-project-progress {
@@ -5565,4 +5567,19 @@ html {
   background: #ece3f5 !important;
   color: var(--fdl-purple-strong) !important;
   border: 1px solid rgba(100, 59, 143, 0.25) !important;
+}
+
+
+/* Relatório diário no tema claro: o fundo (backdrop) ao redor da folha A4
+   fica escuro por padrão — no claro, iluminamos e ajustamos a toolbar. */
+.light .fdl-report-backdrop {
+  background: var(--fdl-canvas) !important;
+}
+.light .fdl-report-toolbar a[class*="text-[var(--fdl-cream)]"] {
+  color: var(--fdl-purple-strong) !important;
+}
+.light .fdl-report-toolbar .fdl-ui-btn-ghost {
+  background: rgba(35, 19, 41, 0.03) !important;
+  border-color: var(--fdl-line) !important;
+  color: var(--fdl-ink) !important;
 }

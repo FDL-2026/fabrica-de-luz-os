@@ -65,9 +65,7 @@ export default function ProgressoPonderadoKpi({
         />
       </div>
 
-      <span className="mt-3 block text-xs font-bold text-[var(--fdl-cream)]">
-        aprovado pelo gestor
-      </span>
+      <span className="fdl-project-kpi-help">aprovado pelo gestor</span>
     </>
   );
 }
