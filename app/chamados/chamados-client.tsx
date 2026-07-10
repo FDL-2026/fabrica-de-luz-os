@@ -59,6 +59,7 @@ type Detalhe = {
   chamado: ChamadoLista & { atribuido_nome: string | null };
   anexos: Anexo[];
   eventos: Evento[];
+  montadores: string[];
 };
 
 type Montador = { usuario_id: string; nome: string };
@@ -451,6 +452,33 @@ function DetalheModal({
           <Campo rotulo="Solicitante" valor={c.solicitante_nome} />
           <Campo rotulo="Contato" valor={c.solicitante_contato} />
           <Campo rotulo="Registrado em" valor={formatDateTime(c.criado_em)} />
+        </div>
+
+        {/* Equipe reconhecida do projeto */}
+        <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+          <p className="text-xs uppercase tracking-[0.22em] text-white/40">
+            Montador(es) do projeto
+          </p>
+          {detalhe.montadores.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {detalhe.montadores.map((m) => (
+                <span
+                  key={m}
+                  className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/85"
+                >
+                  {m}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-1 text-sm font-semibold text-white/50">
+              Nenhum montador vinculado ao projeto.
+            </p>
+          )}
+          <p className="mt-2 text-xs text-white/40">
+            Ao marcar o chamado como “Em andamento”, ele aparece como alerta na
+            tela desses montadores.
+          </p>
         </div>
 
         <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">

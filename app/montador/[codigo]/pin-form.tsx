@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { aquecerListasOs, lerRpcComCache } from "@/lib/offline/cache";
 import { prefetchTelasMontador } from "@/lib/offline/prefetch";
+import ChamadosAlertaMontador from "@/components/montador/chamados-alerta-montador";
 
 type PinFormProps = {
   codigo: string;
@@ -223,6 +224,11 @@ export default function PinForm({ codigo }: PinFormProps) {
             Seu acesso de campo foi validado com sucesso.
           </p>
         </div>
+
+        <ChamadosAlertaMontador
+          usuarioId={montador.usuario_id}
+          codigo={codigo}
+        />
 
         <div className="fdl-form-section p-5">
           <div className="mb-5">

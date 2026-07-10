@@ -423,7 +423,13 @@ begin
        from public.chamado_anexos a where a.chamado_id = c.id), '[]'::jsonb),
     'eventos', coalesce((
        select jsonb_agg(to_jsonb(e) order by e.criado_em desc)
-       from public.chamado_eventos e where e.chamado_id = c.id), '[]'::jsonb)
+       from public.chamado_eventos e where e.chamado_id = c.id), '[]'::jsonb),
+    -- Montadores vinculados ao projeto (reconhecidos junto com o gestor)
+    'montadores', coalesce((
+       select jsonb_agg(u2.nome::text order by u2.nome)
+       from public.projeto_usuarios pu
+       join public.usuarios u2 on u2.id = pu.usuario_id
+       where pu.projeto_id = c.projeto_id and u2.perfil = 'montador'), '[]'::jsonb)
   )
   into v_result
   from public.chamados c
@@ -593,3 +599,51 @@ $$;
 
 revoke all on function public.fdl_acompanhar_chamado(text) from public;
 grant execute on function public.fdl_acompanhar_chamado(text) to anon, authenticated;
+
+-- ----------------------------------------------------------------------------
+-- 8) MONTADOR — chamados "em andamento" dos projetos do montador
+-- ----------------------------------------------------------------------------
+-- Segue o padrão dos demais RPCs do montador (recebe p_usuario_id, público).
+-- Só retorna chamados que o gestor já colocou em andamento, para servir de
+-- alerta na tela do montador.
+create or replace function public.fdl_listar_chamados_montador(p_usuario_id uuid)
+returns table (
+  chamado_id  uuid,
+  protocolo   text,
+  projeto_id  uuid,
+  cliente     text,
+  shopping    text,
+  uf          text,
+  categoria   text,
+  prioridade  text,
+  local_ponto text,
+  titulo      text,
+  descricao   text,
+  status      text,
+  criado_em   timestamptz
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return query
+  select
+    c.id, c.protocolo::text, p.id,
+    p.cliente::text, p.shopping::text, p.uf::text,
+    c.categoria::text, c.prioridade::text, c.local_ponto::text,
+    c.titulo::text, c.descricao::text, c.status::text, c.criado_em
+  from public.chamados c
+  join public.projetos p on p.id = c.projeto_id
+  join public.projeto_usuarios pu on pu.projeto_id = c.projeto_id
+  where pu.usuario_id = p_usuario_id
+    and c.status = 'em_andamento'
+  order by
+    case c.prioridade when 'urgente' then 0 when 'alta' then 1
+                      when 'media' then 2 else 3 end,
+    c.criado_em desc;
+end;
+$$;
+
+revoke all on function public.fdl_listar_chamados_montador(uuid) from public;
+grant execute on function public.fdl_listar_chamados_montador(uuid) to anon, authenticated;
