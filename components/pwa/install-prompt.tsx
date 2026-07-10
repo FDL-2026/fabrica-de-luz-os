@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -8,6 +9,17 @@ type BeforeInstallPromptEvent = Event & {
 };
 
 const DISMISS_KEY = "fdl_pwa_dismiss";
+
+// O convite de instalação só faz sentido para quem usa o app instalado:
+// o login da gestão e a área do montador. Não aparece no formulário público
+// de chamado nem nas telas internas de navegação.
+function podeMostrarEm(pathname: string) {
+  return (
+    pathname === "/login" ||
+    pathname.startsWith("/auth/login") ||
+    pathname.startsWith("/montador")
+  );
+}
 
 function isStandalone() {
   if (typeof window === "undefined") return false;
@@ -29,6 +41,7 @@ export default function InstallPrompt() {
   );
   const [mostrarIos, setMostrarIos] = useState(false);
   const [visivel, setVisivel] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (isStandalone()) return;
@@ -76,6 +89,7 @@ export default function InstallPrompt() {
     setDeferred(null);
   }
 
+  if (!podeMostrarEm(pathname)) return null;
   if (!visivel) return null;
 
   return (
