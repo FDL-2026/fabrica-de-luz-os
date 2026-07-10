@@ -25,7 +25,7 @@ export default function ChamadosResumoDashboard() {
     });
   }, []);
 
-  const aTratar = (resumo?.abertos ?? 0) + (resumo?.em_andamento ?? 0) + (resumo?.aguardando ?? 0);
+  const aTratar = (resumo?.abertos ?? 0) + (resumo?.em_andamento ?? 0);
   if (!resumo || aTratar === 0) return null;
 
   return (
@@ -42,8 +42,7 @@ export default function ChamadosResumoDashboard() {
             {aTratar} chamado(s) de manutenção a tratar
           </p>
           <p className="fdl-chamados-alerta-sub mt-0.5 text-xs">
-            {resumo.abertos} aberto(s) · {resumo.em_andamento} em andamento ·{" "}
-            {resumo.aguardando} aguardando peça
+            {resumo.abertos} aberto(s) · {resumo.em_andamento} em andamento
           </p>
         </div>
       </div>

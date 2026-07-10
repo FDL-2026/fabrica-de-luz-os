@@ -66,7 +66,6 @@ type Montador = { usuario_id: string; nome: string };
 const STATUS = [
   { valor: "aberto", rotulo: "Aberto" },
   { valor: "em_andamento", rotulo: "Em andamento" },
-  { valor: "aguardando_peca", rotulo: "Aguardando peça" },
   { valor: "resolvido", rotulo: "Resolvido" },
   { valor: "cancelado", rotulo: "Cancelado" },
 ];
@@ -91,8 +90,6 @@ function statusClass(s: string | null) {
       return "bg-yellow-100 text-yellow-700";
     case "em_andamento":
       return "bg-blue-100 text-blue-700";
-    case "aguardando_peca":
-      return "bg-amber-100 text-amber-800";
     case "resolvido":
       return "bg-green-100 text-green-700";
     case "cancelado":
@@ -214,7 +211,6 @@ export default function ChamadosClient() {
   const kpis = [
     { label: "Abertos", valor: resumo?.abertos ?? 0, filtro: "aberto" },
     { label: "Em andamento", valor: resumo?.em_andamento ?? 0, filtro: "em_andamento" },
-    { label: "Aguardando peça", valor: resumo?.aguardando ?? 0, filtro: "aguardando_peca" },
     { label: "Resolvidos", valor: resumo?.resolvidos ?? 0, filtro: "resolvido" },
   ];
 
@@ -231,7 +227,7 @@ export default function ChamadosClient() {
       </header>
 
       {/* KPIs */}
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <section className="grid grid-cols-3 gap-3">
         {kpis.map((k) => {
           const ativo = filtro === k.filtro;
           return (

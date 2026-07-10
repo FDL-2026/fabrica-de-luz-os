@@ -27,7 +27,6 @@ type Chamado = {
 const STATUS_LABEL: Record<string, string> = {
   aberto: "Aberto",
   em_andamento: "Em andamento",
-  aguardando_peca: "Aguardando peça",
   resolvido: "Resolvido",
   cancelado: "Cancelado",
 };
@@ -42,8 +41,6 @@ function statusClass(s: string | null) {
       return "bg-yellow-100 text-yellow-700";
     case "em_andamento":
       return "bg-blue-100 text-blue-700";
-    case "aguardando_peca":
-      return "bg-amber-100 text-amber-800";
     case "resolvido":
       return "bg-green-100 text-green-700";
     case "cancelado":
