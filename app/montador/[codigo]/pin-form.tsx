@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { lerRpcComCache } from "@/lib/offline/cache";
+import { aquecerListasOs, lerRpcComCache } from "@/lib/offline/cache";
 import { prefetchTelasMontador } from "@/lib/offline/prefetch";
 
 type PinFormProps = {
@@ -115,6 +115,14 @@ export default function PinForm({ codigo }: PinFormProps) {
       lista.map(
         (p) => `/montador/${codigo}/projetos/${p.projeto_id}`
       )
+    );
+
+    // Aquece a lista de OSs de cada projeto (cobre a página do projeto e as
+    // telas de etapas), para abrirem offline mesmo sem visita prévia.
+    aquecerListasOs(
+      supabase,
+      usuarioId,
+      lista.map((p) => p.projeto_id)
     );
   }
 

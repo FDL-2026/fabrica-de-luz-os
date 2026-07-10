@@ -77,6 +77,26 @@ export async function lerRpcComCache<T>(
 }
 
 /**
+ * Aquece a lista de OSs de um projeto (usada pela página do projeto e por
+ * todas as telas de etapas — mesma chave de cache). Best-effort.
+ */
+export async function aquecerListasOs(
+  supabase: SupabaseClient,
+  usuarioId: string,
+  projetoIds: string[],
+  limite = 40
+): Promise<void> {
+  if (typeof navigator !== "undefined" && !navigator.onLine) return;
+  for (const projetoId of projetoIds.slice(0, limite)) {
+    if (typeof navigator !== "undefined" && !navigator.onLine) return;
+    await lerRpcComCache(supabase, "listar_os_montador", {
+      p_usuario_id: usuarioId,
+      p_projeto_id: projetoId,
+    });
+  }
+}
+
+/**
  * Aquece (busca e cacheia) os dados de detalhe de uma OS, para que ela abra
  * offline mesmo sem ter sido aberta manualmente antes. Best-effort e só faz
  * sentido chamar quando online — cada leitura já se auto-cacheia.
@@ -127,5 +147,14 @@ async function comFallback<T>(
     };
   }
 
-  return { data: null, error: mensagemErro, origem: "vazio", savedAt: null };
+  // Sem conexão e sem snapshot salvo: mensagem amigável em vez do erro cru.
+  const semConexao =
+    typeof navigator !== "undefined" && navigator.onLine === false;
+
+  const mensagem =
+    semConexao || ehErroDeRede(mensagemErro)
+      ? "Sem conexão e esta tela ainda não foi salva para uso offline. Abra-a uma vez com internet."
+      : mensagemErro;
+
+  return { data: null, error: mensagem, origem: "vazio", savedAt: null };
 }
