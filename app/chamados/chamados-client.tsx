@@ -41,6 +41,7 @@ type Anexo = {
   tipo: string | null;
   nome_arquivo: string | null;
   url_visualizacao: string | null;
+  external_file_id: string | null;
   criado_em: string;
 };
 
@@ -375,12 +376,40 @@ function DetalheModal({
   onFechar: () => void;
 }) {
   const c = detalhe.chamado;
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   return (
     <div
       className="fixed inset-0 z-[70] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-6"
       onClick={onFechar}
     >
+      {lightbox ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-4"
+          onClick={(e) => {
+            e.stopPropagation();
+            setLightbox(null);
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightbox}
+            alt="Foto do chamado"
+            className="max-h-[92vh] max-w-full rounded-xl object-contain"
+          />
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightbox(null);
+            }}
+            aria-label="Fechar imagem"
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white"
+          >
+            ✕
+          </button>
+        </div>
+      ) : null}
       <div
         className="fdl-content max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-white/10 bg-[var(--fdl-purple-dark)] p-6 text-white shadow-2xl sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
@@ -435,26 +464,48 @@ function DetalheModal({
           </p>
         </div>
 
-        {/* Fotos */}
+        {/* Fotos — miniaturas inline, abrem em tela cheia sem sair da página */}
         {detalhe.anexos.length > 0 ? (
           <div className="mt-4">
             <p className="mb-2 text-xs uppercase tracking-[0.22em] text-white/40">
               Fotos ({detalhe.anexos.length})
             </p>
-            <div className="flex flex-wrap gap-2">
-              {detalhe.anexos.map((a) =>
-                a.url_visualizacao ? (
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {detalhe.anexos.map((a) => {
+                const ehFoto = a.tipo !== "video" && a.external_file_id;
+                if (ehFoto) {
+                  return (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() =>
+                        setLightbox(`/api/anexos/${a.external_file_id}`)
+                      }
+                      className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`/api/anexos/${a.external_file_id}?thumb=1`}
+                        alt={a.nome_arquivo || "Foto do chamado"}
+                        loading="lazy"
+                        className="h-24 w-full object-cover transition group-hover:opacity-90"
+                      />
+                    </button>
+                  );
+                }
+                // Vídeo (ou sem id): abre no Drive
+                return a.url_visualizacao ? (
                   <a
                     key={a.id}
                     href={a.url_visualizacao}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-xs font-semibold text-[var(--fdl-cream)] hover:bg-white/10"
+                    className="flex h-24 items-center justify-center rounded-xl border border-white/10 bg-white/[0.06] text-2xl hover:bg-white/10"
                   >
-                    {a.tipo === "video" ? "🎬" : "🖼"} Abrir no Drive
+                    🎬
                   </a>
-                ) : null
-              )}
+                ) : null;
+              })}
             </div>
           </div>
         ) : null}

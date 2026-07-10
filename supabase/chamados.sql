@@ -541,3 +541,54 @@ $$;
 
 revoke all on function public.fdl_atualizar_chamado_gestao(uuid, text, uuid, text) from public, anon;
 grant execute on function public.fdl_atualizar_chamado_gestao(uuid, text, uuid, text) to authenticated;
+
+-- ----------------------------------------------------------------------------
+-- 7) PÚBLICO — acompanhamento do chamado pelo cliente (por protocolo)
+-- ----------------------------------------------------------------------------
+-- Devolve apenas informações não sensíveis: status e linha do tempo de status.
+-- Não expõe observações internas, atribuições nem contato.
+create or replace function public.fdl_acompanhar_chamado(p_protocolo text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v jsonb;
+begin
+  select jsonb_build_object(
+    'protocolo',   c.protocolo,
+    'status',      c.status,
+    'categoria',   c.categoria,
+    'prioridade',  c.prioridade,
+    'titulo',      c.titulo,
+    'shopping',    coalesce(p.shopping, p.cliente),
+    'criado_em',   c.criado_em,
+    'resolvido_em', c.resolvido_em,
+    'linha_tempo', coalesce((
+        select jsonb_agg(
+                 jsonb_build_object(
+                   'tipo', e.tipo,
+                   'para_status', e.para_status,
+                   'descricao', e.descricao,
+                   'criado_em', e.criado_em
+                 ) order by e.criado_em)
+        from public.chamado_eventos e
+        where e.chamado_id = c.id and e.tipo in ('criado', 'status')
+      ), '[]'::jsonb)
+  )
+  into v
+  from public.chamados c
+  join public.projetos p on p.id = c.projeto_id
+  where upper(trim(c.protocolo)) = upper(trim(coalesce(p_protocolo, '')));
+
+  if v is null then
+    raise exception 'Chamado não encontrado. Confira o número do protocolo.';
+  end if;
+
+  return v;
+end;
+$$;
+
+revoke all on function public.fdl_acompanhar_chamado(text) from public;
+grant execute on function public.fdl_acompanhar_chamado(text) to anon, authenticated;

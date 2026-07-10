@@ -30,6 +30,29 @@ const PRIORIDADES = [
   { valor: "urgente", rotulo: "Urgente" },
 ];
 
+function IconeCamera() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M4 8.5A1.5 1.5 0 0 1 5.5 7h1.2a1 1 0 0 0 .8-.4l.9-1.2a1 1 0 0 1 .8-.4h3.6a1 1 0 0 1 .8.4l.9 1.2a1 1 0 0 0 .8.4h1.2A1.5 1.5 0 0 1 20 8.5v8A1.5 1.5 0 0 1 18.5 18h-13A1.5 1.5 0 0 1 4 16.5v-8Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <circle cx="12" cy="12.2" r="2.9" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
+function IconeImagem() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4" y="5" width="16" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="9" cy="10" r="1.5" fill="currentColor" />
+      <path d="m5 17 4.5-4.2a1 1 0 0 1 1.35-.03L14 15l1.8-1.6a1 1 0 0 1 1.3-.02L20 16" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
 function nomeProjeto(p: ProjetoOpcao) {
   const base = p.shopping || p.cliente || "Projeto";
   const local = [p.cidade, p.uf].filter(Boolean).join("/");
@@ -45,6 +68,8 @@ export default function ChamadoClient() {
   const [buscando, setBuscando] = useState(false);
   const [projeto, setProjeto] = useState<ProjetoOpcao | null>(null);
   const buscaTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const camRef = useRef<HTMLInputElement>(null);
+  const galRef = useRef<HTMLInputElement>(null);
 
   // Campos
   const [solicitante, setSolicitante] = useState("");
@@ -213,10 +238,17 @@ export default function ChamadoClient() {
           </div>
         ) : null}
 
+        <a
+          href={`/chamado/acompanhar?p=${encodeURIComponent(protocolo)}`}
+          className="mt-6 block h-12 rounded-2xl bg-[var(--fdl-cream)] px-5 text-center text-sm font-semibold leading-[3rem] text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+        >
+          Acompanhar este chamado
+        </a>
+
         <button
           type="button"
           onClick={novoChamado}
-          className="mt-6 h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+          className="mt-3 h-12 w-full rounded-2xl border border-white/15 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
         >
           Registrar outro chamado
         </button>
@@ -416,29 +448,39 @@ export default function ChamadoClient() {
           <label className="mb-2 block text-sm font-semibold text-white">
             Fotos (opcional)
           </label>
+          <input
+            ref={camRef}
+            key={`cam-${inputKey}`}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={(e) => adicionarArquivos(e.target.files)}
+            className="hidden"
+          />
+          <input
+            ref={galRef}
+            key={`gal-${inputKey}`}
+            type="file"
+            multiple
+            accept="image/*,video/*"
+            onChange={(e) => adicionarArquivos(e.target.files)}
+            className="hidden"
+          />
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[var(--fdl-cream)] text-sm font-bold text-[var(--fdl-purple-dark)] transition hover:brightness-95">
-              📷 Tirar foto
-              <input
-                key={`cam-${inputKey}`}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={(e) => adicionarArquivos(e.target.files)}
-                className="hidden"
-              />
-            </label>
-            <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/[0.06] text-sm font-bold text-white/85 transition hover:bg-white/10">
-              🖼 Da galeria
-              <input
-                key={`gal-${inputKey}`}
-                type="file"
-                multiple
-                accept="image/*,video/*"
-                onChange={(e) => adicionarArquivos(e.target.files)}
-                className="hidden"
-              />
-            </label>
+            <button
+              type="button"
+              onClick={() => camRef.current?.click()}
+              className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-[var(--fdl-cream)] text-sm font-bold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+            >
+              <IconeCamera /> Tirar foto
+            </button>
+            <button
+              type="button"
+              onClick={() => galRef.current?.click()}
+              className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/[0.06] text-sm font-bold text-white/85 transition hover:bg-white/10"
+            >
+              <IconeImagem /> Da galeria
+            </button>
           </div>
 
           {arquivos.length > 0 ? (
