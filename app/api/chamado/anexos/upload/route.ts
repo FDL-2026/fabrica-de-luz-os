@@ -12,29 +12,26 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type ContextoUpload = {
+type ContextoChamado = {
+  chamado_id: string;
+  protocolo: string | null;
   projeto_id: string;
   cliente: string | null;
   shopping: string | null;
   uf: string | null;
   temporada: string | null;
-  os_id: string;
-  codigo_os: string | null;
-  codigo_cronograma: string | null;
 };
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
 
-    const usuarioId = String(formData.get("usuarioId") ?? "");
-    const projetoId = String(formData.get("projetoId") ?? "");
-    const osId = String(formData.get("osId") ?? "");
+    const chamadoId = String(formData.get("chamadoId") ?? "");
     const file = formData.get("file");
 
-    if (!usuarioId || !projetoId || !osId) {
+    if (!chamadoId) {
       return Response.json(
-        { error: "Dados de acesso incompletos para upload." },
+        { error: "Chamado não identificado para o envio." },
         { status: 400 }
       );
     }
@@ -55,7 +52,7 @@ export async function POST(request: Request) {
 
     if (file.size > MAX_FILE_SIZE) {
       return Response.json(
-        { error: "Arquivo muito grande. Envie arquivos de até 25 MB nesta fase." },
+        { error: "Arquivo muito grande. Envie arquivos de até 25 MB." },
         { status: 400 }
       );
     }
@@ -63,21 +60,12 @@ export async function POST(request: Request) {
     const supabase = createClient(
       env("NEXT_PUBLIC_SUPABASE_URL"),
       env("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-        },
-      }
+      { auth: { persistSession: false, autoRefreshToken: false } }
     );
 
     const { data: contextoData, error: contextoError } = await supabase.rpc(
-      "obter_contexto_upload_os_montador",
-      {
-        p_usuario_id: usuarioId,
-        p_projeto_id: projetoId,
-        p_os_id: osId,
-      }
+      "fdl_obter_contexto_chamado",
+      { p_chamado_id: chamadoId }
     );
 
     if (contextoError) {
@@ -85,32 +73,26 @@ export async function POST(request: Request) {
     }
 
     const contexto = Array.isArray(contextoData)
-      ? (contextoData[0] as ContextoUpload | undefined)
+      ? (contextoData[0] as ContextoChamado | undefined)
       : undefined;
 
     if (!contexto) {
-      return Response.json(
-        { error: "OS não encontrada ou montador sem vínculo com este projeto." },
-        { status: 403 }
-      );
+      return Response.json({ error: "Chamado não encontrado." }, { status: 404 });
     }
 
     const accessToken = await getGoogleAccessToken();
-
     const rootFolderId = env("GOOGLE_DRIVE_ROOT_FOLDER_ID");
 
     const temporada = sanitizeFolderName(
       `Temporada ${contexto.temporada ?? "Sem temporada"}`
     );
-
     const nomeProjeto = sanitizeFolderName(
       `${contexto.cliente || contexto.shopping || "Projeto sem nome"} - ${
         contexto.uf || "UF"
       }`
     );
-
-    const nomeOs = sanitizeFolderName(
-      `OS ${contexto.codigo_cronograma || contexto.codigo_os || contexto.os_id}`
+    const nomeChamado = sanitizeFolderName(
+      `Chamado ${contexto.protocolo || contexto.chamado_id}`
     );
 
     const tipo = file.type.startsWith("video/") ? "video" : "foto";
@@ -121,26 +103,29 @@ export async function POST(request: Request) {
       rootFolderId,
       temporada
     );
-
     const projetoFolderId = await ensureFolder(
       accessToken,
       temporadaFolderId,
       nomeProjeto
     );
-
-    const registrosFolderId = await ensureFolder(
+    const chamadosFolderId = await ensureFolder(
       accessToken,
       projetoFolderId,
-      "02 - Registros de Execução"
+      "03 - Chamados de Manutenção"
     );
-
-    const osFolderId = await ensureFolder(accessToken, registrosFolderId, nomeOs);
-
-    const tipoFolderId = await ensureFolder(accessToken, osFolderId, pastaTipo);
+    const chamadoFolderId = await ensureFolder(
+      accessToken,
+      chamadosFolderId,
+      nomeChamado
+    );
+    const tipoFolderId = await ensureFolder(
+      accessToken,
+      chamadoFolderId,
+      pastaTipo
+    );
 
     const originalName = sanitizeFolderName(file.name || "arquivo");
     const fileName = `${Date.now()} - ${originalName}`;
-
     const buffer = Buffer.from(await file.arrayBuffer());
 
     const driveFile = await uploadFileToDrive({
@@ -154,21 +139,17 @@ export async function POST(request: Request) {
     const caminhoArquivo = [
       temporada,
       nomeProjeto,
-      "02 - Registros de Execução",
-      nomeOs,
+      "03 - Chamados de Manutenção",
+      nomeChamado,
       pastaTipo,
       fileName,
     ].join("/");
 
-    const { data: arquivoData, error: arquivoError } = await supabase.rpc(
-      "registrar_arquivo_os_montador",
+    const { error: anexoError } = await supabase.rpc(
+      "fdl_registrar_anexo_chamado",
       {
-        p_usuario_id: usuarioId,
-        p_projeto_id: projetoId,
-        p_os_id: osId,
+        p_chamado_id: chamadoId,
         p_tipo: tipo,
-        p_bucket: "google_drive",
-        p_caminho_arquivo: caminhoArquivo,
         p_nome_arquivo: fileName,
         p_mime_type: file.type || "application/octet-stream",
         p_tamanho_bytes: file.size,
@@ -176,17 +157,15 @@ export async function POST(request: Request) {
         p_external_file_id: driveFile.id,
         p_external_folder_id: tipoFolderId,
         p_url_visualizacao: driveFile.webViewLink ?? "",
+        p_caminho_arquivo: caminhoArquivo,
       }
     );
 
-    if (arquivoError) {
-      return Response.json({ error: arquivoError.message }, { status: 400 });
+    if (anexoError) {
+      return Response.json({ error: anexoError.message }, { status: 400 });
     }
 
-    return Response.json({
-      ok: true,
-      arquivo: Array.isArray(arquivoData) ? arquivoData[0] : null,
-    });
+    return Response.json({ ok: true });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Erro inesperado no upload.";
