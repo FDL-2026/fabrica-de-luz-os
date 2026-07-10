@@ -493,11 +493,7 @@ export default function ImportarClient() {
       <section className="fdl-form-card p-6">
         <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
           <div>
-            <p className="text-sm uppercase tracking-[0.24em] text-[var(--fdl-cream)]">
-              Fase 2
-            </p>
-
-            <h2 className="mt-2 text-2xl font-bold">
+            <h2 className="text-2xl font-bold">
               Ler cronograma e confirmar importação
             </h2>
 
