@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { lerRpcComCache } from "@/lib/offline/cache";
 
 type PinFormProps = {
   codigo: string;
@@ -89,18 +90,22 @@ export default function PinForm({ codigo }: PinFormProps) {
   async function carregarProjetos(usuarioId: string) {
     setCarregandoProjetos(true);
 
-    const { data, error } = await supabase.rpc("listar_projetos_montador", {
-      p_usuario_id: usuarioId,
-    });
+    const { data, error } = await lerRpcComCache<ProjetoMontador>(
+      supabase,
+      "listar_projetos_montador",
+      {
+        p_usuario_id: usuarioId,
+      }
+    );
 
     if (error) {
-      setErro(error.message);
+      setErro(error);
       setProjetos([]);
       setCarregandoProjetos(false);
       return;
     }
 
-    setProjetos((data ?? []) as ProjetoMontador[]);
+    setProjetos(data ?? []);
     setCarregandoProjetos(false);
   }
 

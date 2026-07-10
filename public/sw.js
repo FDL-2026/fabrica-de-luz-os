@@ -8,8 +8,11 @@
  *  - Estáticos do build (/_next/static, ícones, marca): cache-first.
  */
 
-const VERSION = "fdl-v3";
+const VERSION = "fdl-v4";
 const STATIC_CACHE = `${VERSION}-static`;
+// Páginas do montador (shells sem dados sensíveis — os dados vêm de RPC no
+// cliente). Cacheadas para permitir navegar offline entre as telas de campo.
+const PAGE_CACHE = `${VERSION}-montador-pages`;
 
 // Estáticos úteis para pré-carregar. NÃO inclui a tela offline: o fallback
 // abaixo é totalmente autossuficiente (HTML embutido), então nunca depende de
@@ -134,6 +137,29 @@ self.addEventListener("message", (event) => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
 });
 
+// Guarda a resposta reconstruída (sem flag "redirected") no cache de páginas.
+// Best-effort: falhas são ignoradas e não afetam a resposta ao usuário.
+async function guardarPagina(chave, resposta) {
+  try {
+    const body = await resposta.blob();
+    const cache = await caches.open(PAGE_CACHE);
+    await cache.put(
+      chave,
+      new Response(body, {
+        status: resposta.status,
+        statusText: resposta.statusText,
+        headers: resposta.headers,
+      })
+    );
+  } catch {
+    // ignora
+  }
+}
+
+function ehRotaMontador(url) {
+  return url.pathname === "/montador" || url.pathname.startsWith("/montador/");
+}
+
 function isStaticAsset(url) {
   return (
     url.pathname.startsWith("/_next/static/") ||
@@ -154,7 +180,30 @@ self.addEventListener("fetch", (event) => {
   // Só lidamos com o próprio domínio. Externo (Supabase/Drive) vai direto à rede.
   if (url.origin !== self.location.origin) return;
 
-  // Páginas: network-first, fallback offline embutido.
+  // Páginas do montador: network-first, cacheia o shell e, offline, serve o
+  // shell cacheado (a tela carrega os dados do IndexedDB). Sem cache -> offline.
+  if (request.mode === "navigate" && ehRotaMontador(url)) {
+    event.respondWith(
+      (async () => {
+        const chave = new Request(url.origin + url.pathname);
+        try {
+          const resposta = await fetch(request);
+          if (resposta.ok) {
+            // não bloqueia a resposta ao usuário
+            guardarPagina(chave, resposta.clone());
+          }
+          return resposta;
+        } catch {
+          const cache = await caches.open(PAGE_CACHE);
+          const cacheada = await cache.match(chave);
+          return cacheada || offlineResponse();
+        }
+      })()
+    );
+    return;
+  }
+
+  // Demais páginas: network-first, fallback offline embutido.
   if (request.mode === "navigate") {
     event.respondWith(
       (async () => {

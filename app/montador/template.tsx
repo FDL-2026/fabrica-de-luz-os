@@ -1,4 +1,5 @@
 import ThemeToggle from "@/components/gestao/theme-toggle";
+import OfflineStatus from "@/components/montador/offline-status";
 
 export default function MontadorTemplate({
   children,
@@ -11,6 +12,7 @@ export default function MontadorTemplate({
         <ThemeToggle />
       </div>
       {children}
+      <OfflineStatus />
     </div>
   );
 }

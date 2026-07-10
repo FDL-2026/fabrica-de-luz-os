@@ -3,6 +3,14 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import FdlToast from "@/components/ui/fdl-toast";
+import { lerRpcComCache } from "@/lib/offline/cache";
+import {
+  contarFotosPendentesDaOs,
+  enfileirarFoto,
+  enfileirarRegistro,
+  enfileirarStatus,
+  ouvirFila,
+} from "@/lib/offline/fila";
 
 type OsDetalheClientProps = {
   codigo: string;
@@ -69,6 +77,16 @@ function formatDateTime(date: string | null) {
 }
 
 const MINIMO_REGISTROS_CONCLUSAO = 7;
+
+function estaOffline() {
+  return typeof navigator !== "undefined" && navigator.onLine === false;
+}
+
+function ehFalhaDeRede(mensagem: string) {
+  return /failed to fetch|load failed|networkerror|network request failed|fetch/i.test(
+    mensagem
+  );
+}
 
 function formatStatus(status: string | null) {
   if (!status) return "Sem status";
@@ -176,6 +194,7 @@ export default function OsDetalheClient({
   const [inputArquivosKey, setInputArquivosKey] = useState(0);
   const [enviandoArquivo, setEnviandoArquivo] = useState(false);
   const [progressoUpload, setProgressoUpload] = useState("");
+  const [fotosPendentes, setFotosPendentes] = useState(0);
 
   function adicionarArquivos(novos: FileList | null) {
     if (!novos || novos.length === 0) return;
@@ -208,46 +227,59 @@ export default function OsDetalheClient({
   const [percentualRegistro, setPercentualRegistro] = useState(0);
 
   async function carregarRegistros(usuarioIdMontador: string) {
-    const { data, error } = await supabase.rpc("listar_registros_os_montador", {
-      p_usuario_id: usuarioIdMontador,
-      p_projeto_id: projetoId,
-      p_os_id: osId,
-    });
+    const { data, error } = await lerRpcComCache<RegistroOs>(
+      supabase,
+      "listar_registros_os_montador",
+      {
+        p_usuario_id: usuarioIdMontador,
+        p_projeto_id: projetoId,
+        p_os_id: osId,
+      }
+    );
 
     if (error) {
-      setErro(error.message);
+      setErro(error);
       setRegistros([]);
       return;
     }
 
-    setRegistros((data ?? []) as RegistroOs[]);
+    setRegistros(data ?? []);
   }
 
   async function carregarArquivos(usuarioIdMontador: string) {
-    const { data, error } = await supabase.rpc("listar_arquivos_os_montador", {
-      p_usuario_id: usuarioIdMontador,
-      p_projeto_id: projetoId,
-      p_os_id: osId,
-    });
+    const { data, error } = await lerRpcComCache<ArquivoOs>(
+      supabase,
+      "listar_arquivos_os_montador",
+      {
+        p_usuario_id: usuarioIdMontador,
+        p_projeto_id: projetoId,
+        p_os_id: osId,
+      }
+    );
 
     if (error) {
-      setErro(error.message);
+      setErro(error);
       setArquivos([]);
       return;
     }
 
-    setArquivos((data ?? []) as ArquivoOs[]);
+    setArquivos(data ?? []);
+    setFotosPendentes(await contarFotosPendentesDaOs(osId));
   }
 
   async function carregarOs(usuarioIdMontador: string) {
-    const { data, error } = await supabase.rpc("obter_os_montador", {
-      p_usuario_id: usuarioIdMontador,
-      p_projeto_id: projetoId,
-      p_os_id: osId,
-    });
+    const { data, error } = await lerRpcComCache<OsDetalhe>(
+      supabase,
+      "obter_os_montador",
+      {
+        p_usuario_id: usuarioIdMontador,
+        p_projeto_id: projetoId,
+        p_os_id: osId,
+      }
+    );
 
     if (error) {
-      setErro(error.message);
+      setErro(error);
       setOs(null);
       setCarregando(false);
       return;
@@ -319,12 +351,39 @@ export default function OsDetalheClient({
     iniciar();
   }, [codigo, projetoId, osId]);
 
+  // Mantém o contador de fotos na fila em dia (ex.: quando a sync as envia).
+  useEffect(() => {
+    const recarregar = () => {
+      contarFotosPendentesDaOs(osId).then(setFotosPendentes);
+    };
+    recarregar();
+    return ouvirFila(recarregar);
+  }, [osId]);
+
   async function atualizarStatus(novoStatus: "em_andamento" | "concluida") {
     if (!usuarioId || !os) return;
 
     setErro("");
     setSucesso("");
     setSalvando(true);
+
+    const mensagemFila =
+      novoStatus === "em_andamento"
+        ? "OS marcada como iniciada. Será enviada quando a conexão voltar."
+        : "OS marcada como concluída. Será enviada quando a conexão voltar.";
+
+    if (estaOffline()) {
+      await enfileirarStatus({
+        usuarioId,
+        projetoId,
+        osId,
+        status: novoStatus,
+        observacao,
+      });
+      setSucesso(mensagemFila);
+      setSalvando(false);
+      return;
+    }
 
     const { data, error } = await supabase.rpc("atualizar_status_os_montador", {
       p_usuario_id: usuarioId,
@@ -335,6 +394,18 @@ export default function OsDetalheClient({
     });
 
     if (error) {
+      if (ehFalhaDeRede(error.message)) {
+        await enfileirarStatus({
+          usuarioId,
+          projetoId,
+          osId,
+          status: novoStatus,
+          observacao,
+        });
+        setSucesso(mensagemFila);
+        setSalvando(false);
+        return;
+      }
       setErro(error.message);
       setSalvando(false);
       return;
@@ -366,6 +437,25 @@ export default function OsDetalheClient({
     setSucesso("");
     setSalvandoRegistro(true);
 
+    const enfileirarEsteRegistro = () =>
+      enfileirarRegistro({
+        usuarioId,
+        projetoId,
+        osId,
+        tipoRegistro,
+        descricao: descricaoRegistro,
+        percentual: percentualRegistro,
+      });
+
+    if (estaOffline()) {
+      await enfileirarEsteRegistro();
+      setDescricaoRegistro("");
+      setTipoRegistro("acompanhamento");
+      setSucesso("Registro salvo no aparelho. Será enviado quando a conexão voltar.");
+      setSalvandoRegistro(false);
+      return;
+    }
+
     const { data, error } = await supabase.rpc("criar_registro_os_montador", {
       p_usuario_id: usuarioId,
       p_projeto_id: projetoId,
@@ -376,6 +466,16 @@ export default function OsDetalheClient({
     });
 
     if (error) {
+      if (ehFalhaDeRede(error.message)) {
+        await enfileirarEsteRegistro();
+        setDescricaoRegistro("");
+        setTipoRegistro("acompanhamento");
+        setSucesso(
+          "Registro salvo no aparelho. Será enviado quando a conexão voltar."
+        );
+        setSalvandoRegistro(false);
+        return;
+      }
       setErro(error.message);
       setSalvandoRegistro(false);
       return;
@@ -406,8 +506,33 @@ export default function OsDetalheClient({
     setEnviandoArquivo(true);
 
     const total = arquivosSelecionados.length;
+
+    // Offline: guarda tudo na fila de uma vez, sem tentar a rede.
+    if (estaOffline()) {
+      for (const arquivo of arquivosSelecionados) {
+        await enfileirarFoto({
+          usuarioId,
+          projetoId,
+          osId,
+          arquivo,
+          nomeArquivo: arquivo.name,
+        });
+      }
+      setArquivosSelecionados([]);
+      setInputArquivosKey((value) => value + 1);
+      setFotosPendentes(await contarFotosPendentesDaOs(osId));
+      setSucesso(
+        total === 1
+          ? "Foto salva no aparelho. Será enviada quando a conexão voltar."
+          : `${total} arquivos salvos no aparelho. Serão enviados quando a conexão voltar.`
+      );
+      setEnviandoArquivo(false);
+      return;
+    }
+
     const naoEnviados: File[] = [];
     let enviados = 0;
+    let enfileirados = 0;
     let ultimoErro = "";
 
     for (let indice = 0; indice < total; indice += 1) {
@@ -437,18 +562,32 @@ export default function OsDetalheClient({
 
         enviados += 1;
       } catch {
-        naoEnviados.push(arquivo);
-        ultimoErro = "Falha de conexão durante o envio.";
+        // Conexão caiu no meio do envio: guarda na fila para reenvio automático.
+        await enfileirarFoto({
+          usuarioId,
+          projetoId,
+          osId,
+          arquivo,
+          nomeArquivo: arquivo.name,
+        });
+        enfileirados += 1;
       }
     }
 
     setProgressoUpload("");
     setArquivosSelecionados(naoEnviados);
     setInputArquivosKey((value) => value + 1);
+    setFotosPendentes(await contarFotosPendentesDaOs(osId));
 
     if (naoEnviados.length > 0) {
       setErro(
-        `${enviados} de ${total} arquivo(s) enviado(s). ${naoEnviados.length} falharam (${ultimoErro}). Os arquivos que falharam continuam selecionados — toque em enviar para tentar novamente.`
+        `${enviados} de ${total} arquivo(s) enviado(s).${
+          enfileirados ? ` ${enfileirados} guardado(s) para reenvio.` : ""
+        } ${naoEnviados.length} falharam (${ultimoErro}). Os arquivos que falharam continuam selecionados — toque em enviar para tentar novamente.`
+      );
+    } else if (enfileirados > 0) {
+      setSucesso(
+        `${enviados} enviado(s) agora e ${enfileirados} guardado(s) no aparelho para envio automático.`
       );
     } else {
       setSucesso(
@@ -495,9 +634,10 @@ export default function OsDetalheClient({
 
   const podeIniciar = os.os_status === "pendente";
 
-  const totalRegistrosConclusao = arquivos.filter(
-    (arquivo) => arquivo.tipo === "foto" || arquivo.tipo === "video"
-  ).length;
+  const totalRegistrosConclusao =
+    arquivos.filter(
+      (arquivo) => arquivo.tipo === "foto" || arquivo.tipo === "video"
+    ).length + fotosPendentes;
 
   const registrosFaltantesConclusao = Math.max(
     0,
@@ -604,11 +744,16 @@ export default function OsDetalheClient({
         <p className="fdl-section-subtitle">
           Para concluir a OS, envie no mínimo 7 registros de foto ou vídeo da execução.
           <span className="mt-2 block text-xs font-bold text-[var(--fdl-cream)]">
-            {totalRegistrosConclusao}/{MINIMO_REGISTROS_CONCLUSAO} registros enviados
+            {totalRegistrosConclusao}/{MINIMO_REGISTROS_CONCLUSAO} registros
             {registrosFaltantesConclusao > 0
               ? ` · faltam ${registrosFaltantesConclusao}`
               : " · mínimo atingido"}
           </span>
+          {fotosPendentes > 0 ? (
+            <span className="mt-1 block text-xs font-semibold text-yellow-200/90">
+              {fotosPendentes} foto(s) aguardando envio no aparelho.
+            </span>
+          ) : null}
         </p>
 
         <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4">

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { lerRpcComCache } from "@/lib/offline/cache";
 
 type FiltroOs = "todas" | "pendentes" | "andamento" | "validacao" | "concluidas";
 
@@ -374,19 +375,23 @@ export default function EtapasOsClient({
 
       setMontadorNome(montador.nome ?? "Montador");
 
-      const { data, error } = await supabase.rpc("listar_os_montador", {
-        p_usuario_id: montador.usuarioId,
-        p_projeto_id: projetoId,
-      });
+      const { data, error } = await lerRpcComCache<OsMontador>(
+        supabase,
+        "listar_os_montador",
+        {
+          p_usuario_id: montador.usuarioId,
+          p_projeto_id: projetoId,
+        }
+      );
 
       if (error) {
-        setErro(error.message);
+        setErro(error);
         setOrdens([]);
         setCarregando(false);
         return;
       }
 
-      setOrdens((data ?? []) as OsMontador[]);
+      setOrdens(data ?? []);
       setCarregando(false);
     }
 
