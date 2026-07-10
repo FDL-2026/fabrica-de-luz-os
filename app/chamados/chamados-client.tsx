@@ -374,6 +374,10 @@ function DetalheModal({
 }) {
   const c = detalhe.chamado;
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [trocando, setTrocando] = useState(false);
+
+  const temEquipe = detalhe.montadores.length > 0;
+  const temResponsavel = Boolean(c.atribuido_usuario_id) || temEquipe;
 
   return (
     <div
@@ -454,13 +458,35 @@ function DetalheModal({
           <Campo rotulo="Registrado em" valor={formatDateTime(c.criado_em)} />
         </div>
 
-        {/* Equipe reconhecida do projeto */}
+        {/* Montador responsável (automático pela equipe, ou atribuído) */}
         <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-          <p className="text-xs uppercase tracking-[0.22em] text-white/40">
-            Montador(es) do projeto
-          </p>
-          {detalhe.montadores.length > 0 ? (
-            <div className="mt-2 flex flex-wrap gap-2">
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-xs uppercase tracking-[0.22em] text-white/40">
+              Montador responsável
+            </p>
+            <button
+              type="button"
+              onClick={() => setTrocando((v) => !v)}
+              disabled={salvando}
+              className="shrink-0 rounded-full border border-white/20 px-3 py-1 text-xs font-semibold text-white/80 transition hover:bg-white/10 hover:text-white disabled:opacity-50"
+            >
+              {trocando
+                ? "Cancelar"
+                : temResponsavel
+                  ? "Trocar montador"
+                  : "Atribuir montador"}
+            </button>
+          </div>
+
+          {c.atribuido_usuario_id ? (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-[var(--fdl-cream)]/20 px-3 py-1 text-xs font-semibold text-[var(--fdl-cream)]">
+                {c.atribuido_nome}
+              </span>
+              <span className="text-xs text-white/45">atribuído</span>
+            </div>
+          ) : temEquipe ? (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
               {detalhe.montadores.map((m) => (
                 <span
                   key={m}
@@ -469,15 +495,41 @@ function DetalheModal({
                   {m}
                 </span>
               ))}
+              <span className="text-xs text-white/45">equipe do projeto</span>
             </div>
           ) : (
             <p className="mt-1 text-sm font-semibold text-white/50">
-              Nenhum montador vinculado ao projeto.
+              O sistema não encontrou montador no projeto.
             </p>
           )}
+
+          {trocando ? (
+            <select
+              defaultValue={c.atribuido_usuario_id ?? ""}
+              onChange={(e) => {
+                onAtualizar({ atribuido: e.target.value || null });
+                setTrocando(false);
+              }}
+              disabled={salvando}
+              className="fdl-field mt-3"
+            >
+              <option value="" className="text-black">
+                {temEquipe ? "— Usar equipe do projeto —" : "— Ninguém —"}
+              </option>
+              {montadores.map((m) => (
+                <option key={m.usuario_id} value={m.usuario_id} className="text-black">
+                  {m.nome}
+                </option>
+              ))}
+            </select>
+          ) : null}
+
           <p className="mt-2 text-xs text-white/40">
-            Ao marcar o chamado como “Em andamento”, ele aparece como alerta na
-            tela desses montadores.
+            {c.atribuido_usuario_id
+              ? "Ao marcar “Em andamento”, o alerta vai apenas para o montador atribuído."
+              : temEquipe
+                ? "Ao marcar “Em andamento”, o alerta vai para os montadores do projeto."
+                : "Atribua um montador para que ele receba o alerta ao entrar em andamento."}
           </p>
         </div>
 
@@ -538,45 +590,22 @@ function DetalheModal({
         <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
           <p className="text-sm font-semibold text-white">Atualizar chamado</p>
 
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold text-white/60">
-                Status
-              </label>
-              <select
-                value={c.status ?? "aberto"}
-                onChange={(e) => onAtualizar({ status: e.target.value })}
-                disabled={salvando}
-                className="fdl-field"
-              >
-                {STATUS.map((s) => (
-                  <option key={s.valor} value={s.valor} className="text-black">
-                    {s.rotulo}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold text-white/60">
-                Atribuir a montador
-              </label>
-              <select
-                value={c.atribuido_usuario_id ?? ""}
-                onChange={(e) => onAtualizar({ atribuido: e.target.value || null })}
-                disabled={salvando}
-                className="fdl-field"
-              >
-                <option value="" className="text-black">
-                  — Ninguém —
+          <div className="mt-3">
+            <label className="mb-1.5 block text-xs font-semibold text-white/60">
+              Status
+            </label>
+            <select
+              value={c.status ?? "aberto"}
+              onChange={(e) => onAtualizar({ status: e.target.value })}
+              disabled={salvando}
+              className="fdl-field"
+            >
+              {STATUS.map((s) => (
+                <option key={s.valor} value={s.valor} className="text-black">
+                  {s.rotulo}
                 </option>
-                {montadores.map((m) => (
-                  <option key={m.usuario_id} value={m.usuario_id} className="text-black">
-                    {m.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
+              ))}
+            </select>
           </div>
 
           <div className="mt-3">

@@ -627,6 +627,9 @@ security definer
 set search_path = public
 as $$
 begin
+  -- Regra do alerta:
+  --  - se o gestor fixou um montador (atribuido_usuario_id), só ele recebe;
+  --  - se ninguém foi fixado, todos os montadores do projeto recebem.
   return query
   select
     c.id, c.protocolo::text, p.id,
@@ -635,9 +638,17 @@ begin
     c.titulo::text, c.descricao::text, c.status::text, c.criado_em
   from public.chamados c
   join public.projetos p on p.id = c.projeto_id
-  join public.projeto_usuarios pu on pu.projeto_id = c.projeto_id
-  where pu.usuario_id = p_usuario_id
-    and c.status = 'em_andamento'
+  where c.status = 'em_andamento'
+    and (
+      (c.atribuido_usuario_id is not null and c.atribuido_usuario_id = p_usuario_id)
+      or (
+        c.atribuido_usuario_id is null
+        and exists (
+          select 1 from public.projeto_usuarios pu
+          where pu.projeto_id = c.projeto_id and pu.usuario_id = p_usuario_id
+        )
+      )
+    )
   order by
     case c.prioridade when 'urgente' then 0 when 'alta' then 1
                       when 'media' then 2 else 3 end,
