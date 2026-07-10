@@ -415,6 +415,7 @@ begin
 
   select jsonb_build_object(
     'chamado', to_jsonb(c) || jsonb_build_object(
+        'chamado_id', c.id,
         'cliente', p.cliente, 'shopping', p.shopping, 'uf', p.uf,
         'temporada', p.temporada, 'atribuido_nome', u.nome),
     'anexos', coalesce((
