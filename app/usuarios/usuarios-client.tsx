@@ -58,6 +58,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
+  const [mostrarForm, setMostrarForm] = useState(false);
 
   const [tipoLogin, setTipoLogin] = useState(() => podeGerenciarTodosPerfis ? "email" : "pin");
   const [nome, setNome] = useState("");
@@ -288,17 +289,40 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
   return (
     <div className="space-y-6">
       <header className="fdl-form-card p-6">
-        <p className="text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
-          Administração
-        </p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
+              Administração
+            </p>
 
-        <h1 className="mt-2 text-3xl font-bold">Usuários</h1>
+            <h1 className="mt-2 text-3xl font-bold">Usuários</h1>
 
-        <p className="mt-2 text-sm text-white/60">
-          Cadastre, edite, ative ou inative usuários administrativos e
-          montadores.
-        </p>
+            <p className="mt-2 text-sm text-white/60">
+              Cadastre, edite, ative ou inative usuários administrativos e
+              montadores.
+            </p>
+          </div>
+
+          {!mostrarForm ? (
+            <button
+              type="button"
+              onClick={() => {
+                setErro("");
+                setSucesso("");
+                setMostrarForm(true);
+              }}
+              className="inline-flex h-12 shrink-0 items-center gap-2 rounded-2xl bg-[var(--fdl-cream)] px-5 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+            >
+              <span className="text-lg leading-none">＋</span> Novo usuário
+            </button>
+          ) : null}
+        </div>
       </header>
+
+      {erro ? <div className="fdl-ui-alert fdl-ui-alert-error">{erro}</div> : null}
+      {sucesso ? (
+        <div className="fdl-ui-alert fdl-ui-alert-success">{sucesso}</div>
+      ) : null}
 
       {usuarioEditando ? (
         <section className="rounded-3xl border border-[var(--fdl-cream)]/30 bg-white/[0.08] p-6">
@@ -479,12 +503,27 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
         </section>
       ) : null}
 
-      <section className="grid items-start gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
+      <section
+        className={`grid items-start gap-6 ${
+          mostrarForm ? "xl:grid-cols-[340px_minmax(0,1fr)]" : "grid-cols-1"
+        }`}
+      >
+        {mostrarForm ? (
         <form
           onSubmit={criarUsuario}
           className="fdl-form-card p-6"
         >
-          <h2 className="fdl-section-title">Novo usuário</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="fdl-section-title">Novo usuário</h2>
+            <button
+              type="button"
+              onClick={() => setMostrarForm(false)}
+              aria-label="Fechar"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:bg-white/10 hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
 
           <div className="mt-5 space-y-4">
             <div>
@@ -618,18 +657,6 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
               Usuário ativo
             </label>
 
-            {erro ? (
-              <div className="fdl-ui-alert fdl-ui-alert-error">
-                {erro}
-              </div>
-            ) : null}
-
-            {sucesso ? (
-              <div className="fdl-ui-alert fdl-ui-alert-success">
-                {sucesso}
-              </div>
-            ) : null}
-
             <button
               type="submit"
               disabled={salvando}
@@ -639,6 +666,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
             </button>
           </div>
         </form>
+        ) : null}
 
         <section className="fdl-form-card fdl-users-list-card min-w-0 p-6">
           <div className="mb-5">
