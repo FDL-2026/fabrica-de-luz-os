@@ -76,6 +76,42 @@ export async function lerRpcComCache<T>(
   }
 }
 
+/**
+ * Aquece (busca e cacheia) os dados de detalhe de uma OS, para que ela abra
+ * offline mesmo sem ter sido aberta manualmente antes. Best-effort e só faz
+ * sentido chamar quando online — cada leitura já se auto-cacheia.
+ */
+export async function aquecerDetalheOs(
+  supabase: SupabaseClient,
+  usuarioId: string,
+  projetoId: string,
+  osId: string
+): Promise<void> {
+  const params = {
+    p_usuario_id: usuarioId,
+    p_projeto_id: projetoId,
+    p_os_id: osId,
+  };
+  await lerRpcComCache(supabase, "obter_os_montador", params);
+  await lerRpcComCache(supabase, "listar_registros_os_montador", params);
+  await lerRpcComCache(supabase, "listar_arquivos_os_montador", params);
+}
+
+/** Aquece uma lista de OSs em sequência, com teto de segurança. */
+export async function aquecerDetalhesOs(
+  supabase: SupabaseClient,
+  usuarioId: string,
+  projetoId: string,
+  osIds: string[],
+  limite = 40
+): Promise<void> {
+  if (typeof navigator !== "undefined" && !navigator.onLine) return;
+  for (const osId of osIds.slice(0, limite)) {
+    if (typeof navigator !== "undefined" && !navigator.onLine) return;
+    await aquecerDetalheOs(supabase, usuarioId, projetoId, osId);
+  }
+}
+
 async function comFallback<T>(
   key: string,
   mensagemErro: string

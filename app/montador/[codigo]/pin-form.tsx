@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { lerRpcComCache } from "@/lib/offline/cache";
+import { prefetchTelasMontador } from "@/lib/offline/prefetch";
 
 type PinFormProps = {
   codigo: string;
@@ -105,8 +106,16 @@ export default function PinForm({ codigo }: PinFormProps) {
       return;
     }
 
-    setProjetos(data ?? []);
+    const lista = data ?? [];
+    setProjetos(lista);
     setCarregandoProjetos(false);
+
+    // Pré-carrega os shells das telas de cada projeto para uso offline.
+    prefetchTelasMontador(
+      lista.map(
+        (p) => `/montador/${codigo}/projetos/${p.projeto_id}`
+      )
+    );
   }
 
   useEffect(() => {

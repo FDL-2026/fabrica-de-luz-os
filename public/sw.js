@@ -8,7 +8,7 @@
  *  - Estáticos do build (/_next/static, ícones, marca): cache-first.
  */
 
-const VERSION = "fdl-v4";
+const VERSION = "fdl-v5";
 const STATIC_CACHE = `${VERSION}-static`;
 // Páginas do montador (shells sem dados sensíveis — os dados vêm de RPC no
 // cliente). Cacheadas para permitir navegar offline entre as telas de campo.
@@ -160,6 +160,35 @@ function ehRotaMontador(url) {
   return url.pathname === "/montador" || url.pathname.startsWith("/montador/");
 }
 
+// Estratégia de página do montador: network-first com fallback ao shell
+// cacheado. Serve tanto navegações reais quanto documentos pré-buscados
+// (prefetch) — em ambos, cacheamos o shell por URL exata (sem query).
+function respostaPaginaMontador(request, url) {
+  const chave = new Request(url.origin + url.pathname);
+  return (async () => {
+    try {
+      const resposta = await fetch(request);
+      if (resposta.ok) {
+        // não bloqueia a resposta ao usuário
+        guardarPagina(chave, resposta.clone());
+      }
+      return resposta;
+    } catch {
+      const cache = await caches.open(PAGE_CACHE);
+      const cacheada = await cache.match(chave);
+      return cacheada || offlineResponse();
+    }
+  })();
+}
+
+// Requisição de documento HTML feita por JS (prefetch), não uma navegação.
+function ehPrefetchDocumento(request) {
+  if (request.mode === "navigate") return false;
+  if (request.destination === "document") return true;
+  const accept = request.headers.get("accept") || "";
+  return accept.includes("text/html");
+}
+
 function isStaticAsset(url) {
   return (
     url.pathname.startsWith("/_next/static/") ||
@@ -180,26 +209,14 @@ self.addEventListener("fetch", (event) => {
   // Só lidamos com o próprio domínio. Externo (Supabase/Drive) vai direto à rede.
   if (url.origin !== self.location.origin) return;
 
-  // Páginas do montador: network-first, cacheia o shell e, offline, serve o
-  // shell cacheado (a tela carrega os dados do IndexedDB). Sem cache -> offline.
-  if (request.mode === "navigate" && ehRotaMontador(url)) {
-    event.respondWith(
-      (async () => {
-        const chave = new Request(url.origin + url.pathname);
-        try {
-          const resposta = await fetch(request);
-          if (resposta.ok) {
-            // não bloqueia a resposta ao usuário
-            guardarPagina(chave, resposta.clone());
-          }
-          return resposta;
-        } catch {
-          const cache = await caches.open(PAGE_CACHE);
-          const cacheada = await cache.match(chave);
-          return cacheada || offlineResponse();
-        }
-      })()
-    );
+  // Páginas do montador (navegação real OU prefetch em segundo plano):
+  // network-first, cacheia o shell e, offline, serve o shell cacheado
+  // (a tela carrega os dados do IndexedDB). Sem cache -> tela offline.
+  if (
+    ehRotaMontador(url) &&
+    (request.mode === "navigate" || ehPrefetchDocumento(request))
+  ) {
+    event.respondWith(respostaPaginaMontador(request, url));
     return;
   }
 

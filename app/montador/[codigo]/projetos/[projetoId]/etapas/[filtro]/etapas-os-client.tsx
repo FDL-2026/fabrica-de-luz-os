@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { lerRpcComCache } from "@/lib/offline/cache";
+import { aquecerDetalhesOs, lerRpcComCache } from "@/lib/offline/cache";
+import { prefetchTelasMontador } from "@/lib/offline/prefetch";
 
 type FiltroOs = "todas" | "pendentes" | "andamento" | "validacao" | "concluidas";
 
@@ -391,8 +392,24 @@ export default function EtapasOsClient({
         return;
       }
 
-      setOrdens(data ?? []);
+      const lista = data ?? [];
+      setOrdens(lista);
       setCarregando(false);
+
+      // Pré-carrega o detalhe de cada OS listada para uso offline.
+      prefetchTelasMontador(
+        lista.map(
+          (os) => `/montador/${codigo}/projetos/${projetoId}/os/${os.os_id}`
+        )
+      );
+
+      // Aquece os dados das OSs acionáveis para abrir o detalhe offline.
+      const acionaveis = lista
+        .filter((os) =>
+          ["pendente", "em_andamento"].includes(os.os_status ?? "")
+        )
+        .map((os) => os.os_id);
+      aquecerDetalhesOs(supabase, montador.usuarioId, projetoId, acionaveis);
     }
 
     carregarOs();
