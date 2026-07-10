@@ -5583,3 +5583,55 @@ html {
   border-color: var(--fdl-line) !important;
   color: var(--fdl-ink) !important;
 }
+
+/* ==========================================================================
+   Chamados — faixa de alerta no dashboard (destaque próprio em ambos os temas)
+   Classe dedicada para não ser remapeada pelas regras genéricas de superfície.
+   ========================================================================== */
+.fdl-chamados-alerta {
+  border: 1px solid rgba(237, 224, 177, 0.4);
+  background:
+    linear-gradient(0deg, rgba(237, 224, 177, 0.07), rgba(237, 224, 177, 0.07)),
+    rgba(255, 255, 255, 0.03);
+  box-shadow: 0 14px 34px -24px rgba(0, 0, 0, 0.8);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.fdl-chamados-alerta:hover {
+  background: rgba(237, 224, 177, 0.13);
+}
+.fdl-chamados-alerta-icone {
+  background: var(--fdl-cream);
+  color: var(--fdl-purple-dark);
+}
+.fdl-chamados-alerta-titulo {
+  color: #ffffff;
+}
+.fdl-chamados-alerta-sub {
+  color: rgba(255, 255, 255, 0.6);
+}
+.fdl-chamados-alerta-cta {
+  color: var(--fdl-cream);
+}
+
+/* Tema claro: cartão branco com acento roxo (sem bloco sólido, bom contraste) */
+.light .fdl-chamados-alerta {
+  border-color: rgba(100, 59, 143, 0.28);
+  background: #ffffff;
+  box-shadow: 0 14px 34px -26px rgba(100, 59, 143, 0.4);
+}
+.light .fdl-chamados-alerta:hover {
+  background: #faf7ff;
+}
+.light .fdl-chamados-alerta-icone {
+  background: var(--fdl-purple-strong);
+  color: #ffffff;
+}
+.light .fdl-chamados-alerta-titulo {
+  color: var(--fdl-ink);
+}
+.light .fdl-chamados-alerta-sub {
+  color: var(--fdl-ink-soft);
+}
+.light .fdl-chamados-alerta-cta {
+  color: var(--fdl-purple-strong);
+}

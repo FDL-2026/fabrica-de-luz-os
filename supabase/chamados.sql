@@ -363,12 +363,16 @@ begin
   end if;
   v_todos := v_perfil in ('admin', 'diretor', 'gerente_operacional');
 
+  -- casts explícitos para text: colunas das tabelas podem ser varchar e o
+  -- RETURN QUERY de plpgsql exige tipo idêntico ao declarado.
   return query
   select
-    c.id, c.protocolo, p.id, p.cliente, p.shopping, p.uf, p.temporada,
-    c.responsavel_comercial, c.solicitante_nome, c.solicitante_contato,
-    c.categoria, c.prioridade, c.local_ponto, c.titulo, c.descricao, c.status,
-    c.atribuido_usuario_id, u.nome,
+    c.id, c.protocolo::text, p.id, p.cliente::text, p.shopping::text,
+    p.uf::text, p.temporada::text,
+    c.responsavel_comercial::text, c.solicitante_nome::text, c.solicitante_contato::text,
+    c.categoria::text, c.prioridade::text, c.local_ponto::text, c.titulo::text,
+    c.descricao::text, c.status::text,
+    c.atribuido_usuario_id, u.nome::text,
     (select count(*) from public.chamado_anexos a where a.chamado_id = c.id),
     c.criado_em, c.atualizado_em, c.resolvido_em
   from public.chamados c
@@ -455,7 +459,7 @@ begin
   end if;
 
   return query
-  select id, nome from public.usuarios
+  select id, nome::text from public.usuarios
   where perfil = 'montador' and coalesce(ativo, true)
   order by nome;
 end;
