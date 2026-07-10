@@ -32,11 +32,6 @@ type ProjetoMontador = {
   os_pendentes: number;
 };
 
-function formatDate(date: string | null) {
-  if (!date) return "Não informado";
-
-  return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
-}
 
 function formatStatus(status: string | null) {
   if (!status) return "Sem status";
@@ -208,35 +203,41 @@ export default function PinForm({ codigo }: PinFormProps) {
   }
 
   if (montador) {
+    const sair = () => {
+      localStorage.removeItem("fdl_montador");
+      setMontador(null);
+      setProjetos([]);
+      setPin("");
+    };
+
     return (
       <div className="space-y-5">
-        <div className="rounded-3xl border border-green-400/30 bg-green-500/10 p-5">
-          <p className="text-sm uppercase tracking-[0.22em] text-green-200">
-            Acesso liberado
-          </p>
-
-          <h2 className="mt-3 text-2xl font-bold text-white">
-            Olá, {montador.nome}
-          </h2>
-
-          <p className="mt-2 text-sm leading-6 text-white/65">
-            Seu acesso de campo foi validado com sucesso.
-          </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="fdl-mobile-kicker">Painel de campo</p>
+            <h2 className="truncate text-2xl font-bold text-white">
+              Olá, {montador.nome}
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={sair}
+            className="shrink-0 rounded-full border border-white/15 px-3 py-1.5 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+          >
+            Trocar
+          </button>
         </div>
 
-        <div className="fdl-form-section p-5">
-          <div className="mb-5">
-            <p className="text-sm uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
+        <div>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-[var(--fdl-cream)]">
               Meus projetos
-            </p>
-
-            <h3 className="mt-2 text-xl font-bold text-white">
-              Projetos vinculados
             </h3>
-
-            <p className="fdl-section-subtitle">
-              Selecione um projeto para acompanhar as OSs de montagem.
-            </p>
+            {projetos.length > 0 ? (
+              <span className="text-xs font-semibold text-white/45">
+                {projetos.length} vinculado{projetos.length > 1 ? "s" : ""}
+              </span>
+            ) : null}
           </div>
 
           {carregandoProjetos ? (
@@ -244,7 +245,7 @@ export default function PinForm({ codigo }: PinFormProps) {
               Carregando projetos...
             </div>
           ) : projetos.length > 0 ? (
-            <div className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
               {projetos.map((projeto) => {
                 const progresso =
                   projeto.total_os > 0
@@ -256,27 +257,22 @@ export default function PinForm({ codigo }: PinFormProps) {
                     : 0;
 
                 return (
-                  <article
+                  <a
                     key={projeto.projeto_id}
-                    className="rounded-3xl border border-white/10 bg-white/[0.05] p-5"
+                    href={`/montador/${codigo}/projetos/${projeto.projeto_id}`}
+                    className="block rounded-2xl border border-white/10 bg-white/[0.05] p-4 transition hover:-translate-y-0.5 hover:bg-white/[0.08]"
                   >
-                    <div className="mb-4 flex flex-col gap-3">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
-                          Temporada {projeto.temporada ?? "2026"}
-                        </p>
-
-                        <h4 className="mt-2 text-xl font-bold text-white">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h4 className="truncate text-base font-bold text-white">
                           {projeto.cliente || projeto.shopping}
                         </h4>
-
-                        <p className="fdl-section-subtitle">
-                           {projeto.uf}
+                        <p className="mt-0.5 text-xs text-white/50">
+                          {projeto.uf} · Temporada {projeto.temporada ?? "2026"}
                         </p>
                       </div>
-
                       <span
-                        className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${statusClass(
+                        className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusClass(
                           projeto.status
                         )}`}
                       >
@@ -284,46 +280,22 @@ export default function PinForm({ codigo }: PinFormProps) {
                       </span>
                     </div>
 
-                    <div className="grid gap-3 text-sm">
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                        <p className="text-white/45">Período previsto</p>
-                        <p className="mt-1 font-semibold text-white">
-                          {formatDate(projeto.data_inicio)} até{" "}
-                          {formatDate(projeto.data_fim)}
-                        </p>
+                    <div className="mt-3 flex items-center gap-3">
+                      <div className="h-1.5 flex-1 rounded-full bg-white/10">
+                        <div
+                          className="fdl-bar-fill h-1.5 rounded-full"
+                          style={{ width: `${progresso}%` }}
+                        />
                       </div>
-
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                        <div className="flex items-center justify-between gap-4">
-                          <div>
-                            <p className="text-white/45">OSs do projeto</p>
-                            <p className="mt-1 font-semibold text-white">
-                              {projeto.os_concluidas} de {projeto.total_os}{" "}
-                              concluídas
-                            </p>
-                          </div>
-
-                          <strong className="text-2xl text-[var(--fdl-cream)]">
-                            {progresso}%
-                          </strong>
-                        </div>
-
-                        <div className="mt-3 h-2 rounded-full bg-white/10">
-                          <div
-                            className="fdl-bar-fill h-2 rounded-full"
-                            style={{ width: `${progresso}%` }}
-                          />
-                        </div>
-                      </div>
+                      <span className="shrink-0 text-xs font-bold text-[var(--fdl-cream)]">
+                        {progresso}%
+                      </span>
                     </div>
 
-                    <a
-  href={`/montador/${codigo}/projetos/${projeto.projeto_id}`}
-  className="mt-4 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
->
-  Abrir OSs do projeto
-</a>
-                  </article>
+                    <p className="mt-1.5 text-xs text-white/45">
+                      {projeto.os_concluidas}/{projeto.total_os} OSs concluídas
+                    </p>
+                  </a>
                 );
               })}
             </div>
@@ -339,32 +311,45 @@ export default function PinForm({ codigo }: PinFormProps) {
             </div>
           )}
         </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            localStorage.removeItem("fdl_montador");
-            setMontador(null);
-            setProjetos([]);
-            setPin("");
-          }}
-          className="h-12 w-full rounded-2xl border border-white/15 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-        >
-          Trocar montador
-        </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div>
-        <label
-          htmlFor="pin"
-          className="mb-2 block text-sm font-medium text-white/80"
-        >
-          PIN de acesso
-        </label>
+    <section className="fdl-mobile-card fdl-mobile-card-strong">
+      <div className="mb-7">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--fdl-cream)] text-2xl text-[var(--fdl-purple-dark)]">
+          🔐
+        </div>
+
+        <p className="fdl-mobile-kicker">Acesso do montador</p>
+
+        <h1 className="fdl-mobile-title">Entrar com PIN</h1>
+
+        <p className="fdl-mobile-description">
+          Digite o PIN vinculado ao código de acesso para liberar o painel de
+          campo.
+        </p>
+      </div>
+
+      <div className="mb-5 rounded-2xl border border-white/10 bg-white/[0.055] p-4">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/45">
+          Código de acesso
+        </p>
+
+        <p className="mt-2 text-2xl font-extrabold tracking-wide text-[var(--fdl-cream)]">
+          {codigo.toUpperCase()}
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label
+            htmlFor="pin"
+            className="mb-2 block text-sm font-medium text-white/80"
+          >
+            PIN de acesso
+          </label>
 
         <input
           id="pin"
@@ -393,6 +378,7 @@ export default function PinForm({ codigo }: PinFormProps) {
       >
         {loading ? "Validando..." : "Liberar acesso"}
       </button>
-    </form>
+      </form>
+    </section>
   );
 }
