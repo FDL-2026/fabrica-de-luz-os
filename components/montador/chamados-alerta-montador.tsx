@@ -80,7 +80,7 @@ export default function ChamadosAlertaMontador({ usuarioId, codigo }: Props) {
         {chamados.map((c) => (
           <a
             key={c.chamado_id}
-            href={`/montador/${codigo}/projetos/${c.projeto_id}`}
+            href={`/montador/${codigo}/chamados/${c.chamado_id}`}
             className="block rounded-2xl border border-amber-300/25 bg-black/15 p-4 transition hover:bg-black/25"
           >
             <div className="flex flex-wrap items-center gap-2">
@@ -108,7 +108,7 @@ export default function ChamadosAlertaMontador({ usuarioId, codigo }: Props) {
             </div>
 
             <p className="mt-2 text-xs font-semibold text-amber-100">
-              Abrir projeto →
+              Ver chamado →
             </p>
           </a>
         ))}

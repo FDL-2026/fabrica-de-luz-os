@@ -647,3 +647,87 @@ $$;
 
 revoke all on function public.fdl_listar_chamados_montador(uuid) from public;
 grant execute on function public.fdl_listar_chamados_montador(uuid) to anon, authenticated;
+
+-- ----------------------------------------------------------------------------
+-- 9) MONTADOR — detalhe do chamado (só se estiver vinculado ao projeto)
+-- ----------------------------------------------------------------------------
+create or replace function public.fdl_obter_chamado_montador(
+  p_usuario_id uuid,
+  p_chamado_id uuid
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v jsonb;
+begin
+  select jsonb_build_object(
+    'chamado', jsonb_build_object(
+      'chamado_id', c.id, 'protocolo', c.protocolo, 'projeto_id', c.projeto_id,
+      'cliente', p.cliente, 'shopping', p.shopping, 'uf', p.uf,
+      'temporada', p.temporada,
+      'categoria', c.categoria, 'prioridade', c.prioridade,
+      'local_ponto', c.local_ponto, 'titulo', c.titulo,
+      'descricao', c.descricao, 'status', c.status,
+      'solicitante_nome', c.solicitante_nome,
+      'solicitante_contato', c.solicitante_contato,
+      'criado_em', c.criado_em),
+    'anexos', coalesce((
+       select jsonb_agg(jsonb_build_object(
+                'id', a.id, 'tipo', a.tipo, 'nome_arquivo', a.nome_arquivo,
+                'external_file_id', a.external_file_id, 'criado_em', a.criado_em)
+              order by a.criado_em)
+       from public.chamado_anexos a where a.chamado_id = c.id), '[]'::jsonb)
+  )
+  into v
+  from public.chamados c
+  join public.projetos p on p.id = c.projeto_id
+  where c.id = p_chamado_id
+    and exists (
+      select 1 from public.projeto_usuarios pu
+      where pu.projeto_id = c.projeto_id and pu.usuario_id = p_usuario_id
+    );
+
+  if v is null then
+    raise exception 'Chamado não encontrado ou sem vínculo com este montador.';
+  end if;
+
+  return v;
+end;
+$$;
+
+revoke all on function public.fdl_obter_chamado_montador(uuid, uuid) from public;
+grant execute on function public.fdl_obter_chamado_montador(uuid, uuid) to anon, authenticated;
+
+-- ----------------------------------------------------------------------------
+-- 10) MONTADOR — autorização de anexo (para o proxy de foto do montador)
+-- ----------------------------------------------------------------------------
+-- Devolve os metadados do anexo apenas se o montador estiver vinculado ao
+-- projeto do chamado ao qual o arquivo pertence.
+create or replace function public.fdl_anexo_chamado_montador(
+  p_usuario_id       uuid,
+  p_external_file_id text
+)
+returns table (mime_type text, tipo text, nome_arquivo text)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return query
+  select a.mime_type::text, a.tipo::text, a.nome_arquivo::text
+  from public.chamado_anexos a
+  join public.chamados c on c.id = a.chamado_id
+  where a.external_file_id = p_external_file_id
+    and exists (
+      select 1 from public.projeto_usuarios pu
+      where pu.projeto_id = c.projeto_id and pu.usuario_id = p_usuario_id
+    )
+  limit 1;
+end;
+$$;
+
+revoke all on function public.fdl_anexo_chamado_montador(uuid, text) from public;
+grant execute on function public.fdl_anexo_chamado_montador(uuid, text) to anon, authenticated;
