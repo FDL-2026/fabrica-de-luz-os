@@ -222,7 +222,7 @@ export default function PinForm({ codigo }: PinFormProps) {
           <button
             type="button"
             onClick={sair}
-            className="shrink-0 rounded-full border border-white/15 px-3 py-1.5 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+            className="fdl-btn-compacto shrink-0 rounded-full border border-white/15 px-3 py-1.5 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
           >
             Trocar
           </button>

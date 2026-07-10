@@ -5583,3 +5583,10 @@ html {
   border-color: var(--fdl-line) !important;
   color: var(--fdl-ink) !important;
 }
+
+/* Botões compactos inline no montador: escapam da regra que força 100% de
+   largura/altura nos botões de ação (ex.: "Trocar" ao lado da saudação). */
+.fdl-montador-main button.fdl-btn-compacto {
+  width: auto !important;
+  min-height: 0 !important;
+}
