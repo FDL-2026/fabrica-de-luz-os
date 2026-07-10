@@ -53,36 +53,6 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${geistSans.className} antialiased`}>
-        {/* Splash interna do PWA: exibida uma vez por abertura (só no app
-            instalado), some quando o app termina de carregar. É a forma
-            confiável de mostrar a logo no carregamento — o Android não aceita
-            imagem de splash customizada via manifesto. */}
-        <div
-          id="fdl-boot-splash"
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 2147483000,
-            display: "none",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "#5a3583",
-            transition: "opacity .45s ease",
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/icons/V_TAGLINE_CF_ROXO.png"
-            alt="Fábrica de Luz"
-            style={{ width: "78%", maxWidth: "340px", height: "auto" }}
-          />
-        </div>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){var el=document.getElementById('fdl-boot-splash');if(!el)return;try{var standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;if(!standalone||sessionStorage.getItem('fdl_splash')){el.remove();return;}sessionStorage.setItem('fdl_splash','1');el.style.display='flex';var start=Date.now(),MIN=700;function hide(){el.style.opacity='0';setTimeout(function(){el.remove();},450);}addEventListener('load',function(){setTimeout(hide,Math.max(0,MIN-(Date.now()-start)));});setTimeout(hide,4000);}catch(e){el.remove();}})();`,
-          }}
-        />
-
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

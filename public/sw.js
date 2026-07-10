@@ -8,7 +8,7 @@
  *  - Estáticos do build (/_next/static, ícones, marca): cache-first.
  */
 
-const VERSION = "fdl-v6";
+const VERSION = "fdl-v7";
 const STATIC_CACHE = `${VERSION}-static`;
 // Páginas do montador (shells sem dados sensíveis — os dados vêm de RPC no
 // cliente). Cacheadas para permitir navegar offline entre as telas de campo.
@@ -21,7 +21,6 @@ const PRECACHE = [
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/icons/apple-touch-icon.png",
-  "/icons/V_TAGLINE_CF_ROXO.png",
   "/brand/H_TAGLINE_SF_ROXO.png",
 ];
 
