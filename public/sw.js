@@ -8,7 +8,7 @@
  *  - Estáticos do build (/_next/static, ícones, marca): cache-first.
  */
 
-const VERSION = "fdl-v1";
+const VERSION = "fdl-v2";
 const STATIC_CACHE = `${VERSION}-static`;
 const OFFLINE_URL = "/offline";
 
@@ -20,11 +20,36 @@ const PRECACHE = [
   "/brand/H_TAGLINE_SF_ROXO.png",
 ];
 
+// Grava cada item individualmente: se um falhar, os demais entram assim mesmo,
+// e a instalação nunca quebra. Reconstrói a Response para remover a flag
+// "redirected" (a Cache API rejeita respostas redirecionadas).
+async function precacheResiliente() {
+  const cache = await caches.open(STATIC_CACHE);
+  await Promise.allSettled(
+    PRECACHE.map(async (url) => {
+      try {
+        const res = await fetch(url, { credentials: "same-origin" });
+        if (!res.ok) return;
+        const body = await res.blob();
+        await cache.put(
+          url,
+          new Response(body, {
+            status: res.status,
+            statusText: res.statusText,
+            headers: res.headers,
+          })
+        );
+      } catch {
+        // ignora item que falhar
+      }
+    })
+  );
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
-      const cache = await caches.open(STATIC_CACHE);
-      await cache.addAll(PRECACHE);
+      await precacheResiliente();
       await self.skipWaiting();
     })()
   );
