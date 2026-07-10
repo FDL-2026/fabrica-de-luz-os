@@ -3,25 +3,80 @@
  * Estratégia conservadora e segura para app autenticado:
  *  - Só intercepta GET do MESMO domínio. Supabase, Google Drive e qualquer
  *    origem externa passam direto pela rede (nunca são cacheados aqui).
- *  - Navegações (páginas): network-first -> se offline, mostra /offline.
+ *  - Navegações (páginas): network-first -> se offline, mostra a tela offline.
  *    (Não cacheamos HTML autenticado para não vazar dados entre sessões.)
  *  - Estáticos do build (/_next/static, ícones, marca): cache-first.
  */
 
-const VERSION = "fdl-v2";
+const VERSION = "fdl-v3";
 const STATIC_CACHE = `${VERSION}-static`;
-const OFFLINE_URL = "/offline";
 
+// Estáticos úteis para pré-carregar. NÃO inclui a tela offline: o fallback
+// abaixo é totalmente autossuficiente (HTML embutido), então nunca depende de
+// precache nem de rede para funcionar.
 const PRECACHE = [
-  OFFLINE_URL,
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/icons/apple-touch-icon.png",
   "/brand/H_TAGLINE_SF_ROXO.png",
 ];
 
+// Tela offline embutida no próprio SW. Independe de cache/rede — se a
+// navegação falhar por falta de conexão, isto SEMPRE renderiza.
+const OFFLINE_HTML = `<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Sem conexão · Fábrica de Luz</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 24px; padding: 32px;
+    text-align: center; background: #16051f;
+    color: #fff; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  img { width: 100%; max-width: 220px; height: auto; opacity: .9; }
+  .kicker {
+    margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .18em;
+    text-transform: uppercase; color: #f4e6c9;
+  }
+  h1 { margin: 8px 0 0; font-size: 24px; font-weight: 700; }
+  p { margin: 12px 0 0; max-width: 22rem; font-size: 14px; line-height: 1.6; color: rgba(255,255,255,.6); }
+  button {
+    margin-top: 4px; height: 44px; padding: 0 24px; border: 0;
+    border-radius: 16px; background: #f4e6c9; color: #2b123a;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <img src="/brand/H_TAGLINE_SF_ROXO.png" alt="Fábrica de Luz" />
+  <div>
+    <p class="kicker">Sem conexão</p>
+    <h1>Você está offline</h1>
+    <p>Não foi possível carregar esta tela. Verifique sua internet e tente novamente — o app volta assim que a conexão retornar.</p>
+  </div>
+  <button type="button" onclick="location.reload()">Tentar novamente</button>
+</body>
+</html>`;
+
+function offlineResponse() {
+  return new Response(OFFLINE_HTML, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
 // Grava cada item individualmente: se um falhar, os demais entram assim mesmo,
-// e a instalação nunca quebra. Reconstrói a Response para remover a flag
+// e a instalação NUNCA quebra. Reconstrói a Response para remover a flag
 // "redirected" (a Cache API rejeita respostas redirecionadas).
 async function precacheResiliente() {
   const cache = await caches.open(STATIC_CACHE);
@@ -49,7 +104,12 @@ async function precacheResiliente() {
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
-      await precacheResiliente();
+      // O precache é best-effort e não pode impedir a ativação do SW.
+      try {
+        await precacheResiliente();
+      } catch {
+        // nunca falha o install
+      }
       await self.skipWaiting();
     })()
   );
@@ -94,22 +154,14 @@ self.addEventListener("fetch", (event) => {
   // Só lidamos com o próprio domínio. Externo (Supabase/Drive) vai direto à rede.
   if (url.origin !== self.location.origin) return;
 
-  // Páginas: network-first, fallback offline.
+  // Páginas: network-first, fallback offline embutido.
   if (request.mode === "navigate") {
     event.respondWith(
       (async () => {
         try {
           return await fetch(request);
         } catch {
-          const cache = await caches.open(STATIC_CACHE);
-          const offline = await cache.match(OFFLINE_URL);
-          return (
-            offline ||
-            new Response("Offline", {
-              status: 503,
-              headers: { "Content-Type": "text/plain; charset=utf-8" },
-            })
-          );
+          return offlineResponse();
         }
       })()
     );
