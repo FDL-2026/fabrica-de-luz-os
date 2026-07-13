@@ -18,6 +18,7 @@ const itens = [
   { href: "/usuarios", label: "Usuários" },
   { href: "/importar", label: "Importar cronograma" },
   { href: "/relatorios/diario", label: "Relatório diário" },
+  { href: "/relatorios/temporada", label: "Fechamento da temporada" },
 ];
 
 export default function SidebarGestao({
