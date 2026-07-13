@@ -58,6 +58,13 @@ type ArquivoOs = {
   criado_em: string;
 };
 
+// Extrai o id do arquivo do Drive do link de visualização (webViewLink).
+function idDoDriveUrl(url: string | null): string | null {
+  if (!url) return null;
+  const m = url.match(/\/d\/([\w-]+)/) || url.match(/[?&]id=([\w-]+)/);
+  return m ? m[1] : null;
+}
+
 function formatDate(date: string | null) {
   if (!date) return "Não informado";
   return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
@@ -179,6 +186,7 @@ export default function OsGestaoClient({
   const [os, setOs] = useState<OsGestao | null>(null);
   const [registros, setRegistros] = useState<RegistroOs[]>([]);
   const [arquivos, setArquivos] = useState<ArquivoOs[]>([]);
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   useEffect(() => {
     async function carregar() {
@@ -274,6 +282,27 @@ export default function OsGestaoClient({
 
   return (
     <div className="space-y-6">
+      {lightbox ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-4"
+          onClick={() => setLightbox(null)}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightbox}
+            alt="Foto da OS"
+            className="max-h-[92vh] max-w-full rounded-xl object-contain"
+          />
+          <button
+            type="button"
+            aria-label="Fechar imagem"
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white"
+          >
+            ✕
+          </button>
+        </div>
+      ) : null}
+
       <header className="fdl-form-card p-6">
         <a
           href={`/projetos/${projetoId}`}
@@ -437,37 +466,60 @@ export default function OsGestaoClient({
 
         <div className="mt-5 space-y-3">
           {arquivos.length > 0 ? (
-            arquivos.map((arquivo) => (
-              <article
-                key={arquivo.arquivo_id}
-                className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
-              >
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      {formatTipoArquivo(arquivo.tipo)} ·{" "}
-                      {arquivo.nome_arquivo || "Arquivo sem nome"}
-                    </p>
+            arquivos.map((arquivo) => {
+              const fileId = idDoDriveUrl(arquivo.url_visualizacao);
+              const ehFoto = arquivo.tipo === "foto" && !!fileId;
 
-                    <p className="mt-1 text-xs text-white/45">
-                      {formatBytes(arquivo.tamanho_bytes)} ·{" "}
-                      {formatDateTime(arquivo.criado_em)}
-                    </p>
+              return (
+                <article
+                  key={arquivo.arquivo_id}
+                  className="rounded-2xl border border-white/10 bg-white/[0.04] p-3"
+                >
+                  <div className="flex items-center gap-3">
+                    {ehFoto ? (
+                      <button
+                        type="button"
+                        onClick={() => setLightbox(`/api/anexos/${fileId}`)}
+                        className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`/api/anexos/${fileId}?thumb=1`}
+                          alt={arquivo.nome_arquivo || "Foto"}
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
+                    ) : (
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.06] text-2xl">
+                        {arquivo.tipo === "video" ? "🎬" : "📄"}
+                      </div>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-white">
+                        {formatTipoArquivo(arquivo.tipo)} ·{" "}
+                        {arquivo.nome_arquivo || "Arquivo sem nome"}
+                      </p>
+                      <p className="mt-1 text-xs text-white/45">
+                        {formatBytes(arquivo.tamanho_bytes)} ·{" "}
+                        {formatDateTime(arquivo.criado_em)}
+                      </p>
+                      {!ehFoto && arquivo.url_visualizacao ? (
+                        <a
+                          href={arquivo.url_visualizacao}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-1 inline-block text-xs font-semibold text-[var(--fdl-cream)] hover:underline"
+                        >
+                          Abrir no Drive
+                        </a>
+                      ) : null}
+                    </div>
                   </div>
-
-                  {arquivo.url_visualizacao ? (
-                    <a
-                      href={arquivo.url_visualizacao}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
-                    >
-                      Abrir no Drive
-                    </a>
-                  ) : null}
-                </div>
-              </article>
-            ))
+                </article>
+              );
+            })
           ) : (
             <div className="fdl-empty-state">
               Nenhum arquivo enviado para esta OS.
