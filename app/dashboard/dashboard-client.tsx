@@ -688,7 +688,9 @@ export default function DashboardClient() {
         </div>
 
         {projetosTabela.length > 0 ? (
-          <div className="fdl-ui-table-wrap mt-0">
+          <>
+            {/* Desktop: tabela completa */}
+            <div className="fdl-ui-table-wrap mt-0 hidden lg:block">
             <div className="fdl-ui-table-scroll">
               <table className="min-w-[1280px] fdl-ui-table">
                 <thead>
@@ -797,7 +799,107 @@ export default function DashboardClient() {
                 </tbody>
               </table>
             </div>
-          </div>
+            </div>
+
+            {/* Mobile: cards empilhados (evita rolagem lateral) */}
+            <div className="space-y-3 lg:hidden">
+              {projetosTabela.map((projeto) => {
+                const progresso = progressoProjetoPonderado(
+                  projeto,
+                  progressosPonderados
+                );
+                const statusOperacional = statusOperacionalProjeto(projeto);
+
+                return (
+                  <article
+                    key={projeto.projeto_id}
+                    className="rounded-3xl border border-white/10 bg-white/[0.06] p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="fdl-ui-table-primary truncate">
+                          {projeto.cliente ||
+                            projeto.shopping ||
+                            "Projeto sem nome"}
+                        </p>
+                        <p className="fdl-ui-table-secondary">
+                          {[
+                            projeto.uf || null,
+                            `Temporada ${projeto.temporada || "não informada"}`,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`fdl-ui-badge shrink-0 ${statusBadgeClass(
+                          statusOperacional
+                        )}`}
+                      >
+                        {statusOperacionalLabel(statusOperacional)}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex items-center gap-3">
+                      <div className="fdl-ui-progress flex-1">
+                        <div
+                          className="fdl-ui-progress-fill"
+                          style={{ width: `${progresso}%` }}
+                        />
+                      </div>
+                      <span className="w-10 shrink-0 text-right text-xs font-bold tabular-nums text-white">
+                        {formatPercentual(progresso)}%
+                      </span>
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-5 gap-1.5 text-center">
+                      <MiniContador rotulo="Total" valor={projeto.total_os} />
+                      <MiniContador
+                        rotulo="Pend."
+                        valor={projeto.pendentes}
+                        cor="text-yellow-100"
+                      />
+                      <MiniContador
+                        rotulo="And."
+                        valor={projeto.em_andamento}
+                        cor="text-blue-100"
+                      />
+                      <MiniContador
+                        rotulo="Val."
+                        valor={projeto.aguardando_validacao}
+                        cor="text-yellow-100"
+                      />
+                      <MiniContador
+                        rotulo="Conc."
+                        valor={projeto.concluidas}
+                        cor="text-green-100"
+                      />
+                    </div>
+
+                    <div className="mt-4 flex items-end justify-between gap-3">
+                      <div className="min-w-0 text-xs text-white/55">
+                        <p className="truncate">
+                          {projeto.responsavel_comercial ||
+                            "Gestor não informado"}
+                        </p>
+                        <p className="mt-0.5">
+                          {formatDateTime(projeto.ult_registro)}
+                        </p>
+                      </div>
+
+                      <a
+                        href={`/projetos/${projeto.projeto_id}`}
+                        className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary shrink-0"
+                      >
+                        Abrir
+                      </a>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </>
         ) : (
           <div className="fdl-ui-empty">
             Nenhum projeto encontrado para os filtros selecionados.
@@ -880,6 +982,27 @@ export default function DashboardClient() {
           )}
         </div>
       </section>
+    </div>
+  );
+}
+
+function MiniContador({
+  rotulo,
+  valor,
+  cor,
+}: {
+  rotulo: string;
+  valor: number;
+  cor?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.04] py-2">
+      <p className={`text-sm font-bold tabular-nums ${cor ?? "text-white"}`}>
+        {valor}
+      </p>
+      <p className="mt-0.5 text-[0.62rem] uppercase tracking-wide text-white/45">
+        {rotulo}
+      </p>
     </div>
   );
 }
