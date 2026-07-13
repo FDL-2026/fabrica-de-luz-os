@@ -11,6 +11,11 @@ import {
   enfileirarStatus,
   ouvirFila,
 } from "@/lib/offline/fila";
+import {
+  TIPOS_OCORRENCIA,
+  ROTULO_OCORRENCIA,
+  ehOcorrencia,
+} from "@/lib/ocorrencias";
 
 type OsDetalheClientProps = {
   codigo: string;
@@ -88,6 +93,13 @@ function ehFalhaDeRede(mensagem: string) {
   );
 }
 
+// Extrai o id do arquivo do Drive do link de visualização (webViewLink).
+function idDoDriveUrl(url: string | null): string | null {
+  if (!url) return null;
+  const m = url.match(/\/d\/([\w-]+)/) || url.match(/[?&]id=([\w-]+)/);
+  return m ? m[1] : null;
+}
+
 function formatStatus(status: string | null) {
   if (!status) return "Sem status";
 
@@ -113,6 +125,7 @@ function formatTipoRegistro(tipo: string | null) {
     pendencia: "Pendência",
     observacao: "Observação",
     anexo: "Anexo",
+    ...ROTULO_OCORRENCIA,
   };
 
   return labels[tipo] ?? tipo.replace("_", " ");
@@ -157,6 +170,8 @@ function statusClass(status: string | null) {
 }
 
 function tipoRegistroClass(tipo: string | null) {
+  if (ehOcorrencia(tipo)) return "bg-amber-100 text-amber-800";
+
   switch (tipo) {
     case "pendencia":
       return "bg-red-100 text-red-700";
@@ -195,6 +210,9 @@ export default function OsDetalheClient({
   const [enviandoArquivo, setEnviandoArquivo] = useState(false);
   const [progressoUpload, setProgressoUpload] = useState("");
   const [fotosPendentes, setFotosPendentes] = useState(0);
+  const [lightbox, setLightbox] = useState<{ src: string; video: boolean } | null>(
+    null
+  );
 
   function adicionarArquivos(novos: FileList | null) {
     if (!novos || novos.length === 0) return;
@@ -433,9 +451,30 @@ export default function OsDetalheClient({
   async function salvarRegistro() {
     if (!usuarioId || !os) return;
 
+    // Ocorrência exige ao menos 1 foto (evidência): enviada, na fila ou selecionada.
+    const ehOcorr = ehOcorrencia(tipoRegistro);
+    if (
+      ehOcorr &&
+      arquivos.length === 0 &&
+      fotosPendentes === 0 &&
+      arquivosSelecionados.length === 0
+    ) {
+      setSucesso("");
+      setErro(
+        'Para registrar uma ocorrência, anexe ao menos 1 foto na seção "Anexos" acima (📷 Tirar foto / 🖼 Da galeria).'
+      );
+      return;
+    }
+
     setErro("");
     setSucesso("");
     setSalvandoRegistro(true);
+
+    // Fotos apenas selecionadas: envia/enfileira antes de gravar a ocorrência.
+    if (ehOcorr && arquivosSelecionados.length > 0) {
+      await enviarArquivos();
+      setErro("");
+    }
 
     const enfileirarEsteRegistro = () =>
       enfileirarRegistro({
@@ -651,6 +690,38 @@ export default function OsDetalheClient({
 
   return (
     <div className="space-y-6">
+      {lightbox ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-4"
+          onClick={() => setLightbox(null)}
+        >
+          {lightbox.video ? (
+            <video
+              src={lightbox.src}
+              controls
+              autoPlay
+              playsInline
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[92vh] max-w-full rounded-xl"
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={lightbox.src}
+              alt="Arquivo da OS"
+              className="max-h-[92vh] max-w-full rounded-xl object-contain"
+            />
+          )}
+          <button
+            type="button"
+            aria-label="Fechar"
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white"
+          >
+            ✕
+          </button>
+        </div>
+      ) : null}
+
       <header className="fdl-form-card p-6">
         <a
           href={`/montador/${codigo}/projetos/${projetoId}`}
@@ -847,36 +918,70 @@ export default function OsDetalheClient({
 
         <div className="mt-5 space-y-3">
           {arquivos.length > 0 ? (
-            arquivos.map((arquivo) => (
-              <article
-                key={arquivo.arquivo_id}
-                className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
-              >
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      {formatTipoArquivo(arquivo.tipo)} ·{" "}
-                      {arquivo.nome_arquivo || "Arquivo sem nome"}
-                    </p>
-                    <p className="mt-1 text-xs text-white/45">
-                      {formatBytes(arquivo.tamanho_bytes)} ·{" "}
-                      {formatDateTime(arquivo.criado_em)}
-                    </p>
-                  </div>
+            arquivos.map((arquivo) => {
+              const fileId = idDoDriveUrl(arquivo.url_visualizacao);
+              const ehVideo = arquivo.tipo === "video";
+              const ehMidia =
+                (arquivo.tipo === "foto" || ehVideo) && !!fileId;
+              const base = `/api/montador/os/anexo?usuarioId=${usuarioId}&projetoId=${projetoId}&osId=${osId}&fileId=${fileId}`;
 
-                  {arquivo.url_visualizacao ? (
-                    <a
-                      href={arquivo.url_visualizacao}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm font-semibold text-[var(--fdl-cream)] hover:underline"
-                    >
-                      Abrir no Drive
-                    </a>
-                  ) : null}
-                </div>
-              </article>
-            ))
+              return (
+                <article
+                  key={arquivo.arquivo_id}
+                  className="rounded-2xl border border-white/10 bg-white/[0.04] p-3"
+                >
+                  <div className="flex items-center gap-3">
+                    {ehMidia ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setLightbox({ src: base, video: ehVideo })
+                        }
+                        className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`${base}&thumb=1`}
+                          alt={arquivo.nome_arquivo || "Arquivo"}
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                        />
+                        {ehVideo ? (
+                          <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-lg text-white">
+                            ▶
+                          </span>
+                        ) : null}
+                      </button>
+                    ) : (
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.06] text-2xl">
+                        {ehVideo ? "🎬" : "📄"}
+                      </div>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-white">
+                        {formatTipoArquivo(arquivo.tipo)} ·{" "}
+                        {arquivo.nome_arquivo || "Arquivo sem nome"}
+                      </p>
+                      <p className="mt-1 text-xs text-white/45">
+                        {formatBytes(arquivo.tamanho_bytes)} ·{" "}
+                        {formatDateTime(arquivo.criado_em)}
+                      </p>
+                      {!ehMidia && arquivo.url_visualizacao ? (
+                        <a
+                          href={arquivo.url_visualizacao}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-1 inline-block text-xs font-semibold text-[var(--fdl-cream)] hover:underline"
+                        >
+                          Abrir no Drive
+                        </a>
+                      ) : null}
+                    </div>
+                  </div>
+                </article>
+              );
+            })
           ) : (
             <div className="rounded-2xl border border-yellow-400/25 bg-yellow-500/10 p-4 text-sm text-yellow-100">
               Nenhuma foto ou vídeo enviado ainda. A conclusão da OS ficará
@@ -972,7 +1077,21 @@ export default function OsDetalheClient({
               <option className="text-black" value="observacao">
                 Observação
               </option>
+              <optgroup className="text-black" label="Ocorrência (dia sem atividade / imprevisto)">
+                {TIPOS_OCORRENCIA.map((t) => (
+                  <option key={t.valor} className="text-black" value={t.valor}>
+                    {t.rotulo}
+                  </option>
+                ))}
+              </optgroup>
             </select>
+
+            {ehOcorrencia(tipoRegistro) ? (
+              <p className="mt-2 text-xs font-semibold text-amber-200/90">
+                📎 Ocorrências exigem ao menos 1 foto — anexe na seção “Anexos”
+                acima antes de salvar.
+              </p>
+            ) : null}
           </div>
 
           <div>
@@ -1004,7 +1123,10 @@ export default function OsDetalheClient({
         <button
           type="button"
           onClick={salvarRegistro}
-          disabled={salvandoRegistro || !descricaoRegistro.trim()}
+          disabled={
+            salvandoRegistro ||
+            (!ehOcorrencia(tipoRegistro) && !descricaoRegistro.trim())
+          }
           className="mt-4 h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {salvandoRegistro ? "Salvando registro..." : "Salvar registro"}

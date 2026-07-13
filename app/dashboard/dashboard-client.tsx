@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ROTULO_OCORRENCIA } from "@/lib/ocorrencias";
 
 type ResumoDashboard = {
   projetos_ativos: number;
@@ -215,6 +216,7 @@ function formatTipoRegistro(tipo: string | null) {
     pendencia: "Pendência",
     observacao: "Observação",
     anexo: "Anexo",
+    ...ROTULO_OCORRENCIA,
   };
 
   return labels[tipo] ?? tipo.replaceAll("_", " ");
