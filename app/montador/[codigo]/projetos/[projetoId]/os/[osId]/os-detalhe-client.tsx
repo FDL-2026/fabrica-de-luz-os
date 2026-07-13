@@ -1047,7 +1047,10 @@ export default function OsDetalheClient({
         <button
           type="button"
           onClick={salvarRegistro}
-          disabled={salvandoRegistro || !descricaoRegistro.trim()}
+          disabled={
+            salvandoRegistro ||
+            (!ehOcorrencia(tipoRegistro) && !descricaoRegistro.trim())
+          }
           className="mt-4 h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {salvandoRegistro ? "Salvando registro..." : "Salvar registro"}
