@@ -618,7 +618,7 @@ export default function DashboardClient() {
         {dados.oss_aguardando_validacao.length > 0 ? (
           <div className="fdl-ui-table-wrap">
             <div className="fdl-ui-table-scroll">
-              <table className="min-w-[1050px] fdl-ui-table">
+              <table className="min-w-[1050px] fdl-ui-table fdl-acao-fixa">
                 <thead>
                   <tr>
                     <th>Projeto</th>
@@ -690,7 +690,7 @@ export default function DashboardClient() {
         {projetosTabela.length > 0 ? (
           <div className="fdl-ui-table-wrap mt-0">
             <div className="fdl-ui-table-scroll">
-              <table className="min-w-[1280px] fdl-ui-table">
+              <table className="min-w-[1280px] fdl-ui-table fdl-acao-fixa">
                 <thead>
                   <tr>
                     <th>Projeto</th>

@@ -1992,6 +1992,47 @@ select.fdl-field option,
   font-size: 0.74rem !important;
 }
 
+/* Coluna de ação fixa (sticky): mantém o botão visível mesmo em tabelas largas
+   que precisam de rolagem horizontal — a última coluna gruda na borda direita. */
+.fdl-acao-fixa th:last-child,
+.fdl-acao-fixa td:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  background: var(--fdl-purple-dark);
+  box-shadow: -14px 0 18px -14px rgba(0, 0, 0, 0.7);
+}
+
+.fdl-acao-fixa thead th:last-child {
+  z-index: 4;
+  background:
+    linear-gradient(0deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.105)),
+    var(--fdl-purple-dark);
+}
+
+.fdl-acao-fixa tbody tr:hover td:last-child {
+  background:
+    linear-gradient(0deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.035)),
+    var(--fdl-purple-dark);
+}
+
+/* Tema claro: fundo do "grude" acompanha a tela clara */
+.light .fdl-acao-fixa th:last-child,
+.light .fdl-acao-fixa td:last-child {
+  background: var(--fdl-canvas);
+  box-shadow: -14px 0 18px -16px rgba(100, 59, 143, 0.45);
+}
+.light .fdl-acao-fixa thead th:last-child {
+  background:
+    linear-gradient(0deg, rgba(35, 19, 41, 0.05), rgba(35, 19, 41, 0.05)),
+    var(--fdl-canvas);
+}
+.light .fdl-acao-fixa tbody tr:hover td:last-child {
+  background:
+    linear-gradient(0deg, rgba(35, 19, 41, 0.03), rgba(35, 19, 41, 0.03)),
+    var(--fdl-canvas);
+}
+
 /* Responsivo */
 @media (max-width: 768px) {
   .fdl-ui-dashboard {
