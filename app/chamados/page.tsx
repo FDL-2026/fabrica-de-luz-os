@@ -1,13 +1,12 @@
 import { requireUser } from "@/lib/auth/require-user";
 import SidebarGestao from "@/components/gestao/sidebar-gestao";
-import DashboardClient from "./dashboard-client";
-import ChamadosResumoDashboard from "@/components/chamados/resumo-dashboard";
+import ChamadosClient from "./chamados-client";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function DashboardPage() {
-  const { usuario } = await requireUser("/dashboard");
+export default async function ChamadosPage() {
+  const { usuario } = await requireUser("/chamados");
 
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">
@@ -18,8 +17,7 @@ export default async function DashboardPage() {
         />
 
         <section className="fdl-content min-w-0 p-4 pb-12 sm:p-6 lg:p-8">
-          <ChamadosResumoDashboard />
-          <DashboardClient />
+          <ChamadosClient />
         </section>
       </div>
     </main>

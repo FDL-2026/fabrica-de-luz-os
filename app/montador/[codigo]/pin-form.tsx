@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { aquecerListasOs, lerRpcComCache } from "@/lib/offline/cache";
 import { prefetchTelasMontador } from "@/lib/offline/prefetch";
+import ChamadosAlertaMontador from "@/components/montador/chamados-alerta-montador";
 
 type PinFormProps = {
   codigo: string;
@@ -227,6 +228,11 @@ export default function PinForm({ codigo }: PinFormProps) {
             Trocar
           </button>
         </div>
+
+        <ChamadosAlertaMontador
+          usuarioId={montador.usuario_id}
+          codigo={codigo}
+        />
 
         <div>
           <div className="mb-3 flex items-center justify-between gap-3">
