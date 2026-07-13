@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type Usuario = {
@@ -70,6 +70,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
   const [ativo, setAtivo] = useState(true);
 
   const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
+  const edicaoRef = useRef<HTMLElement | null>(null);
   const [editNome, setEditNome] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editSenha, setEditSenha] = useState("");
@@ -150,6 +151,11 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
     setEditCodigoAcesso(usuario.codigo_acesso ?? "");
     setEditPin("");
     setEditAtivo(Boolean(usuario.ativo));
+
+    // Rola até o formulário de edição (renderiza no topo da tela)
+    requestAnimationFrame(() => {
+      edicaoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   function fecharEdicao() {
@@ -325,7 +331,10 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
       ) : null}
 
       {usuarioEditando ? (
-        <section className="rounded-3xl border border-[var(--fdl-cream)]/30 bg-white/[0.08] p-6">
+        <section
+          ref={edicaoRef}
+          className="scroll-mt-24 rounded-3xl border border-[var(--fdl-cream)]/30 bg-white/[0.08] p-6"
+        >
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
