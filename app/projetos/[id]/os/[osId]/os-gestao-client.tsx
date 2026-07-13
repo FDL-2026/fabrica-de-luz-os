@@ -186,7 +186,9 @@ export default function OsGestaoClient({
   const [os, setOs] = useState<OsGestao | null>(null);
   const [registros, setRegistros] = useState<RegistroOs[]>([]);
   const [arquivos, setArquivos] = useState<ArquivoOs[]>([]);
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<{ src: string; video: boolean } | null>(
+    null
+  );
 
   useEffect(() => {
     async function carregar() {
@@ -287,15 +289,26 @@ export default function OsGestaoClient({
           className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-4"
           onClick={() => setLightbox(null)}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={lightbox}
-            alt="Foto da OS"
-            className="max-h-[92vh] max-w-full rounded-xl object-contain"
-          />
+          {lightbox.video ? (
+            <video
+              src={lightbox.src}
+              controls
+              autoPlay
+              playsInline
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[92vh] max-w-full rounded-xl"
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={lightbox.src}
+              alt="Arquivo da OS"
+              className="max-h-[92vh] max-w-full rounded-xl object-contain"
+            />
+          )}
           <button
             type="button"
-            aria-label="Fechar imagem"
+            aria-label="Fechar"
             className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white"
           >
             ✕
@@ -468,7 +481,9 @@ export default function OsGestaoClient({
           {arquivos.length > 0 ? (
             arquivos.map((arquivo) => {
               const fileId = idDoDriveUrl(arquivo.url_visualizacao);
-              const ehFoto = arquivo.tipo === "foto" && !!fileId;
+              const ehVideo = arquivo.tipo === "video";
+              const ehMidia =
+                (arquivo.tipo === "foto" || ehVideo) && !!fileId;
 
               return (
                 <article
@@ -476,23 +491,33 @@ export default function OsGestaoClient({
                   className="rounded-2xl border border-white/10 bg-white/[0.04] p-3"
                 >
                   <div className="flex items-center gap-3">
-                    {ehFoto ? (
+                    {ehMidia ? (
                       <button
                         type="button"
-                        onClick={() => setLightbox(`/api/anexos/${fileId}`)}
-                        className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
+                        onClick={() =>
+                          setLightbox({
+                            src: `/api/anexos/${fileId}`,
+                            video: ehVideo,
+                          })
+                        }
+                        className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={`/api/anexos/${fileId}?thumb=1`}
-                          alt={arquivo.nome_arquivo || "Foto"}
+                          alt={arquivo.nome_arquivo || "Arquivo"}
                           loading="lazy"
                           className="h-full w-full object-cover"
                         />
+                        {ehVideo ? (
+                          <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-lg text-white">
+                            ▶
+                          </span>
+                        ) : null}
                       </button>
                     ) : (
                       <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.06] text-2xl">
-                        {arquivo.tipo === "video" ? "🎬" : "📄"}
+                        {ehVideo ? "🎬" : "📄"}
                       </div>
                     )}
 
@@ -505,7 +530,7 @@ export default function OsGestaoClient({
                         {formatBytes(arquivo.tamanho_bytes)} ·{" "}
                         {formatDateTime(arquivo.criado_em)}
                       </p>
-                      {!ehFoto && arquivo.url_visualizacao ? (
+                      {!ehMidia && arquivo.url_visualizacao ? (
                         <a
                           href={arquivo.url_visualizacao}
                           target="_blank"
