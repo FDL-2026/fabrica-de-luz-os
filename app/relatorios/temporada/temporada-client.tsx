@@ -209,7 +209,6 @@ export default function TemporadaClient() {
           Projeto: o.projeto ?? "",
           UF: o.uf ?? "",
           OS: o.codigo ?? "",
-          Etapa: o.etapa ?? "",
           Serviço: o.servico ?? "",
           "Término previsto": dataBR(o.termino_previsto),
           "Concluída em": dataBR(o.concluido_em),
