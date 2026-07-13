@@ -616,7 +616,9 @@ export default function DashboardClient() {
         </div>
 
         {dados.oss_aguardando_validacao.length > 0 ? (
-          <div className="fdl-ui-table-wrap">
+          <>
+            {/* Desktop: tabela completa */}
+            <div className="fdl-ui-table-wrap hidden lg:block">
             <div className="fdl-ui-table-scroll">
               <table className="min-w-[1050px] fdl-ui-table">
                 <thead>
@@ -668,7 +670,68 @@ export default function DashboardClient() {
                 </tbody>
               </table>
             </div>
-          </div>
+            </div>
+
+            {/* Mobile: cards empilhados (evita rolagem lateral) */}
+            <div className="space-y-3 lg:hidden">
+              {dados.oss_aguardando_validacao.map((os) => (
+                <article
+                  key={os.os_id}
+                  className="rounded-3xl border border-white/10 bg-white/[0.06] p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="fdl-ui-table-primary truncate">
+                        {os.cliente || os.shopping || "Projeto sem nome"}
+                      </p>
+                      <p className="fdl-ui-table-secondary">
+                        {os.uf || "UF não informada"} · Gestor:{" "}
+                        {os.responsavel_comercial || "Não informado"}
+                      </p>
+                    </div>
+
+                    <span className="fdl-ui-badge fdl-ui-badge-muted shrink-0">
+                      {os.codigo_os || "-"}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 space-y-1.5 text-sm">
+                    <p className="flex justify-between gap-3">
+                      <span className="text-white/45">Local</span>
+                      <span className="min-w-0 truncate text-right text-white/80">
+                        {os.local || "-"}
+                      </span>
+                    </p>
+                    <p className="flex justify-between gap-3">
+                      <span className="text-white/45">Serviço</span>
+                      <span className="min-w-0 truncate text-right text-white/80">
+                        {os.servico || "-"}
+                      </span>
+                    </p>
+                    <p className="flex justify-between gap-3">
+                      <span className="text-white/45">Equipe</span>
+                      <span className="min-w-0 truncate text-right text-white/80">
+                        {os.equipe || "-"}
+                      </span>
+                    </p>
+                    <p className="flex justify-between gap-3">
+                      <span className="text-white/45">Concluída em</span>
+                      <span className="text-right text-white/80">
+                        {formatDateTime(os.concluido_em)}
+                      </span>
+                    </p>
+                  </div>
+
+                  <a
+                    href={`/projetos/${os.projeto_id}/os/${os.os_id}/validacao`}
+                    className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-primary mt-4 w-full"
+                  >
+                    Validar OS
+                  </a>
+                </article>
+              ))}
+            </div>
+          </>
         ) : null}
       </section>
       ) : null}
