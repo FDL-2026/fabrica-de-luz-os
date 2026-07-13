@@ -2,6 +2,14 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import {
+  PERFIL_LABEL,
+  ehVinculado,
+  formatarPerfil,
+  gerenciaTodos,
+  perfisQuePodeGerenciar,
+  tipoLoginDoPerfil,
+} from "@/lib/perfis";
 
 type Usuario = {
   usuario_id: string;
@@ -11,6 +19,8 @@ type Usuario = {
   ativo: boolean;
   tipo_login: string | null;
   codigo_acesso: string | null;
+  gestor_id: string | null;
+  gestor_nome: string | null;
   ultimo_acesso_pin: string | null;
   criado_em: string | null;
 };
@@ -18,18 +28,6 @@ type Usuario = {
 type UsuariosClientProps = {
   usuarioPerfil: string;
 };
-
-const perfis = [
-  { value: "admin", label: "Admin" },
-  { value: "diretor", label: "Diretor" },
-  { value: "gestor_comercial", label: "Gestor Comercial" },
-  { value: "gerente_operacional", label: "Gerente Operacional" },
-  { value: "montador", label: "Montador" },
-];
-
-function formatPerfil(perfil: string | null) {
-  return perfis.find((item) => item.value === perfil)?.label || perfil || "-";
-}
 
 function formatDateTime(date: string | null) {
   if (!date) return "Sem registro";
@@ -48,10 +46,16 @@ function gerarCodigoMontador(totalUsuarios: number) {
 export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
   const supabase = useMemo(() => createClient(), []);
 
-  const podeGerenciarTodosPerfis = ["admin", "diretor", "gerente_operacional"].includes(usuarioPerfil);
-  const perfisPermitidos = podeGerenciarTodosPerfis
-    ? perfis
-    : perfis.filter((item) => item.value === "montador");
+  const podeGerenciarTodosPerfis = gerenciaTodos(usuarioPerfil);
+  const perfisPermitidos = useMemo(
+    () =>
+      perfisQuePodeGerenciar(usuarioPerfil).map((value) => ({
+        value,
+        label: PERFIL_LABEL[value] ?? value,
+      })),
+    [usuarioPerfil]
+  );
+  const perfilPadrao = podeGerenciarTodosPerfis ? "gerente_operacional" : "montador";
 
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -60,11 +64,17 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
   const [sucesso, setSucesso] = useState("");
   const [mostrarForm, setMostrarForm] = useState(false);
 
-  const [tipoLogin, setTipoLogin] = useState(() => podeGerenciarTodosPerfis ? "email" : "pin");
+  // Gestores disponíveis para vincular (usado quando quem cadastra tem acesso total).
+  const gestores = useMemo(
+    () => usuarios.filter((u) => u.perfil === "gestor_comercial" && u.ativo),
+    [usuarios]
+  );
+
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [perfil, setPerfil] = useState(() => podeGerenciarTodosPerfis ? "gerente_operacional" : "montador");
+  const [perfil, setPerfil] = useState(perfilPadrao);
+  const [gestorSelecionado, setGestorSelecionado] = useState("");
   const [codigoAcesso, setCodigoAcesso] = useState("");
   const [pin, setPin] = useState("");
   const [ativo, setAtivo] = useState(true);
@@ -74,11 +84,15 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
   const [editNome, setEditNome] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editSenha, setEditSenha] = useState("");
-  const [editPerfil, setEditPerfil] = useState(() => podeGerenciarTodosPerfis ? "gerente_operacional" : "montador");
-  const [editTipoLogin, setEditTipoLogin] = useState(() => podeGerenciarTodosPerfis ? "email" : "pin");
+  const [editPerfil, setEditPerfil] = useState(perfilPadrao);
+  const [editGestor, setEditGestor] = useState("");
   const [editCodigoAcesso, setEditCodigoAcesso] = useState("");
   const [editPin, setEditPin] = useState("");
   const [editAtivo, setEditAtivo] = useState(true);
+
+  // O tipo de login é determinado pelo perfil (montador = PIN, demais = e-mail).
+  const tipoLogin = tipoLoginDoPerfil(perfil);
+  const editTipoLogin = tipoLoginDoPerfil(editPerfil);
 
   async function carregarUsuarios() {
     setCarregando(true);
@@ -101,41 +115,39 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
     carregarUsuarios();
   }, [supabase]);
 
-  function alterarTipoLogin(value: string) {
-    setTipoLogin(value);
+  function alterarPerfil(value: string) {
+    setPerfil(value);
 
-    if (value === "pin") {
-      setPerfil("montador");
+    if (value === "montador") {
       setEmail("");
       setSenha("");
       setCodigoAcesso((atual) => atual || gerarCodigoMontador(usuarios.length));
-    }
-
-    if (value === "email") {
-      setPerfil(podeGerenciarTodosPerfis ? "gerente_operacional" : "montador");
+    } else {
       setCodigoAcesso("");
       setPin("");
     }
+
+    if (!ehVinculado(value)) {
+      setGestorSelecionado("");
+    }
   }
 
-  function alterarTipoLoginEdicao(value: string) {
-    setEditTipoLogin(value);
+  function alterarPerfilEdicao(value: string) {
+    setEditPerfil(value);
 
-    if (value === "pin") {
-      setEditPerfil("montador");
+    if (value === "montador") {
       setEditEmail("");
       setEditSenha("");
       setEditCodigoAcesso(
         (atual) => atual || gerarCodigoMontador(usuarios.length)
       );
-    }
-
-    if (value === "email") {
+    } else {
       setEditCodigoAcesso("");
       setEditPin("");
-      if (editPerfil === "montador") {
-        setEditPerfil(podeGerenciarTodosPerfis ? "gerente_operacional" : "montador");
-      }
+    }
+
+    if (!ehVinculado(value)) {
+      setEditGestor("");
     }
   }
 
@@ -146,8 +158,8 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
     setEditNome(usuario.nome ?? "");
     setEditEmail(usuario.email ?? "");
     setEditSenha("");
-    setEditPerfil(usuario.perfil ?? "gestor_operacoes");
-    setEditTipoLogin(usuario.tipo_login ?? "email");
+    setEditPerfil(usuario.perfil ?? perfilPadrao);
+    setEditGestor(usuario.gestor_id ?? "");
     setEditCodigoAcesso(usuario.codigo_acesso ?? "");
     setEditPin("");
     setEditAtivo(Boolean(usuario.ativo));
@@ -163,8 +175,8 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
     setEditNome("");
     setEditEmail("");
     setEditSenha("");
-    setEditPerfil(podeGerenciarTodosPerfis ? "gerente_operacional" : "montador");
-    setEditTipoLogin(podeGerenciarTodosPerfis ? "email" : "pin");
+    setEditPerfil(perfilPadrao);
+    setEditGestor("");
     setEditCodigoAcesso("");
     setEditPin("");
     setEditAtivo(true);
@@ -183,6 +195,12 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
 
     setErro("");
     setSucesso("");
+
+    if (podeGerenciarTodosPerfis && ehVinculado(perfil) && !gestorSelecionado) {
+      setErro("Selecione o gestor ao qual este usuário ficará vinculado.");
+      return;
+    }
+
     setSalvando(true);
 
     const accessToken = await obterAccessToken();
@@ -208,6 +226,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
         codigo_acesso: codigoAcesso,
         pin,
         ativo,
+        gestor_id: gestorSelecionado,
       }),
     });
 
@@ -227,11 +246,10 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
     setCodigoAcesso("");
     setPin("");
     setAtivo(true);
+    setGestorSelecionado("");
+    setPerfil(perfilPadrao);
 
-    if (tipoLogin === "email") {
-      setPerfil(podeGerenciarTodosPerfis ? "gerente_operacional" : "montador");
-    } else {
-      setPerfil("montador");
+    if (perfilPadrao === "montador") {
       setCodigoAcesso(gerarCodigoMontador(usuarios.length + 1));
     }
 
@@ -247,6 +265,12 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
 
     setErro("");
     setSucesso("");
+
+    if (podeGerenciarTodosPerfis && ehVinculado(editPerfil) && !editGestor) {
+      setErro("Selecione o gestor ao qual este usuário ficará vinculado.");
+      return;
+    }
+
     setSalvando(true);
 
     const accessToken = await obterAccessToken();
@@ -273,6 +297,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
         codigo_acesso: editCodigoAcesso,
         pin: editPin,
         ativo: editAtivo,
+        gestor_id: editGestor,
       }),
     });
 
@@ -292,17 +317,18 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
     setSalvando(false);
   }
 
+  const campoClasse =
+    "h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]";
+  const selectClasse =
+    "h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)] disabled:cursor-not-allowed disabled:opacity-60";
+  const labelClasse = "mb-2 block text-sm font-semibold text-white";
+
   return (
     <div className="space-y-6">
       <header className="fdl-form-card p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.28em] text-[var(--fdl-cream)]">
-              Administração
-            </p>
-
-            <h1 className="mt-2 text-3xl font-bold">Usuários</h1>
-
+            <h1 className="text-3xl font-bold">Usuários</h1>
             <p className="mt-2 text-sm text-white/60">
               Cadastre, edite, ative ou inative usuários administrativos e
               montadores.
@@ -315,6 +341,11 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
               onClick={() => {
                 setErro("");
                 setSucesso("");
+                setPerfil(perfilPadrao);
+                setGestorSelecionado("");
+                if (perfilPadrao === "montador") {
+                  setCodigoAcesso(gerarCodigoMontador(usuarios.length));
+                }
                 setMostrarForm(true);
               }}
               className="inline-flex h-12 shrink-0 items-center gap-2 rounded-2xl bg-[var(--fdl-cream)] px-5 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
@@ -358,40 +389,14 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
             </button>
           </div>
 
-          <form
-            onSubmit={salvarEdicao}
-            className="mt-6 grid gap-4 lg:grid-cols-2"
-          >
+          <form onSubmit={salvarEdicao} className="mt-6 grid gap-4 lg:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-semibold text-white">
-                Tipo de acesso
-              </label>
-
-              <select
-                value={editTipoLogin}
-                disabled={!podeGerenciarTodosPerfis}
-                onChange={(event) => alterarTipoLoginEdicao(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <option className="text-black" value="email">
-                  E-mail e senha
-                </option>
-                <option className="text-black" value="pin">
-                  Código + PIN
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-white">
-                Perfil
-              </label>
-
+              <label className={labelClasse}>Perfil</label>
               <select
                 value={editPerfil}
-                disabled={!podeGerenciarTodosPerfis}
-                onChange={(event) => setEditPerfil(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={perfisPermitidos.length <= 1}
+                onChange={(event) => alterarPerfilEdicao(event.target.value)}
+                className={selectClasse}
               >
                 {perfisPermitidos.map((item) => (
                   <option key={item.value} className="text-black" value={item.value}>
@@ -402,47 +407,64 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-white">
-                Nome
-              </label>
-
+              <label className={labelClasse}>Nome</label>
               <input
                 value={editNome}
                 onChange={(event) => setEditNome(event.target.value)}
                 required
-                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
+                className={campoClasse}
                 placeholder="Nome completo"
               />
             </div>
 
+            {ehVinculado(editPerfil) ? (
+              podeGerenciarTodosPerfis ? (
+                <div>
+                  <label className={labelClasse}>Gestor vinculado</label>
+                  <select
+                    value={editGestor}
+                    onChange={(event) => setEditGestor(event.target.value)}
+                    className={selectClasse}
+                  >
+                    <option className="text-black" value="">
+                      Selecione o gestor…
+                    </option>
+                    {gestores.map((g) => (
+                      <option key={g.usuario_id} className="text-black" value={g.usuario_id}>
+                        {g.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div className="flex h-12 items-center self-end rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white/70">
+                  Vinculado a você (gestor)
+                </div>
+              )
+            ) : null}
+
             {editTipoLogin === "email" ? (
               <>
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-white">
-                    E-mail
-                  </label>
-
+                  <label className={labelClasse}>E-mail</label>
                   <input
                     type="email"
                     value={editEmail}
                     onChange={(event) => setEditEmail(event.target.value)}
                     required
-                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
+                    className={campoClasse}
                     placeholder="usuario@fabricadeluz.com.br"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-white">
-                    Nova senha provisória
-                  </label>
-
+                  <label className={labelClasse}>Nova senha provisória</label>
                   <input
                     type="password"
                     value={editSenha}
                     onChange={(event) => setEditSenha(event.target.value)}
                     minLength={6}
-                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
+                    className={campoClasse}
                     placeholder="Deixe em branco para manter"
                   />
                 </div>
@@ -450,32 +472,26 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
             ) : (
               <>
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-white">
-                    Código de acesso
-                  </label>
-
+                  <label className={labelClasse}>Código de acesso</label>
                   <input
                     value={editCodigoAcesso}
                     onChange={(event) =>
                       setEditCodigoAcesso(event.target.value.toUpperCase())
                     }
                     required
-                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
+                    className={campoClasse}
                     placeholder="Exemplo: M1001"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-white">
-                    Novo PIN
-                  </label>
-
+                  <label className={labelClasse}>Novo PIN</label>
                   <input
                     value={editPin}
                     onChange={(event) => setEditPin(event.target.value)}
                     inputMode="numeric"
                     minLength={4}
-                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
+                    className={campoClasse}
                     placeholder="Deixe em branco para manter"
                   />
                 </div>
@@ -518,163 +534,148 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
         }`}
       >
         {mostrarForm ? (
-        <form
-          onSubmit={criarUsuario}
-          className="fdl-form-card p-6"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="fdl-section-title">Novo usuário</h2>
-            <button
-              type="button"
-              onClick={() => setMostrarForm(false)}
-              aria-label="Fechar"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:bg-white/10 hover:text-white"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="mt-5 space-y-4">
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-white">
-                Tipo de acesso
-              </label>
-
-              <select
-                value={tipoLogin}
-                disabled={!podeGerenciarTodosPerfis}
-                onChange={(event) => alterarTipoLogin(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)] disabled:cursor-not-allowed disabled:opacity-60"
+          <form onSubmit={criarUsuario} className="fdl-form-card p-6">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="fdl-section-title">Novo usuário</h2>
+              <button
+                type="button"
+                onClick={() => setMostrarForm(false)}
+                aria-label="Fechar"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:bg-white/10 hover:text-white"
               >
-                <option className="text-black" value="email">
-                  E-mail e senha
-                </option>
-                <option className="text-black" value="pin">
-                  Código + PIN
-                </option>
-              </select>
+                ✕
+              </button>
             </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-white">
-                Nome
+            <div className="mt-5 space-y-4">
+              <div>
+                <label className={labelClasse}>Perfil</label>
+                <select
+                  value={perfil}
+                  disabled={perfisPermitidos.length <= 1}
+                  onChange={(event) => alterarPerfil(event.target.value)}
+                  className={selectClasse}
+                >
+                  {perfisPermitidos.map((item) => (
+                    <option key={item.value} className="text-black" value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className={labelClasse}>Nome</label>
+                <input
+                  value={nome}
+                  onChange={(event) => setNome(event.target.value)}
+                  required
+                  className={campoClasse}
+                  placeholder="Nome completo"
+                />
+              </div>
+
+              {ehVinculado(perfil) ? (
+                podeGerenciarTodosPerfis ? (
+                  <div>
+                    <label className={labelClasse}>Gestor vinculado</label>
+                    <select
+                      value={gestorSelecionado}
+                      onChange={(event) => setGestorSelecionado(event.target.value)}
+                      className={selectClasse}
+                    >
+                      <option className="text-black" value="">
+                        Selecione o gestor…
+                      </option>
+                      {gestores.map((g) => (
+                        <option key={g.usuario_id} className="text-black" value={g.usuario_id}>
+                          {g.nome}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="flex items-center rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/70">
+                    Vinculado a você (gestor)
+                  </div>
+                )
+              ) : null}
+
+              {tipoLogin === "email" ? (
+                <>
+                  <div>
+                    <label className={labelClasse}>E-mail</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      required
+                      className={campoClasse}
+                      placeholder="usuario@fabricadeluz.com.br"
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClasse}>Senha provisória</label>
+                    <input
+                      type="password"
+                      value={senha}
+                      onChange={(event) => setSenha(event.target.value)}
+                      required
+                      minLength={6}
+                      className={campoClasse}
+                      placeholder="Mínimo 6 caracteres"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className={labelClasse}>Código de acesso</label>
+                    <input
+                      value={codigoAcesso}
+                      onChange={(event) =>
+                        setCodigoAcesso(event.target.value.toUpperCase())
+                      }
+                      required
+                      className={campoClasse}
+                      placeholder="Exemplo: M1001"
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClasse}>PIN</label>
+                    <input
+                      value={pin}
+                      onChange={(event) => setPin(event.target.value)}
+                      required
+                      inputMode="numeric"
+                      minLength={4}
+                      className={campoClasse}
+                      placeholder="Exemplo: 4821"
+                    />
+                  </div>
+                </>
+              )}
+
+              <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-white/80">
+                <input
+                  type="checkbox"
+                  checked={ativo}
+                  onChange={(event) => setAtivo(event.target.checked)}
+                />
+                Usuário ativo
               </label>
 
-              <input
-                value={nome}
-                onChange={(event) => setNome(event.target.value)}
-                required
-                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
-                placeholder="Nome completo"
-              />
-            </div>
-
-            {tipoLogin === "email" ? (
-              <>
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-white">
-                    E-mail
-                  </label>
-
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    required
-                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
-                    placeholder="usuario@fabricadeluz.com.br"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-white">
-                    Senha provisória
-                  </label>
-
-                  <input
-                    type="password"
-                    value={senha}
-                    onChange={(event) => setSenha(event.target.value)}
-                    required
-                    minLength={6}
-                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
-                    placeholder="Mínimo 6 caracteres"
-                  />
-                </div>
-              </>
-            ) : (
-              <>
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-white">
-                    Código de acesso
-                  </label>
-
-                  <input
-                    value={codigoAcesso}
-                    onChange={(event) =>
-                      setCodigoAcesso(event.target.value.toUpperCase())
-                    }
-                    required
-                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
-                    placeholder="Exemplo: M1001"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-white">
-                    PIN
-                  </label>
-
-                  <input
-                    value={pin}
-                    onChange={(event) => setPin(event.target.value)}
-                    required
-                    inputMode="numeric"
-                    minLength={4}
-                    className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-[var(--fdl-cream)]"
-                    placeholder="Exemplo: 4821"
-                  />
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-white">
-                Perfil
-              </label>
-
-              <select
-                value={perfil}
-                disabled={!podeGerenciarTodosPerfis}
-                onChange={(event) => setPerfil(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-sm text-white outline-none focus:border-[var(--fdl-cream)] disabled:cursor-not-allowed disabled:opacity-60"
+              <button
+                type="submit"
+                disabled={salvando}
+                className="h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {perfisPermitidos.map((item) => (
-                  <option key={item.value} className="text-black" value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
+                {salvando ? "Salvando..." : "Cadastrar usuário"}
+              </button>
             </div>
-
-            <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-white/80">
-              <input
-                type="checkbox"
-                checked={ativo}
-                onChange={(event) => setAtivo(event.target.checked)}
-              />
-              Usuário ativo
-            </label>
-
-            <button
-              type="submit"
-              disabled={salvando}
-              className="h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {salvando ? "Salvando..." : "Cadastrar usuário"}
-            </button>
-          </div>
-        </form>
+          </form>
         ) : null}
 
         <section className="fdl-form-card fdl-users-list-card min-w-0 p-6">
@@ -686,9 +687,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
           </div>
 
           {carregando ? (
-            <div className="fdl-empty-state">
-              Carregando usuários...
-            </div>
+            <div className="fdl-empty-state">Carregando usuários...</div>
           ) : usuarios.length > 0 ? (
             <div className="fdl-ui-table-wrap">
               <div className="fdl-ui-table-scroll">
@@ -708,7 +707,9 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
                       <th className="px-4 py-3">Acesso</th>
                       <th className="px-4 py-3">Status</th>
                       <th className="px-4 py-3">Último PIN</th>
-                      <th className="fdl-users-action-cell px-2 py-3 text-center">Ação</th>
+                      <th className="fdl-users-action-cell px-2 py-3 text-center">
+                        Ação
+                      </th>
                     </tr>
                   </thead>
 
@@ -728,7 +729,12 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
                         </td>
 
                         <td className="px-4 py-3 text-white/75">
-                          {formatPerfil(usuario.perfil)}
+                          {formatarPerfil(usuario.perfil)}
+                          {usuario.gestor_nome ? (
+                            <p className="mt-1 text-xs text-white/45">
+                              Gestor: {usuario.gestor_nome}
+                            </p>
+                          ) : null}
                         </td>
 
                         <td className="px-4 py-3">

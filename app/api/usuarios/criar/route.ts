@@ -1,24 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
+import {
+  PERFIL_GESTOR,
+  ehVinculado,
+  perfisQuePodeGerenciar,
+  podeGerenciarUsuarios,
+  tipoLoginDoPerfil,
+} from "@/lib/perfis";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const PERFIS_GERENCIAM_USUARIOS = [
-  "admin",
-  "diretor",
-  "gerente_operacional",
-  "gestor_comercial",
-];
-
-const PERFIS_GERENCIAM_TODOS = ["admin", "diretor", "gerente_operacional"];
-
-const PERFIS_VALIDOS = [
-  "admin",
-  "diretor",
-  "gestor_comercial",
-  "gerente_operacional",
-  "montador",
-];
 
 function env(name: string) {
   const value = process.env[name];
@@ -96,7 +86,7 @@ export async function POST(request: Request) {
     if (
       !solicitante ||
       !solicitante.ativo ||
-      !PERFIS_GERENCIAM_USUARIOS.includes(solicitante.perfil)
+      !podeGerenciarUsuarios(solicitante.perfil)
     ) {
       return Response.json(
         { error: "Você não tem permissão para cadastrar usuários." },
@@ -107,13 +97,13 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const nome = normalizarTexto(body.nome);
-    const tipoLogin = normalizarTexto(body.tipo_login || "email");
     const perfil = normalizarTexto(body.perfil);
     const email = normalizarTexto(body.email).toLowerCase();
     const senha = normalizarTexto(body.senha);
     const codigoAcesso = normalizarTexto(body.codigo_acesso).toUpperCase();
     const pin = normalizarTexto(body.pin);
     const ativo = Boolean(body.ativo ?? true);
+    const gestorIdInformado = normalizarTexto(body.gestor_id);
 
     if (!nome) {
       return Response.json({ error: "Nome é obrigatório." }, { status: 400 });
@@ -123,43 +113,45 @@ export async function POST(request: Request) {
       return Response.json({ error: "Perfil é obrigatório." }, { status: 400 });
     }
 
-    if (!["email", "pin"].includes(tipoLogin)) {
+    // Perfil precisa estar dentro do que o solicitante pode gerenciar.
+    const permitidos = perfisQuePodeGerenciar(solicitante.perfil);
+    if (!permitidos.includes(perfil)) {
       return Response.json(
-        { error: "Tipo de acesso inválido." },
-        { status: 400 }
-      );
-    }
-
-    if (!PERFIS_VALIDOS.includes(perfil)) {
-      return Response.json(
-        { error: "Perfil inválido." },
-        { status: 400 }
-      );
-    }
-
-    const podeGerenciarTodos = PERFIS_GERENCIAM_TODOS.includes(
-      solicitante.perfil
-    );
-
-    if (!podeGerenciarTodos && perfil !== "montador") {
-      return Response.json(
-        { error: "Seu perfil permite cadastrar/editar apenas montadores." },
+        { error: "Seu perfil não permite cadastrar esse tipo de usuário." },
         { status: 403 }
       );
     }
 
-    if (!podeGerenciarTodos && tipoLogin !== "pin") {
-      return Response.json(
-        { error: "Montadores devem acessar por Código + PIN." },
-        { status: 403 }
-      );
-    }
+    // O tipo de login é definido pelo perfil (montador = PIN, demais = e-mail).
+    const tipoLogin = tipoLoginDoPerfil(perfil);
 
-    if (perfil === "montador" && tipoLogin !== "pin") {
-      return Response.json(
-        { error: "Perfil Montador deve usar acesso por Código + PIN." },
-        { status: 400 }
-      );
+    // Resolve o gestor vinculado (analista/assistente/estagiário/auxiliar).
+    let gestorId: string | null = null;
+    if (ehVinculado(perfil)) {
+      if (solicitante.perfil === PERFIL_GESTOR) {
+        gestorId = solicitante.id;
+      } else {
+        // Acesso total precisa indicar a qual gestor o usuário fica vinculado.
+        if (!gestorIdInformado) {
+          return Response.json(
+            { error: "Selecione o gestor ao qual este usuário ficará vinculado." },
+            { status: 400 }
+          );
+        }
+        const { data: gestor } = await adminClient
+          .from("usuarios")
+          .select("id, perfil")
+          .eq("id", gestorIdInformado)
+          .maybeSingle();
+
+        if (!gestor || gestor.perfil !== PERFIL_GESTOR) {
+          return Response.json(
+            { error: "Gestor vinculado inválido." },
+            { status: 400 }
+          );
+        }
+        gestorId = gestor.id;
+      }
     }
 
     let authUserId: string | null = null;
@@ -238,9 +230,26 @@ export async function POST(request: Request) {
       return Response.json({ error: usuarioError.message }, { status: 400 });
     }
 
+    const novo = Array.isArray(usuarioData) ? usuarioData[0] : usuarioData;
+
+    // Grava o vínculo com o gestor (a função de salvar não conhece gestor_id).
+    if (gestorId) {
+      const novoId = novo?.usuario_id ?? novo?.id ?? null;
+      const alvo = adminClient.from("usuarios").update({ gestor_id: gestorId });
+      const { error: vinculoError } = novoId
+        ? await alvo.eq("id", novoId)
+        : tipoLogin === "email"
+          ? await alvo.eq("email", email)
+          : await alvo.eq("codigo_acesso", codigoAcesso);
+
+      if (vinculoError) {
+        return Response.json({ error: vinculoError.message }, { status: 400 });
+      }
+    }
+
     return Response.json({
       ok: true,
-      usuario: Array.isArray(usuarioData) ? usuarioData[0] : null,
+      usuario: novo ?? null,
     });
   } catch (error) {
     const message =
