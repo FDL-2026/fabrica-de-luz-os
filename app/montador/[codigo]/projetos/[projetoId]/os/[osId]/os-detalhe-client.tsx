@@ -441,9 +441,30 @@ export default function OsDetalheClient({
   async function salvarRegistro() {
     if (!usuarioId || !os) return;
 
+    // Ocorrência exige ao menos 1 foto (evidência): enviada, na fila ou selecionada.
+    const ehOcorr = ehOcorrencia(tipoRegistro);
+    if (
+      ehOcorr &&
+      arquivos.length === 0 &&
+      fotosPendentes === 0 &&
+      arquivosSelecionados.length === 0
+    ) {
+      setSucesso("");
+      setErro(
+        'Para registrar uma ocorrência, anexe ao menos 1 foto na seção "Anexos" acima (📷 Tirar foto / 🖼 Da galeria).'
+      );
+      return;
+    }
+
     setErro("");
     setSucesso("");
     setSalvandoRegistro(true);
+
+    // Fotos apenas selecionadas: envia/enfileira antes de gravar a ocorrência.
+    if (ehOcorr && arquivosSelecionados.length > 0) {
+      await enviarArquivos();
+      setErro("");
+    }
 
     const enfileirarEsteRegistro = () =>
       enfileirarRegistro({
@@ -988,6 +1009,13 @@ export default function OsDetalheClient({
                 ))}
               </optgroup>
             </select>
+
+            {ehOcorrencia(tipoRegistro) ? (
+              <p className="mt-2 text-xs font-semibold text-amber-200/90">
+                📎 Ocorrências exigem ao menos 1 foto — anexe na seção “Anexos”
+                acima antes de salvar.
+              </p>
+            ) : null}
           </div>
 
           <div>
