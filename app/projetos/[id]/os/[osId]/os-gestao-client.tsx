@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ROTULO_OCORRENCIA, ehOcorrencia } from "@/lib/ocorrencias";
 
 type OsGestaoClientProps = {
   projetoId: string;
@@ -99,6 +100,7 @@ function formatTipoRegistro(tipo: string | null) {
     pendencia: "Pendência",
     observacao: "Observação",
     anexo: "Anexo",
+    ...ROTULO_OCORRENCIA,
   };
 
   return labels[tipo] ?? tipo.replace("_", " ");
@@ -146,6 +148,8 @@ function statusClass(status: string | null) {
 }
 
 function tipoRegistroClass(tipo: string | null) {
+  if (ehOcorrencia(tipo)) return "bg-amber-100 text-amber-800";
+
   switch (tipo) {
     case "pendencia":
       return "bg-red-100 text-red-700";
