@@ -29,7 +29,7 @@ export default function MontadorShell({
         } ${center ? "justify-center" : ""}`}
       >
         <header className="mb-8 flex justify-center">
-          <BrandLogo className="h-auto max-h-28 w-full max-w-sm object-contain" />
+          <BrandLogo className="h-auto max-h-28 w-full max-w-sm object-contain sm:max-h-36 sm:max-w-lg" />
         </header>
 
         <div className="w-full">{children}</div>
