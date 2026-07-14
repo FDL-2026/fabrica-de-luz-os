@@ -15,7 +15,9 @@ type PageProps = {
 export default async function ValidacaoOsPage({ params }: PageProps) {
   const { id, osId } = await params;
 
-  await requireUser(`/projetos/${id}/os/${osId}/validacao`);
+  await requireUser(`/projetos/${id}/os/${osId}/validacao`, {
+    negarPerfis: ["visitante"],
+  });
 
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">

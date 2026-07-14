@@ -114,7 +114,9 @@ export default async function RelatorioDiarioPage({ searchParams }: PageProps) {
   const { todos } = await searchParams;
   const mostrarTodos = todos === "1";
 
-  const { supabase } = await requireUser("/relatorios/diario");
+  const { supabase } = await requireUser("/relatorios/diario", {
+    negarPerfis: ["visitante"],
+  });
 
   let projetosResult = await supabase
     .from("projetos")

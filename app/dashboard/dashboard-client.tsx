@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ROTULO_OCORRENCIA } from "@/lib/ocorrencias";
+import { ehSomenteLeitura } from "@/lib/perfis";
 
 type ResumoDashboard = {
   projetos_ativos: number;
@@ -237,7 +238,12 @@ function registroBadgeClass(tipo: string | null) {
   }
 }
 
-export default function DashboardClient() {
+export default function DashboardClient({
+  usuarioPerfil = "",
+}: {
+  usuarioPerfil?: string;
+}) {
+  const somenteLeitura = ehSomenteLeitura(usuarioPerfil);
   const supabase = useMemo(() => createClient(), []);
 
   const [carregando, setCarregando] = useState(true);
@@ -442,17 +448,21 @@ export default function DashboardClient() {
           </div>
 
           <div className="fdl-ui-actions xl:justify-end">
-            <a href="/relatorios/diario" className="fdl-ui-btn fdl-ui-btn-ghost">
-              Relatório diário
-            </a>
+            {!somenteLeitura ? (
+              <a href="/relatorios/diario" className="fdl-ui-btn fdl-ui-btn-ghost">
+                Relatório diário
+              </a>
+            ) : null}
 
             <a href="/projetos" className="fdl-ui-btn fdl-ui-btn-secondary">
               Ver projetos
             </a>
 
-            <a href="/importar" className="fdl-ui-btn fdl-ui-btn-primary">
-              Importar cronograma
-            </a>
+            {!somenteLeitura ? (
+              <a href="/importar" className="fdl-ui-btn fdl-ui-btn-primary">
+                Importar cronograma
+              </a>
+            ) : null}
           </div>
         </div>
 
@@ -599,7 +609,7 @@ export default function DashboardClient() {
         </div>
       </section>
 
-      {dados.oss_aguardando_validacao.length > 0 ? (
+      {!somenteLeitura && dados.oss_aguardando_validacao.length > 0 ? (
       <section className="fdl-ui-validation-card">
         <div className="fdl-ui-section-head">
           <div>

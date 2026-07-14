@@ -6,7 +6,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function ImportarPage() {
-  const { usuario } = await requireUser("/importar");
+  const { usuario } = await requireUser("/importar", {
+    negarPerfis: ["visitante"],
+  });
 
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">

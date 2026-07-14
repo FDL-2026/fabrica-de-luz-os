@@ -18,8 +18,8 @@ export default async function DashboardPage() {
         />
 
         <section className="fdl-content min-w-0 p-4 pb-12 sm:p-6 lg:p-8">
-          <ChamadosResumoDashboard />
-          <DashboardClient />
+          {usuario.perfil !== "visitante" ? <ChamadosResumoDashboard /> : null}
+          <DashboardClient usuarioPerfil={usuario.perfil} />
         </section>
       </div>
     </main>

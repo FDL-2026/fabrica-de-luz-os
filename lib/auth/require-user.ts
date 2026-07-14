@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export async function requireUser(nextPath = "/dashboard") {
+export async function requireUser(
+  nextPath = "/dashboard",
+  opts: { negarPerfis?: string[] } = {}
+) {
   const supabase = await createClient();
 
   const {
@@ -21,6 +24,11 @@ export async function requireUser(nextPath = "/dashboard") {
 
   if (usuarioError || !usuario || !usuario.ativo) {
     redirect("/login?error=perfil");
+  }
+
+  // Bloqueio por perfil (ex.: visitante não acessa telas de escrita/admin).
+  if (opts.negarPerfis && opts.negarPerfis.includes(usuario.perfil)) {
+    redirect("/dashboard");
   }
 
   return {

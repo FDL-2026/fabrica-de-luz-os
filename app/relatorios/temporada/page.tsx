@@ -6,7 +6,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function RelatorioTemporadaPage() {
-  const { usuario } = await requireUser("/relatorios/temporada");
+  const { usuario } = await requireUser("/relatorios/temporada", {
+    negarPerfis: ["visitante"],
+  });
 
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">

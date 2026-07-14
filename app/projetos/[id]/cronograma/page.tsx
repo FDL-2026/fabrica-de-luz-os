@@ -127,7 +127,9 @@ function compararOS(a: OrdemServico, b: OrdemServico) {
 
 export default async function CronogramaProjetoPage({ params }: PageProps) {
   const { id } = await params;
-  const { usuario } = await requireUser();
+  const { usuario } = await requireUser(`/projetos/${id}/cronograma`, {
+    negarPerfis: ["visitante"],
+  });
   const supabase = await createClient();
 
   const { data: projeto, error: projetoError } = await supabase

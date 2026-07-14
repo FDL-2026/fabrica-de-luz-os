@@ -104,6 +104,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
   const { id } = await params;
 
   const { supabase, usuario } = await requireUser(`/projetos/${id}`);
+  const somenteLeitura = usuario.perfil === "visitante";
 
   const { data: projeto } = await supabase
     .from("projetos")
@@ -214,12 +215,14 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                 {formatStatus(projeto.status)}
               </span>
 
-              <a
-                href={`/projetos/${projeto.id}/cronograma`}
-                className="fdl-ui-btn fdl-ui-btn-primary"
-              >
-                Ver cronograma
-              </a>
+              {!somenteLeitura ? (
+                <a
+                  href={`/projetos/${projeto.id}/cronograma`}
+                  className="fdl-ui-btn fdl-ui-btn-primary"
+                >
+                  Ver cronograma
+                </a>
+              ) : null}
             </div>
           </header>
 
@@ -349,12 +352,14 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                       ) : null}
                     </div>
 
-                    <a
-                      href={`/projetos/${projeto.id}/equipe`}
-                      className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary shrink-0"
-                    >
-                      Gerenciar
-                    </a>
+                    {!somenteLeitura ? (
+                      <a
+                        href={`/projetos/${projeto.id}/equipe`}
+                        className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary shrink-0"
+                      >
+                        Gerenciar
+                      </a>
+                    ) : null}
                   </div>
                 </div>
 

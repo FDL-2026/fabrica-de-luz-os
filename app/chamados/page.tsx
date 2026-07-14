@@ -6,7 +6,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function ChamadosPage() {
-  const { usuario } = await requireUser("/chamados");
+  const { usuario } = await requireUser("/chamados", {
+    negarPerfis: ["visitante"],
+  });
 
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">

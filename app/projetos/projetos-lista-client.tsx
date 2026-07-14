@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import ProgressoPonderadoCardProjeto from "@/components/progresso/progresso-ponderado-card-projeto";
+import { ehSomenteLeitura } from "@/lib/perfis";
 
 type ProjetoLista = {
   id: string;
@@ -16,8 +17,9 @@ type ProjetoLista = {
   responsavel_comercial?: string | null;
 };
 
-type ProjetosListaClientProps = {
+type ProjetosClientProps = {
   projetos: ProjetoLista[];
+  usuarioPerfil?: string;
 };
 
 const statusOptions = [
@@ -74,7 +76,9 @@ function normalizar(texto: string) {
 
 export default function ProjetosListaClient({
   projetos,
-}: ProjetosListaClientProps) {
+  usuarioPerfil = "",
+}: ProjetosClientProps) {
+  const somenteLeitura = ehSomenteLeitura(usuarioPerfil);
   const [busca, setBusca] = useState("");
   const [visao, setVisao] = useState<"cards" | "tabela">("cards");
   const [ufFiltro, setUfFiltro] = useState("");
@@ -309,12 +313,14 @@ export default function ProjetosListaClient({
                           >
                             Abrir
                           </a>
-                          <a
-                            href={`/projetos/${projeto.id}/cronograma`}
-                            className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-ghost"
-                          >
-                            Cronograma
-                          </a>
+                          {!somenteLeitura ? (
+                            <a
+                              href={`/projetos/${projeto.id}/cronograma`}
+                              className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-ghost"
+                            >
+                              Cronograma
+                            </a>
+                          ) : null}
                         </div>
                       </td>
                     </tr>
@@ -380,12 +386,14 @@ export default function ProjetosListaClient({
                     Ver projeto
                   </a>
 
-                  <a
-                    href={`/projetos/${projeto.id}/cronograma`}
-                    className="rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-                  >
-                    Cronograma
-                  </a>
+                  {!somenteLeitura ? (
+                    <a
+                      href={`/projetos/${projeto.id}/cronograma`}
+                      className="rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+                    >
+                      Cronograma
+                    </a>
+                  ) : null}
                 </div>
               </article>
             ))}
@@ -411,11 +419,11 @@ export default function ProjetosListaClient({
               >
                 Limpar filtros
               </button>
-            ) : (
+            ) : !somenteLeitura ? (
               <a href="/importar" className="fdl-ui-btn fdl-ui-btn-primary mt-5">
                 Importar cronograma
               </a>
-            )}
+            ) : null}
           </div>
         )}
       </div>

@@ -79,12 +79,14 @@ export default async function ProjetosPage() {
                 Temporada 2026
               </div>
 
-              <a
-                href="/importar"
-                className="rounded-full bg-[var(--fdl-cream)] px-5 py-2 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
-              >
-                Importar cronograma
-              </a>
+              {usuario.perfil !== "visitante" ? (
+                <a
+                  href="/importar"
+                  className="rounded-full bg-[var(--fdl-cream)] px-5 py-2 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                >
+                  Importar cronograma
+                </a>
+              ) : null}
             </div>
           </header>
 
@@ -118,7 +120,10 @@ export default async function ProjetosPage() {
             </div>
           </div>
 
-          <ProjetosListaClient projetos={projetos} />
+          <ProjetosListaClient
+            projetos={projetos}
+            usuarioPerfil={usuario.perfil}
+          />
         </section>
       </div>
     </main>

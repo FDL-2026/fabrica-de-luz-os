@@ -14,7 +14,9 @@ type PageProps = {
 export default async function EquipeProjetoPage({ params }: PageProps) {
   const { id } = await params;
 
-  await requireUser(`/projetos/${id}/equipe`);
+  await requireUser(`/projetos/${id}/equipe`, {
+    negarPerfis: ["visitante"],
+  });
 
   return (
     <main className="min-h-screen bg-[var(--fdl-purple-dark)] text-white">

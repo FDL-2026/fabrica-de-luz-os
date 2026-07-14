@@ -21,12 +21,20 @@ const itens = [
   { href: "/relatorios/temporada", label: "Fechamento da temporada" },
 ];
 
+// Visitante (somente leitura) enxerga apenas painel e projetos.
+const itensVisitante = new Set(["/dashboard", "/projetos"]);
+
 export default function SidebarGestao({
   usuarioNome,
   usuarioPerfil,
 }: SidebarGestaoProps) {
   const pathname = usePathname();
   const [menuAberto, setMenuAberto] = useState(false);
+
+  const itensVisiveis =
+    usuarioPerfil === "visitante"
+      ? itens.filter((item) => itensVisitante.has(item.href))
+      : itens;
 
   function estaAtivo(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -79,7 +87,7 @@ export default function SidebarGestao({
 
         {menuAberto ? (
           <nav className="border-t border-white/10 px-4 pb-4 pt-2 text-sm">
-            {itens.map((item) => (
+            {itensVisiveis.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -132,7 +140,7 @@ export default function SidebarGestao({
         </div>
 
         <nav className="space-y-2 text-sm">
-          {itens.map((item) => (
+          {itensVisiveis.map((item) => (
             <Link
               key={item.href}
               href={item.href}
