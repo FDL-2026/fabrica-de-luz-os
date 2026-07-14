@@ -47,6 +47,7 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
   const supabase = useMemo(() => createClient(), []);
 
   const podeGerenciarTodosPerfis = gerenciaTodos(usuarioPerfil);
+  const ehAdmin = usuarioPerfil === "admin";
   const perfisPermitidos = useMemo(
     () =>
       perfisQuePodeGerenciar(usuarioPerfil).map((value) => ({
@@ -258,6 +259,44 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
     setSalvando(false);
   }
 
+  async function excluirUsuario(usuario: Usuario) {
+    const confirmado = window.confirm(
+      `Excluir definitivamente o usuário "${usuario.nome ?? "sem nome"}"? Esta ação não pode ser desfeita.`
+    );
+    if (!confirmado) return;
+
+    setErro("");
+    setSucesso("");
+
+    const accessToken = await obterAccessToken();
+    if (!accessToken) {
+      setErro("Sessão expirada. Faça login novamente.");
+      return;
+    }
+
+    const response = await fetch("/api/usuarios/excluir", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ usuario_id: usuario.usuario_id }),
+    });
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      setErro(payload?.error ?? "Não foi possível excluir o usuário.");
+      return;
+    }
+
+    if (usuarioEditando?.usuario_id === usuario.usuario_id) {
+      fecharEdicao();
+    }
+    setSucesso("Usuário excluído com sucesso.");
+    await carregarUsuarios();
+  }
+
   async function salvarEdicao(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -335,24 +374,35 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
             </p>
           </div>
 
-          {!mostrarForm ? (
-            <button
-              type="button"
-              onClick={() => {
-                setErro("");
-                setSucesso("");
-                setPerfil(perfilPadrao);
-                setGestorSelecionado("");
-                if (perfilPadrao === "montador") {
-                  setCodigoAcesso(gerarCodigoMontador(usuarios.length));
-                }
-                setMostrarForm(true);
-              }}
-              className="inline-flex h-12 shrink-0 items-center gap-2 rounded-2xl bg-[var(--fdl-cream)] px-5 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
-            >
-              <span className="text-lg leading-none">＋</span> Novo usuário
-            </button>
-          ) : null}
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
+            {ehAdmin ? (
+              <a
+                href="/usuarios/historico"
+                className="inline-flex h-12 items-center gap-2 rounded-2xl border border-white/15 px-5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+              >
+                Histórico
+              </a>
+            ) : null}
+
+            {!mostrarForm ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setErro("");
+                  setSucesso("");
+                  setPerfil(perfilPadrao);
+                  setGestorSelecionado("");
+                  if (perfilPadrao === "montador") {
+                    setCodigoAcesso(gerarCodigoMontador(usuarios.length));
+                  }
+                  setMostrarForm(true);
+                }}
+                className="inline-flex h-12 items-center gap-2 rounded-2xl bg-[var(--fdl-cream)] px-5 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+              >
+                <span className="text-lg leading-none">＋</span> Novo usuário
+              </button>
+            ) : null}
+          </div>
         </div>
       </header>
 
@@ -760,13 +810,22 @@ export default function UsuariosClient({ usuarioPerfil }: UsuariosClientProps) {
                         </td>
 
                         <td className="fdl-users-action-cell px-2 py-3 text-center align-middle">
-                          <button
-                            type="button"
-                            onClick={() => abrirEdicao(usuario)}
-                            className="fdl-users-edit-btn"
-                          >
-                            Editar
-                          </button>
+                          <div className="flex flex-col items-stretch gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => abrirEdicao(usuario)}
+                              className="fdl-users-edit-btn"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => excluirUsuario(usuario)}
+                              className="rounded-full border border-red-400/40 px-3 py-1 text-xs font-semibold text-red-200 transition hover:bg-red-500/15"
+                            >
+                              Excluir
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

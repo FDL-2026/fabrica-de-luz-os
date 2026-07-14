@@ -72,7 +72,7 @@ export async function POST(request: Request) {
 
     const { data: solicitante, error: solicitanteError } = await adminClient
       .from("usuarios")
-      .select("id, perfil, ativo")
+      .select("id, nome, perfil, ativo")
       .eq("auth_user_id", user.id)
       .maybeSingle();
 
@@ -134,7 +134,7 @@ export async function POST(request: Request) {
 
     const { data: usuarioAtual, error: usuarioAtualError } = await adminClient
       .from("usuarios")
-      .select("id, auth_user_id, email, tipo_login, perfil, gestor_id")
+      .select("id, auth_user_id, email, tipo_login, perfil, gestor_id, ativo")
       .eq("id", usuarioId)
       .maybeSingle();
 
@@ -352,6 +352,34 @@ export async function POST(request: Request) {
     if (vinculoError) {
       return Response.json({ error: vinculoError.message }, { status: 400 });
     }
+
+    // Auditoria — resume o que mudou
+    const mudancas: string[] = [];
+    if (usuarioAtual.perfil !== perfil) {
+      mudancas.push(`perfil: ${usuarioAtual.perfil} → ${perfil}`);
+    }
+    if (email && email !== usuarioAtual.email) {
+      mudancas.push("e-mail alterado");
+    }
+    if (tipoLogin === "email" && senha) {
+      mudancas.push("senha redefinida");
+    }
+    const mudouAtivo = Boolean(usuarioAtual.ativo) !== ativo;
+    const acao = mudouAtivo ? (ativo ? "ativado" : "inativado") : "alterado";
+    if (mudouAtivo) {
+      mudancas.push(ativo ? "reativado" : "inativado");
+    }
+
+    await adminClient.from("usuarios_auditoria").insert({
+      usuario_id: usuarioId,
+      usuario_nome: nome,
+      usuario_email: email || null,
+      acao,
+      detalhes: mudancas.length > 0 ? mudancas.join("; ") : "Sem alterações relevantes",
+      autor_id: solicitante.id,
+      autor_nome: solicitante.nome,
+      autor_perfil: solicitante.perfil,
+    });
 
     return Response.json({
       ok: true,

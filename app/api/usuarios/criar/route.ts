@@ -72,7 +72,7 @@ export async function POST(request: Request) {
 
     const { data: solicitante, error: solicitanteError } = await adminClient
       .from("usuarios")
-      .select("id, perfil, ativo")
+      .select("id, nome, perfil, ativo")
       .eq("auth_user_id", user.id)
       .maybeSingle();
 
@@ -253,6 +253,18 @@ export async function POST(request: Request) {
         return Response.json({ error: ajusteError.message }, { status: 400 });
       }
     }
+
+    // Auditoria
+    await adminClient.from("usuarios_auditoria").insert({
+      usuario_id: novo?.usuario_id ?? novo?.id ?? null,
+      usuario_nome: nome,
+      usuario_email: email || null,
+      acao: "criado",
+      detalhes: `Perfil: ${perfil}`,
+      autor_id: solicitante.id,
+      autor_nome: solicitante.nome,
+      autor_perfil: solicitante.perfil,
+    });
 
     return Response.json({
       ok: true,
