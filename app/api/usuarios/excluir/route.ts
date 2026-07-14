@@ -119,9 +119,37 @@ export async function POST(request: Request) {
       );
     }
 
-    // Exclui o registro em usuarios primeiro: se houver histórico vinculado
-    // (registros, validações, equipe, chamados), a FK bloqueia e nada é
-    // apagado — orientamos a inativar.
+    // Verifica explicitamente se há histórico vinculado. Não dá para confiar
+    // na FK (algumas estão como ON DELETE SET NULL e apagariam o vínculo em
+    // silêncio, orfanando os registros).
+    async function contarVinculo(tabela: string, coluna: string) {
+      const { count, error } = await adminClient
+        .from(tabela)
+        .select("*", { count: "exact", head: true })
+        .eq(coluna, usuarioId);
+      // Tabela ausente/sem permissão → ignora (não bloqueia por isso).
+      if (error) return 0;
+      return count ?? 0;
+    }
+
+    const historico =
+      (await contarVinculo("registros_diarios", "usuario_id")) +
+      (await contarVinculo("ordens_servico", "validado_por")) +
+      (await contarVinculo("chamados", "atribuido_usuario_id"));
+
+    if (historico > 0) {
+      return Response.json(
+        {
+          error:
+            "Não é possível excluir: o usuário possui histórico vinculado (registros, validações ou chamados). Para preservar o histórico, inative-o em vez de excluir.",
+        },
+        { status: 409 }
+      );
+    }
+
+    // Sem histórico: remove vínculos de equipe (apenas associações) e exclui.
+    await adminClient.from("projeto_usuarios").delete().eq("usuario_id", usuarioId);
+
     const { error: deleteError } = await adminClient
       .from("usuarios")
       .delete()
@@ -131,7 +159,7 @@ export async function POST(request: Request) {
       return Response.json(
         {
           error:
-            "Não foi possível excluir: o usuário possui histórico vinculado (registros, validações, equipe ou chamados). Para preservar o histórico, inative-o em vez de excluir.",
+            "Não foi possível excluir o usuário. Se ele possui histórico no sistema, inative-o em vez de excluir.",
         },
         { status: 409 }
       );
