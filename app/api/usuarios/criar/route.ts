@@ -232,18 +232,25 @@ export async function POST(request: Request) {
 
     const novo = Array.isArray(usuarioData) ? usuarioData[0] : usuarioData;
 
-    // Grava o vínculo com o gestor (a função de salvar não conhece gestor_id).
-    if (gestorId) {
+    // Ajustes pós-criação (a função de salvar não conhece gestor_id nem a
+    // flag de senha provisória):
+    //  - vínculo com o gestor (perfis vinculados)
+    //  - senha provisória para acessos por e-mail (troca no 1º login)
+    const ajustes: { gestor_id?: string; senha_provisoria?: boolean } = {};
+    if (gestorId) ajustes.gestor_id = gestorId;
+    if (tipoLogin === "email") ajustes.senha_provisoria = true;
+
+    if (Object.keys(ajustes).length > 0) {
       const novoId = novo?.usuario_id ?? novo?.id ?? null;
-      const alvo = adminClient.from("usuarios").update({ gestor_id: gestorId });
-      const { error: vinculoError } = novoId
+      const alvo = adminClient.from("usuarios").update(ajustes);
+      const { error: ajusteError } = novoId
         ? await alvo.eq("id", novoId)
         : tipoLogin === "email"
           ? await alvo.eq("email", email)
           : await alvo.eq("codigo_acesso", codigoAcesso);
 
-      if (vinculoError) {
-        return Response.json({ error: vinculoError.message }, { status: 400 });
+      if (ajusteError) {
+        return Response.json({ error: ajusteError.message }, { status: 400 });
       }
     }
 

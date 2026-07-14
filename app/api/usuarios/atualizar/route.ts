@@ -334,10 +334,19 @@ export async function POST(request: Request) {
       return Response.json({ error: usuarioError.message }, { status: 400 });
     }
 
-    // Atualiza o vínculo com o gestor (limpa quando o perfil deixa de ser vinculado).
+    // Atualiza o vínculo com o gestor (limpa quando o perfil deixa de ser
+    // vinculado). Se o gestor definiu uma nova senha, o usuário precisará
+    // trocá-la no próximo login.
+    const ajustes: { gestor_id: string | null; senha_provisoria?: boolean } = {
+      gestor_id: gestorId,
+    };
+    if (tipoLogin === "email" && senha) {
+      ajustes.senha_provisoria = true;
+    }
+
     const { error: vinculoError } = await adminClient
       .from("usuarios")
-      .update({ gestor_id: gestorId })
+      .update(ajustes)
       .eq("id", usuarioId);
 
     if (vinculoError) {

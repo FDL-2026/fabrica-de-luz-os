@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function requireUser(
   nextPath = "/dashboard",
-  opts: { negarPerfis?: string[] } = {}
+  opts: { negarPerfis?: string[]; ignorarSenhaProvisoria?: boolean } = {}
 ) {
   const supabase = await createClient();
 
@@ -18,12 +18,17 @@ export async function requireUser(
 
   const { data: usuario, error: usuarioError } = await supabase
     .from("usuarios")
-    .select("id, nome, email, perfil, ativo")
+    .select("id, nome, email, perfil, ativo, senha_provisoria")
     .eq("auth_user_id", user.id)
     .single();
 
   if (usuarioError || !usuario || !usuario.ativo) {
     redirect("/login?error=perfil");
+  }
+
+  // Senha provisória: força a troca antes de liberar qualquer tela.
+  if (!opts.ignorarSenhaProvisoria && usuario.senha_provisoria) {
+    redirect("/definir-senha");
   }
 
   // Bloqueio por perfil (ex.: visitante não acessa telas de escrita/admin).
