@@ -43,30 +43,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json().catch(() => null);
-    const senha = String(body?.senha ?? "").trim();
-
-    if (senha.length < 6) {
-      return Response.json(
-        { error: "A nova senha precisa ter pelo menos 6 caracteres." },
-        { status: 400 }
-      );
-    }
-
+    // A senha em si é trocada pelo cliente (mantém a sessão). Aqui apenas
+    // limpamos a flag de senha provisória, que exige privilégio elevado.
     const adminClient = createClient(
       env("NEXT_PUBLIC_SUPABASE_URL"),
       env("SUPABASE_SERVICE_ROLE_KEY"),
       { auth: { persistSession: false, autoRefreshToken: false } }
     );
-
-    const { error: senhaError } = await adminClient.auth.admin.updateUserById(
-      user.id,
-      { password: senha }
-    );
-
-    if (senhaError) {
-      return Response.json({ error: senhaError.message }, { status: 400 });
-    }
 
     const { error: flagError } = await adminClient
       .from("usuarios")

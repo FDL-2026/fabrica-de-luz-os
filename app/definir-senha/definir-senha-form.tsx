@@ -29,32 +29,32 @@ export default function DefinirSenhaForm() {
 
     setSalvando(true);
 
+    // Troca a senha pela sessão do próprio usuário — assim a sessão continua
+    // válida (a troca via admin invalidaria o login e cairia na tela de login).
+    const { error: senhaError } = await supabase.auth.updateUser({
+      password: senha,
+    });
+
+    if (senhaError) {
+      setErro(senhaError.message || "Não foi possível definir a nova senha.");
+      setSalvando(false);
+      return;
+    }
+
+    // Limpa a flag de senha provisória (precisa de privilégio elevado).
     const {
       data: { session },
     } = await supabase.auth.getSession();
     const token = session?.access_token ?? "";
 
-    if (!token) {
-      setErro("Sessão expirada. Faça login novamente.");
-      setSalvando(false);
-      return;
-    }
-
-    const response = await fetch("/api/usuarios/definir-senha", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ senha }),
-    });
-
-    const payload = await response.json().catch(() => null);
-
-    if (!response.ok) {
-      setErro(payload?.error ?? "Não foi possível definir a nova senha.");
-      setSalvando(false);
-      return;
+    if (token) {
+      await fetch("/api/usuarios/definir-senha", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }).catch(() => null);
     }
 
     router.replace("/dashboard");
