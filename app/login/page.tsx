@@ -10,16 +10,19 @@ type LoginPageProps = {
 
 const destaques = [
   {
-    titulo: "Cronogramas e OSs",
-    descricao: "Importados da planilha, acompanhados noite a noite",
+    titulo: "Gestão ativa e sincronizada",
+    descricao:
+      "Acompanhamento preciso do avanço noturno, do planejamento à execução, sem planilha e sem atraso de informação.",
   },
   {
-    titulo: "Execução comprovada",
-    descricao: "Montadores registram fotos e vídeos de cada etapa",
+    titulo: "Auditoria visual integrada",
+    descricao:
+      "Foto e vídeo enviados do campo validam cada etapa concluída na hora.",
   },
   {
-    titulo: "Relatório executivo",
-    descricao: "Planejado x real e previsão de término, todo dia",
+    titulo: "Previsibilidade baseada em dados",
+    descricao:
+      "Planejado vs. realizado no dia a dia, com previsão de término pelo ritmo real das equipes.",
   },
 ];
 
@@ -72,12 +75,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </p>
 
             <h1 className="mt-4 text-4xl font-black leading-[1.15] tracking-tight">
-              Toda a montagem da temporada em um só painel.
+              Visão executiva e controle absoluto: toda a operação em uma única
+              tela.
             </h1>
 
             <p className="mt-4 text-sm leading-7 text-white/70">
-              Do desembarque no shopping à aprovação final: projetos,
-              cronogramas, ordens de serviço e evolução validada em tempo real.
+              Transformamos o acompanhamento noturno. Monitore a evolução
+              diária, valide as entregas das equipes e tenha dados confiáveis
+              para a tomada de decisão.
             </p>
 
             <div className="mt-8 space-y-3">
