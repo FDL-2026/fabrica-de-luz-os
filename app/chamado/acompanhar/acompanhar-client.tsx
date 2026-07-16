@@ -226,14 +226,16 @@ export default function AcompanharClient() {
         </section>
       ) : null}
 
-      <div className="text-center">
-        <a
-          href="/chamado"
-          className="text-sm font-semibold text-[var(--fdl-cream)] underline"
-        >
-          Abrir um novo chamado
-        </a>
-      </div>
+      {!chamado ? (
+        <div className="text-center">
+          <a
+            href="/chamado"
+            className="text-sm font-semibold text-[var(--fdl-cream)] underline"
+          >
+            Abrir um novo chamado
+          </a>
+        </div>
+      ) : null}
     </div>
   );
 }
