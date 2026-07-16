@@ -59,10 +59,55 @@ function nomeProjeto(p: ProjetoOpcao) {
   return local ? `${base} — ${local}` : base;
 }
 
+type ChamadoHistorico = {
+  protocolo: string;
+  titulo: string | null;
+  categoria: string | null;
+  prioridade: string | null;
+  status: string;
+  criado_em: string;
+  resolvido_em: string | null;
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  aberto: "Aberto",
+  em_andamento: "Em andamento",
+  aguardando_peca: "Aguardando peça",
+  resolvido: "Resolvido",
+};
+
+function statusLabel(s: string | null) {
+  return (s && STATUS_LABEL[s]) || s || "—";
+}
+
+function statusClass(s: string | null) {
+  switch (s) {
+    case "resolvido":
+      return "bg-green-100 text-green-700";
+    case "em_andamento":
+      return "bg-blue-100 text-blue-700";
+    case "aguardando_peca":
+      return "bg-yellow-100 text-yellow-800";
+    default:
+      return "bg-white/15 text-white";
+  }
+}
+
+function dataCurta(v: string | null) {
+  if (!v) return "";
+  return new Date(v).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export default function ChamadoClient({
   projetoFixo = null,
+  historico = null,
 }: {
   projetoFixo?: ProjetoOpcao | null;
+  historico?: ChamadoHistorico[] | null;
 }) {
   const supabase = useMemo(() => createClient(), []);
 
@@ -272,13 +317,66 @@ export default function ChamadoClient({
           Registre uma solicitação de manutenção. Ela vai direto para o gestor
           responsável pelo projeto.
         </p>
-        <a
-          href="/chamado/acompanhar"
-          className="mt-3 inline-flex items-center gap-1 rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-        >
-          Já tem um chamado? Acompanhe pelo protocolo →
-        </a>
+        {!projetoFixo ? (
+          <a
+            href="/chamado/acompanhar"
+            className="mt-3 inline-flex items-center gap-1 rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+          >
+            Já tem um chamado? Acompanhe pelo protocolo →
+          </a>
+        ) : null}
       </div>
+
+      {projetoFixo ? (
+        <section className="fdl-mobile-card">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-sm font-bold text-white">
+              Chamados deste shopping
+            </h2>
+            {historico && historico.length > 0 ? (
+              <span className="text-xs text-white/45">
+                {historico.length}
+              </span>
+            ) : null}
+          </div>
+
+          {historico && historico.length > 0 ? (
+            <div className="mt-3 space-y-2">
+              {historico.map((h) => (
+                <a
+                  key={h.protocolo}
+                  href={`/chamado/acompanhar?p=${encodeURIComponent(h.protocolo)}`}
+                  className="block rounded-2xl border border-white/10 bg-white/[0.05] p-3 transition hover:bg-white/10"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="min-w-0 truncate text-sm font-semibold text-white">
+                      {h.titulo || "Chamado"}
+                    </span>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(
+                        h.status
+                      )}`}
+                    >
+                      {statusLabel(h.status)}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-white/45">
+                    {h.protocolo} · aberto em {dataCurta(h.criado_em)}
+                    {h.status === "resolvido" && h.resolvido_em
+                      ? ` · resolvido em ${dataCurta(h.resolvido_em)}`
+                      : ""}
+                  </p>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-white/50">
+              Ainda não há chamados para este shopping. Use o formulário abaixo
+              para registrar o primeiro.
+            </p>
+          )}
+        </section>
+      ) : null}
 
       <section className="fdl-mobile-card space-y-4">
         {/* Projeto */}

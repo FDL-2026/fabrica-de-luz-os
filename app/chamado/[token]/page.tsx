@@ -22,11 +22,19 @@ export default async function ChamadoTokenPage({ params }: PageProps) {
   });
   const projeto = Array.isArray(data) && data[0] ? data[0] : null;
 
+  // Histórico dos chamados deste shopping (degrada para vazio se a RPC ainda
+  // não existir no banco).
+  const { data: histData } = await supabase.rpc(
+    "fdl_listar_chamados_projeto_token",
+    { p_token: token }
+  );
+  const historico = Array.isArray(histData) ? histData : [];
+
   return (
     <main className="fdl-content min-h-screen bg-[var(--fdl-purple-dark)] px-4 py-8 text-white">
       <div className="mx-auto w-full max-w-lg">
         {projeto ? (
-          <ChamadoClient projetoFixo={projeto} />
+          <ChamadoClient projetoFixo={projeto} historico={historico} />
         ) : (
           <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-8 text-center">
             <h1 className="text-xl font-bold">Link inválido</h1>
