@@ -117,6 +117,7 @@ export default function ChamadoClient({
   const [opcoes, setOpcoes] = useState<ProjetoOpcao[]>([]);
   const [buscando, setBuscando] = useState(false);
   const [projeto, setProjeto] = useState<ProjetoOpcao | null>(projetoFixo);
+  const [mostrarHistorico, setMostrarHistorico] = useState(false);
   const buscaTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const camRef = useRef<HTMLInputElement>(null);
   const galRef = useRef<HTMLInputElement>(null);
@@ -329,18 +330,26 @@ export default function ChamadoClient({
 
       {projetoFixo ? (
         <section className="fdl-mobile-card">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-bold text-white">
-              Chamados deste shopping
-            </h2>
-            {historico && historico.length > 0 ? (
-              <span className="text-xs text-white/45">
-                {historico.length}
-              </span>
-            ) : null}
-          </div>
+          <button
+            type="button"
+            onClick={() => setMostrarHistorico((v) => !v)}
+            className="flex w-full items-center justify-between gap-3"
+            aria-expanded={mostrarHistorico}
+          >
+            <span className="flex items-center gap-2 text-sm font-bold text-white">
+              📋 Histórico de chamados
+              {historico && historico.length > 0 ? (
+                <span className="rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold text-white/80">
+                  {historico.length}
+                </span>
+              ) : null}
+            </span>
+            <span className="shrink-0 text-xs font-semibold text-[var(--fdl-cream)]">
+              {mostrarHistorico ? "Ocultar ▲" : "Ver ▼"}
+            </span>
+          </button>
 
-          {historico && historico.length > 0 ? (
+          {mostrarHistorico && historico && historico.length > 0 ? (
             <div className="mt-3 space-y-2">
               {historico.map((h) => (
                 <a
@@ -369,12 +378,12 @@ export default function ChamadoClient({
                 </a>
               ))}
             </div>
-          ) : (
+          ) : mostrarHistorico ? (
             <p className="mt-3 text-sm text-white/50">
               Ainda não há chamados para este shopping. Use o formulário abaixo
               para registrar o primeiro.
             </p>
-          )}
+          ) : null}
         </section>
       ) : null}
 

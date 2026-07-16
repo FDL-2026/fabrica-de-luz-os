@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import BrandLogo from "@/components/brand-logo";
 
@@ -61,6 +61,15 @@ function formatDateTime(v: string | null) {
 export default function AcompanharClient() {
   const supabase = useMemo(() => createClient(), []);
   const searchParams = useSearchParams();
+  const router = useRouter();
+
+  function voltar() {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/chamado");
+    }
+  }
 
   const [protocolo, setProtocolo] = useState("");
   const [chamado, setChamado] = useState<Chamado | null>(null);
@@ -103,6 +112,14 @@ export default function AcompanharClient() {
 
   return (
     <div className="space-y-5">
+      <button
+        type="button"
+        onClick={voltar}
+        className="inline-flex items-center gap-1 rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+      >
+        ← Voltar
+      </button>
+
       <div className="flex flex-col items-center text-center">
         <BrandLogo className="h-auto w-48 sm:w-56" />
         <p className="fdl-mobile-kicker mt-5">Manutenção</p>
