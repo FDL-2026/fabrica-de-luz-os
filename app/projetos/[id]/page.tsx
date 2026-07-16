@@ -110,7 +110,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
   const { data: projeto } = await supabase
     .from("projetos")
     .select(
-      "id, cliente, shopping, cidade, uf, temporada, status, data_inicio, data_fim, observacoes, chamado_token"
+      "id, cliente, shopping, cidade, uf, temporada, status, data_inicio, data_fim, observacoes"
     )
     .eq("id", id)
     .single();
@@ -118,6 +118,17 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
   if (!projeto) {
     notFound();
   }
+
+  // Busca tolerante: se a coluna chamado_token ainda não existir no banco,
+  // o card do link simplesmente não aparece (não quebra a página).
+  const { data: tokenRow } = await supabase
+    .from("projetos")
+    .select("chamado_token")
+    .eq("id", id)
+    .maybeSingle();
+  const chamadoToken =
+    (tokenRow as { chamado_token?: string | null } | null)?.chamado_token ??
+    null;
 
   const { data: noites } = await supabase
     .from("noites_montagem")
@@ -227,9 +238,9 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
             </div>
           </header>
 
-          {!somenteLeitura && projeto.chamado_token ? (
+          {!somenteLeitura && chamadoToken ? (
             <div className="mb-6">
-              <LinkChamado token={projeto.chamado_token} />
+              <LinkChamado token={chamadoToken} />
             </div>
           ) : null}
 
