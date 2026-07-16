@@ -59,14 +59,19 @@ function nomeProjeto(p: ProjetoOpcao) {
   return local ? `${base} — ${local}` : base;
 }
 
-export default function ChamadoClient() {
+export default function ChamadoClient({
+  projetoFixo = null,
+}: {
+  projetoFixo?: ProjetoOpcao | null;
+}) {
   const supabase = useMemo(() => createClient(), []);
 
-  // Seleção de projeto (autocomplete)
+  // Seleção de projeto (autocomplete). Quando o chamado vem por um link
+  // individual do shopping, o projeto já vem fixo e o campo fica travado.
   const [busca, setBusca] = useState("");
   const [opcoes, setOpcoes] = useState<ProjetoOpcao[]>([]);
   const [buscando, setBuscando] = useState(false);
-  const [projeto, setProjeto] = useState<ProjetoOpcao | null>(null);
+  const [projeto, setProjeto] = useState<ProjetoOpcao | null>(projetoFixo);
   const buscaTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const camRef = useRef<HTMLInputElement>(null);
   const galRef = useRef<HTMLInputElement>(null);
@@ -290,16 +295,18 @@ export default function ChamadoClient() {
                   <span className="text-white/50"> · {projeto.temporada}</span>
                 ) : null}
               </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setProjeto(null);
-                  setBusca("");
-                }}
-                className="shrink-0 rounded-full border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-              >
-                Trocar
-              </button>
+              {!projetoFixo ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProjeto(null);
+                    setBusca("");
+                  }}
+                  className="shrink-0 rounded-full border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+                >
+                  Trocar
+                </button>
+              ) : null}
             </div>
           ) : (
             <>

@@ -4,6 +4,7 @@ import SidebarGestao from "@/components/gestao/sidebar-gestao";
 import OsTableClient from "./os-table-client";
 import FilaValidacaoProjetoClient from "./fila-validacao-projeto-client";
 import ExcluirProjetoClient from "./excluir-projeto-client";
+import LinkChamado from "./link-chamado";
 import HistoricoProjetoClient from "./historico-projeto-client";
 import ProgressoPonderadoProjeto from "@/components/progresso/progresso-ponderado-projeto";
 import ProgressoPonderadoKpi from "@/components/progresso/progresso-ponderado-kpi";
@@ -109,7 +110,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
   const { data: projeto } = await supabase
     .from("projetos")
     .select(
-      "id, cliente, shopping, cidade, uf, temporada, status, data_inicio, data_fim, observacoes"
+      "id, cliente, shopping, cidade, uf, temporada, status, data_inicio, data_fim, observacoes, chamado_token"
     )
     .eq("id", id)
     .single();
@@ -225,6 +226,12 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
               ) : null}
             </div>
           </header>
+
+          {!somenteLeitura && projeto.chamado_token ? (
+            <div className="mb-6">
+              <LinkChamado token={projeto.chamado_token} />
+            </div>
+          ) : null}
 
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
             <div className="fdl-project-kpi-card">

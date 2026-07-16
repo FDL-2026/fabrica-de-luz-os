@@ -128,14 +128,14 @@ export default function SidebarGestao({
 
       {/* Sidebar (desktop) — superfície sóbria: aresta creme + elevação (amarra com o login sem competir com o conteúdo) */}
       <aside className="relative hidden bg-[#5a3583] p-6 shadow-[14px_0_40px_-26px_rgba(0,0,0,0.9)] after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-[1.5px] after:bg-[linear-gradient(to_bottom,transparent,rgba(237,224,177,0.55)_26%,rgba(237,224,177,0.55)_74%,transparent)] after:content-[''] lg:block">
-        <div className="mb-8 flex items-center justify-center border-b border-white/10 px-2 pb-7">
+        <div className="mb-8 flex items-center justify-center border-b border-white/10 pb-7">
           <Image
             src="/brand/H_TAGLINE_SF_ROXO.png"
             alt="Fábrica de Luz"
             width={500}
             height={300}
             priority
-            className="h-auto max-h-24 w-full object-contain"
+            className="h-auto max-h-40 w-full object-contain"
           />
         </div>
 
