@@ -68,12 +68,30 @@ type ChamadoSla = {
   cumpriu: boolean | null;
 };
 
+type SlaGestor = {
+  gestor: string | null;
+  projetos: number;
+  total_os: number;
+  os_no_prazo: number;
+  os_atrasadas: number;
+  pct_sla_os: number;
+  dias_atraso_os: number;
+  projetos_avaliados: number;
+  projetos_no_prazo: number;
+  pct_sla_projeto: number;
+  ocorrencias_total: number;
+  chamados_total: number;
+  chamados_no_prazo: number;
+  pct_sla_chamados: number;
+};
+
 type Dados = {
   resumo: Resumo;
   slaOs: SlaOs[];
   slaProjeto: SlaProjeto[];
   ocorrencias: Ocorrencia[];
   chamados: ChamadoSla[];
+  slaGestor: SlaGestor[];
 };
 
 function pct(v: number | null | undefined) {
@@ -99,6 +117,14 @@ function dataHoraBR(v: string | null) {
 function simNao(v: boolean | null) {
   if (v === null || v === undefined) return "—";
   return v ? "Sim" : "Não";
+}
+
+function corPct(v: number) {
+  return v >= 90
+    ? "bg-green-100 text-green-700"
+    : v >= 70
+      ? "bg-yellow-100 text-yellow-800"
+      : "bg-red-100 text-red-700";
 }
 
 const PRIORIDADE_LABEL: Record<string, string> = {
@@ -135,16 +161,18 @@ export default function TemporadaClient() {
     setErro("");
     setDados(null);
 
-    const [r1, r2, r3, r4, r5] = await Promise.all([
+    const [r1, r2, r3, r4, r5, r6] = await Promise.all([
       supabase.rpc("fdl_relatorio_resumo_temporada", { p_temporada: temporada }),
       supabase.rpc("fdl_relatorio_sla_os", { p_temporada: temporada }),
       supabase.rpc("fdl_relatorio_sla_projeto", { p_temporada: temporada }),
       supabase.rpc("fdl_relatorio_ocorrencias", { p_temporada: temporada }),
       supabase.rpc("fdl_relatorio_sla_chamados", { p_temporada: temporada }),
+      supabase.rpc("fdl_relatorio_sla_por_gestor", { p_temporada: temporada }),
     ]);
 
-    const primeiroErro =
-      r1.error || r2.error || r3.error || r4.error || r5.error;
+    // r6 (SLA por gestor) é opcional: se a RPC ainda não existir no banco,
+    // o relatório continua funcionando sem essa quebra.
+    const primeiroErro = r1.error || r2.error || r3.error || r4.error || r5.error;
     if (primeiroErro) {
       setErro(primeiroErro.message);
       setCarregando(false);
@@ -157,6 +185,7 @@ export default function TemporadaClient() {
       slaProjeto: (r3.data ?? []) as SlaProjeto[],
       ocorrencias: (r4.data ?? []) as Ocorrencia[],
       chamados: (r5.data ?? []) as ChamadoSla[],
+      slaGestor: (r6.data ?? []) as SlaGestor[],
     });
     setCarregando(false);
   }, [supabase, temporada]);
@@ -165,10 +194,12 @@ export default function TemporadaClient() {
     if (!dados) return;
     setGerandoExcel(true);
     try {
-      const { resumo, slaOs, slaProjeto, ocorrencias, chamados } = dados;
+      const { resumo, slaOs, slaProjeto, ocorrencias, chamados, slaGestor } =
+        dados;
       const ExcelJS = (await import("exceljs")).default;
 
       const ROXO = "FF5A3583";
+      const ROXO_ESC = "FF231329";
       const CREME = "FFEDE0B1";
       const CINZA = "FFF4F1F9";
       const BORDA = "FFDDD6E5";
@@ -192,12 +223,15 @@ export default function TemporadaClient() {
 
       const wb = new ExcelJS.Workbook();
       wb.creator = "Fábrica de Luz";
+      wb.company = "Fábrica de Luz";
+      wb.title = `Fechamento da Temporada ${temporada}`;
       wb.created = new Date();
 
       // ---------- Aba Dashboard ----------
       const ws = wb.addWorksheet("Dashboard", {
         views: [{ showGridLines: false }],
       });
+      ws.properties.tabColor = { argb: CREME };
       ws.columns = [
         { width: 24 },
         { width: 14 },
@@ -303,6 +337,84 @@ export default function TemporadaClient() {
         }
       }
 
+      // ---------- Aba SLA por gestor ----------
+      const wg = wb.addWorksheet("SLA por gestor", {
+        views: [{ state: "frozen", ySplit: 1 }],
+      });
+      wg.properties.tabColor = { argb: ROXO };
+      const gcols = [
+        { h: "Gestor", w: 26, l: true },
+        { h: "Projetos", w: 10 },
+        { h: "SLA OS", w: 9 },
+        { h: "OS no prazo", w: 12 },
+        { h: "OS atrasadas", w: 13 },
+        { h: "Dias atraso", w: 12 },
+        { h: "SLA projeto", w: 12 },
+        { h: "Proj. no prazo", w: 14 },
+        { h: "SLA chamados", w: 13 },
+        { h: "Chamados", w: 11 },
+        { h: "Ocorrências", w: 12 },
+      ];
+      wg.columns = gcols.map((c) => ({ width: c.w }));
+      const ghr = wg.addRow(gcols.map((c) => c.h));
+      ghr.height = 30;
+      ghr.eachCell((cell, col) => {
+        cell.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 10 };
+        cell.fill = solid(ROXO);
+        cell.alignment = {
+          vertical: "middle",
+          horizontal: col === 1 ? "left" : "center",
+          wrapText: true,
+        };
+        cell.border = thin;
+      });
+
+      slaGestor.forEach((g, i) => {
+        const row = wg.addRow([
+          g.gestor ?? "—",
+          g.projetos,
+          g.pct_sla_os,
+          g.os_no_prazo,
+          g.os_atrasadas,
+          g.dias_atraso_os,
+          g.pct_sla_projeto,
+          `${g.projetos_no_prazo}/${g.projetos_avaliados}`,
+          g.pct_sla_chamados,
+          g.chamados_total,
+          g.ocorrencias_total,
+        ]);
+        row.height = 18;
+        row.eachCell((cell, col) => {
+          cell.border = thin;
+          if (i % 2 === 1) cell.fill = solid(CINZA);
+          cell.alignment = {
+            vertical: "middle",
+            horizontal: col === 1 ? "left" : "center",
+          };
+        });
+        // Colore as células de SLA (%) por faixa
+        (
+          [
+            [3, g.pct_sla_os],
+            [7, g.pct_sla_projeto],
+            [9, g.pct_sla_chamados],
+          ] as const
+        ).forEach(([col, valor]) => {
+          const c = row.getCell(col);
+          const cs = corSla(valor);
+          c.fill = solid(cs.fill);
+          c.font = { bold: true, color: { argb: cs.font } };
+          c.numFmt = '0"%"';
+        });
+      });
+      wg.autoFilter = {
+        from: { row: 1, column: 1 },
+        to: { row: 1, column: gcols.length },
+      };
+      if (slaGestor.length === 0) {
+        wg.addRow(["Sem dados para esta temporada."]);
+      }
+
       // ---------- Abas de tabela ----------
       type Col = { header: string; width: number };
       const addTabela = (
@@ -314,6 +426,7 @@ export default function TemporadaClient() {
         const t = wb.addWorksheet(nome, {
           views: [{ state: "frozen", ySplit: 1 }],
         });
+        t.properties.tabColor = { argb: ROXO_ESC };
         t.columns = cols.map((c) => ({ width: c.width }));
         const hr = t.addRow(cols.map((c) => c.header));
         hr.height = 20;
@@ -332,6 +445,10 @@ export default function TemporadaClient() {
           });
           if (estilizar) estilizar(row, valores);
         });
+        t.autoFilter = {
+          from: { row: 1, column: 1 },
+          to: { row: 1, column: cols.length },
+        };
       };
 
       const corNoPrazo = (row: Row, idx: number) => {
@@ -456,6 +573,7 @@ export default function TemporadaClient() {
   }
 
   const r = dados?.resumo;
+  const gestores = dados?.slaGestor ?? [];
 
   return (
     <div className="space-y-6">
@@ -529,6 +647,57 @@ export default function TemporadaClient() {
             <Kpi titulo="SLA de chamados" valor={pct(r.pct_sla_chamados)} sub={`${r.chamados_no_prazo}/${r.chamados_total} no prazo`} />
             <Kpi titulo="Dias de atraso" valor={String(r.dias_atraso_os)} sub="soma das OSs" />
           </section>
+
+          {gestores.length > 0 ? (
+            <section className="fdl-form-card p-6">
+              <h2 className="fdl-section-title">SLA por gestor</h2>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {gestores.map((g) => (
+                  <div
+                    key={g.gestor ?? "sem"}
+                    className="rounded-2xl border border-white/10 bg-white/[0.05] p-4"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="min-w-0 truncate font-semibold text-white">
+                        {g.gestor || "Sem gestor"}
+                      </p>
+                      <span className="shrink-0 text-xs text-white/45">
+                        {g.projetos} proj.
+                      </span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${corPct(
+                          g.pct_sla_os
+                        )}`}
+                      >
+                        OS {pct(g.pct_sla_os)}
+                      </span>
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${corPct(
+                          g.pct_sla_projeto
+                        )}`}
+                      >
+                        Projeto {pct(g.pct_sla_projeto)}
+                      </span>
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${corPct(
+                          g.pct_sla_chamados
+                        )}`}
+                      >
+                        Chamados {pct(g.pct_sla_chamados)}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs text-white/45">
+                      {g.os_no_prazo}/{g.total_os} OSs no prazo ·{" "}
+                      {g.ocorrencias_total} ocorrência(s) · {g.chamados_total}{" "}
+                      chamado(s)
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <section className="fdl-form-card p-6">
             <h2 className="fdl-section-title">Ocorrências ({r.ocorrencias_total})</h2>
