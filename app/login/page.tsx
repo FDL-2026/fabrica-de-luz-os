@@ -74,25 +74,25 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               Central de Comando · Temporada 2026
             </p>
 
-            <h1 className="mt-4 text-4xl font-black leading-[1.15] tracking-tight">
+            <h1 className="mt-5 text-[2rem] font-black leading-[1.12] tracking-tight xl:text-[2.15rem]">
               Visão executiva e controle absoluto: toda a operação em uma única
               tela.
             </h1>
 
-            <p className="mt-4 text-sm leading-7 text-white/70">
+            <p className="mt-5 max-w-md text-sm leading-7 text-white/70">
               Transformamos o acompanhamento noturno. Monitore a evolução
               diária, valide as entregas das equipes e tenha dados confiáveis
               para a tomada de decisão.
             </p>
 
-            <div className="mt-8 space-y-3">
+            <div className="mt-10 space-y-4">
               {destaques.map((item) => (
                 <div
                   key={item.titulo}
-                  className="rounded-2xl border border-white/10 border-l-[3px] border-l-[var(--fdl-cream)]/70 bg-white/[0.07] px-5 py-3 backdrop-blur"
+                  className="rounded-2xl border border-white/10 border-l-[3px] border-l-[var(--fdl-cream)]/70 bg-white/[0.07] px-5 py-4 backdrop-blur"
                 >
                   <p className="text-sm font-bold text-white">{item.titulo}</p>
-                  <p className="mt-0.5 text-xs text-white/55">
+                  <p className="mt-1 text-xs leading-5 text-white/55">
                     {item.descricao}
                   </p>
                 </div>
