@@ -31,7 +31,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const nextPath = params?.next ?? "/dashboard";
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[var(--fdl-purple-dark)] text-white">
+    <main className="relative min-h-screen overflow-hidden bg-[var(--fdl-purple-dark)] text-white lg:h-screen">
       {/* Fundo contínuo: um só plano de luz atravessando a tela */}
       <div
         aria-hidden="true"
@@ -57,7 +57,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       </div>
 
       <div className="relative z-10 grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="hidden lg:flex lg:flex-col lg:justify-between lg:p-14">
+        <section className="hidden lg:flex lg:flex-col lg:justify-between lg:px-14 lg:py-10">
           <div className="relative z-10">
             <Image
               src="/brand/H_TAGLINE_SF_ROXO.png"
@@ -65,7 +65,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               width={500}
               height={300}
               priority
-              className="h-auto w-72 object-contain"
+              className="h-auto w-60 object-contain"
             />
           </div>
 
@@ -80,16 +80,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </h1>
 
             <p className="mt-5 max-w-md text-sm leading-7 text-white/70">
-              Transformamos o acompanhamento noturno. Monitore a evolução
-              diária, valide as entregas das equipes e tenha dados confiáveis
-              para a tomada de decisão.
+              Transformamos o acompanhamento. Monitore a evolução diária,
+              valide as entregas das equipes e tenha dados confiáveis para a
+              tomada de decisão.
             </p>
 
-            <div className="mt-10 space-y-4">
+            <div className="mt-8 space-y-3">
               {destaques.map((item) => (
                 <div
                   key={item.titulo}
-                  className="rounded-2xl border border-white/10 border-l-[3px] border-l-[var(--fdl-cream)]/70 bg-white/[0.07] px-5 py-4 backdrop-blur"
+                  className="rounded-2xl border border-white/10 border-l-[3px] border-l-[var(--fdl-cream)]/70 bg-white/[0.07] px-5 py-3.5 backdrop-blur"
                 >
                   <p className="text-sm font-bold text-white">{item.titulo}</p>
                   <p className="mt-1 text-xs leading-5 text-white/55">
