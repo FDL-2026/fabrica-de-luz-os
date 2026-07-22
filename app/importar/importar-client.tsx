@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
+
+import { createClient } from "@/lib/supabase/client";
 
 type CellValue = string | number | boolean | Date | null | undefined;
 type RowValue = CellValue[];
@@ -594,6 +596,45 @@ function interpretarCronograma(file: File, workbook: XLSX.WorkBook) {
   return preview;
 }
 
+type UsuarioLista = {
+  usuario_id: string;
+  nome: string | null;
+  perfil: string | null;
+  ativo: boolean | null;
+};
+
+// Rótulos de "equipe" que não representam um líder cadastrável e, portanto,
+// não devem tentar casar com um montador.
+const EQUIPE_PLACEHOLDERS = new Set([
+  "",
+  "nao informada",
+  "nao informado",
+  "sem equipe",
+  "a definir",
+  "a confirmar",
+  "mista",
+  "verificar",
+]);
+
+function normalizarNomeLocal(valor: string) {
+  return valor
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s/]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// "RAY / ADENILDA" -> ["ray", "adenilda"]; "JEFERSON (ZÉ)" -> ["jeferson"].
+// Devolve o primeiro nome de cada parte, que é o que casa com o montador.
+function primeirosNomesEquipe(label: string) {
+  return normalizarNomeLocal(label)
+    .split("/")
+    .map((parte) => parte.trim().split(" ")[0])
+    .filter(Boolean);
+}
+
 export default function ImportarClient() {
   const [preview, setPreview] = useState<CronogramaPreview | null>(null);
   const [erro, setErro] = useState("");
@@ -601,6 +642,97 @@ export default function ImportarClient() {
   const [confirmando, setConfirmando] = useState(false);
   const [resultado, setResultado] = useState<ResultadoImportacao | null>(null);
   const [revisao, setRevisao] = useState<RevisaoImportacao | null>(null);
+
+  // Seleção de responsáveis (template "mundos"): gestor comercial e os
+  // montadores das equipes envolvidas.
+  const [usuarios, setUsuarios] = useState<UsuarioLista[]>([]);
+  const [gestorId, setGestorId] = useState("");
+  const [montadoresSel, setMontadoresSel] = useState<Set<string>>(new Set());
+
+  const gestores = useMemo(
+    () =>
+      usuarios.filter(
+        (u) => u.perfil === "gestor_comercial" && u.ativo !== false
+      ),
+    [usuarios]
+  );
+
+  const montadores = useMemo(
+    () => usuarios.filter((u) => u.perfil === "montador" && u.ativo !== false),
+    [usuarios]
+  );
+
+  const equipesCronograma = useMemo(() => {
+    if (!preview) return [] as string[];
+    const mapa = new Map<string, string>();
+    for (const etapa of preview.etapas) {
+      const label = (etapa.equipe || "").trim();
+      if (!label || EQUIPE_PLACEHOLDERS.has(normalizarNomeLocal(label))) continue;
+      mapa.set(normalizarNomeLocal(label), label);
+    }
+    return [...mapa.values()];
+  }, [preview]);
+
+  // Carrega usuários e pré-casa os montadores pelos primeiros nomes das equipes.
+  useEffect(() => {
+    if (preview?.template !== "mundos") {
+      setUsuarios([]);
+      setGestorId("");
+      setMontadoresSel(new Set());
+      return;
+    }
+
+    let ativo = true;
+
+    (async () => {
+      const supabase = createClient();
+      const { data } = await supabase.rpc("fdl_listar_usuarios_gestao");
+
+      if (!ativo) return;
+
+      const lista = (data ?? []) as UsuarioLista[];
+      setUsuarios(lista);
+
+      const montadoresLista = lista.filter(
+        (u) => u.perfil === "montador" && u.ativo !== false
+      );
+      const preSelecionados = new Set<string>();
+
+      for (const etapa of preview.etapas) {
+        const label = etapa.equipe || "";
+        if (EQUIPE_PLACEHOLDERS.has(normalizarNomeLocal(label))) continue;
+
+        for (const primeiro of primeirosNomesEquipe(label)) {
+          for (const montador of montadoresLista) {
+            const primeiroMontador = normalizarNomeLocal(
+              montador.nome ?? ""
+            ).split(" ")[0];
+            if (primeiroMontador && primeiroMontador === primeiro) {
+              preSelecionados.add(montador.usuario_id);
+            }
+          }
+        }
+      }
+
+      setMontadoresSel(preSelecionados);
+    })();
+
+    return () => {
+      ativo = false;
+    };
+  }, [preview]);
+
+  function alternarMontador(id: string) {
+    setMontadoresSel((anterior) => {
+      const proximo = new Set(anterior);
+      if (proximo.has(id)) {
+        proximo.delete(id);
+      } else {
+        proximo.add(id);
+      }
+      return proximo;
+    });
+  }
 
   const resumo = useMemo(() => {
     if (!preview) {
@@ -682,7 +814,11 @@ export default function ImportarClient() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(preview),
+        body: JSON.stringify({
+          ...preview,
+          gestorId: gestorId || null,
+          montadorIds: [...montadoresSel],
+        }),
       });
 
       const json = await response.json();
@@ -1014,6 +1150,100 @@ export default function ImportarClient() {
               </div>
             ) : null}
           </section>
+
+          {preview.template === "mundos" ? (
+            <section className="fdl-form-card p-6">
+              <div className="mb-5">
+                <h2 className="text-xl font-semibold">
+                  Responsáveis do projeto
+                </h2>
+                <p className="mt-1 text-sm text-white/50">
+                  O cronograma por mundos não traz o gestor, e as equipes são
+                  por mundo. Escolha o gestor comercial e confirme os montadores
+                  envolvidos — todos os marcados são vinculados ao projeto.
+                </p>
+              </div>
+
+              <div className="grid gap-6 lg:grid-cols-2">
+                <div>
+                  <label className="fdl-ui-label">Gestor Comercial</label>
+                  <select
+                    className="fdl-select mt-2 w-full"
+                    value={gestorId}
+                    onChange={(event) => setGestorId(event.target.value)}
+                  >
+                    <option value="">Selecionar gestor…</option>
+                    {gestores.map((gestor) => (
+                      <option key={gestor.usuario_id} value={gestor.usuario_id}>
+                        {gestor.nome ?? "Sem nome"}
+                      </option>
+                    ))}
+                  </select>
+                  {gestores.length === 0 ? (
+                    <p className="mt-2 text-xs text-yellow-100/80">
+                      Nenhum gestor comercial disponível para você. Cadastre em
+                      Usuários ou defina depois na Equipe do projeto.
+                    </p>
+                  ) : null}
+                </div>
+
+                <div>
+                  <label className="fdl-ui-label">
+                    Equipes de montagem (montadores envolvidos)
+                  </label>
+
+                  {equipesCronograma.length > 0 ? (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {equipesCronograma.map((label) => (
+                        <span
+                          key={label}
+                          className="rounded-full bg-white/10 px-2.5 py-0.5 text-xs text-white/70"
+                        >
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  <div className="mt-3 max-h-56 space-y-1 overflow-auto rounded-2xl border border-white/10 bg-white/[0.03] p-2">
+                    {montadores.length === 0 ? (
+                      <p className="p-2 text-xs text-white/50">
+                        Nenhum montador cadastrado. Cadastre em Usuários e
+                        reimporte para vincular.
+                      </p>
+                    ) : (
+                      montadores.map((montador) => {
+                        const marcado = montadoresSel.has(montador.usuario_id);
+                        return (
+                          <label
+                            key={montador.usuario_id}
+                            className="flex cursor-pointer items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-white/5"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={marcado}
+                              onChange={() =>
+                                alternarMontador(montador.usuario_id)
+                              }
+                            />
+                            <span className="text-sm text-white/80">
+                              {montador.nome ?? "Sem nome"}
+                            </span>
+                          </label>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  <p className="mt-2 text-xs text-white/45">
+                    {montadoresSel.size} montador(es) marcado(s). Líderes sem
+                    correspondência aparecem nos chips acima — cadastre-os em
+                    Usuários e reimporte, ou marque manualmente.
+                  </p>
+                </div>
+              </div>
+            </section>
+          ) : null}
 
           <section className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
             <div className="fdl-form-card p-6">

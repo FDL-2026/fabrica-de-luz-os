@@ -126,6 +126,23 @@ export async function POST(request: NextRequest) {
     ...payload,
   };
 
+  // Seleção explícita de responsáveis feita no preview (template "mundos").
+  // Quando presente, tem prioridade sobre o reconhecimento por texto — que
+  // continua valendo para os cronogramas legados.
+  const gestorIdExplicito =
+    typeof payloadComTemporada.gestorId === "string" &&
+    payloadComTemporada.gestorId
+      ? payloadComTemporada.gestorId
+      : null;
+
+  const montadorIdsExplicitos: string[] = Array.isArray(
+    payloadComTemporada.montadorIds
+  )
+    ? (payloadComTemporada.montadorIds as unknown[]).filter(
+        (id): id is string => typeof id === "string" && id.length > 0
+      )
+    : [];
+
   // Carrega gestores e montadores cadastrados para tentar reconhecer, pelo nome
   // que veio no cronograma, quem é o responsável e a equipe. Best-effort: se a
   // listagem falhar, a importação segue normalmente, apenas sem vínculo
@@ -192,6 +209,12 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Gestor efetivo: o escolhido no preview vence; senão, o reconhecido por texto.
+  const gestorEscolhido =
+    (gestorIdExplicito
+      ? gestores.find((g) => g.usuario_id === gestorIdExplicito) ?? null
+      : null) ?? gestorResolvido;
+
   const { data, error } = await supabase.rpc(
     "confirmar_importacao_cronograma",
     {
@@ -232,7 +255,7 @@ export async function POST(request: NextRequest) {
     // Usa o nome canônico quando reconhecido; senão, o texto informado — nunca
     // sobrescreve com um placeholder ("Não informado").
     const responsavelParaGravar =
-      gestorResolvido?.nome ??
+      gestorEscolhido?.nome ??
       (responsavelEhPlaceholder ? null : responsavelInformado || null);
 
     if (responsavelParaGravar) {
@@ -251,18 +274,18 @@ export async function POST(request: NextRequest) {
         .eq("id", resultado.projeto_id);
     }
 
-    if (gestorResolvido) {
+    if (gestorEscolhido) {
       const { error: erroGestor } = await supabase.rpc(
         "fdl_adicionar_usuario_projeto",
         {
           p_projeto_id: resultado.projeto_id,
-          p_usuario_id: gestorResolvido.usuario_id,
+          p_usuario_id: gestorEscolhido.usuario_id,
           p_funcao: "gestor_comercial",
         }
       );
 
       if (!erroGestor) {
-        vinculos.gestor = gestorResolvido.nome;
+        vinculos.gestor = gestorEscolhido.nome;
       }
     }
 
@@ -294,11 +317,20 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    for (const os of ordensServico) {
-      registrarEquipe(os?.equipe);
-    }
+    if (montadorIdsExplicitos.length > 0) {
+      // Preview do template "mundos": o usuário já mapeou as equipes envolvidas
+      // aos montadores cadastrados. Vinculamos exatamente esses.
+      for (const id of montadorIdsExplicitos) {
+        const montador = montadores.find((m) => m.usuario_id === id);
+        if (montador) montadoresPorId.set(montador.usuario_id, montador);
+      }
+    } else {
+      for (const os of ordensServico) {
+        registrarEquipe(os?.equipe);
+      }
 
-    registrarEquipe(payloadComTemporada.equipe);
+      registrarEquipe(payloadComTemporada.equipe);
+    }
 
     equipesSemVinculo = [...equipesNaoReconhecidas.values()];
 
