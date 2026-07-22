@@ -6,6 +6,7 @@ import {
   resolverUsuario,
   type UsuarioVinculo,
 } from "@/lib/importacao/vinculos";
+import { ehSomenteLeitura } from "@/lib/perfis";
 
 // Rótulos genéricos de "Equipe" que não representam uma pessoa e, portanto, não
 // devem ser reportados como "montador não reconhecido".
@@ -94,9 +95,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const perfisPermitidos = ["admin", "gerente_geral", "gestor_contas"];
-
-  if (!perfisPermitidos.includes(usuario.perfil)) {
+  // Todos os perfis podem importar cronogramas, exceto visitante (somente
+  // leitura). Usuário inativo já foi barrado acima.
+  if (ehSomenteLeitura(usuario.perfil)) {
     return NextResponse.json(
       { error: "Seu perfil não tem permissão para importar cronogramas." },
       { status: 403 }
