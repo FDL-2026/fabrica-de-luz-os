@@ -458,25 +458,20 @@ export default function ImportarClient() {
         equipesNaoReconhecidas: [],
       };
 
-      const precisaRevisar =
-        Boolean(alertas.gestorNaoReconhecido) ||
-        alertas.equipesNaoReconhecidas.length > 0;
-
-      // Quando há algo a revisar (gestor/montador não reconhecido), mantém a
-      // pessoa na tela com o resumo, em vez de redirecionar direto ao projeto.
-      if (precisaRevisar) {
-        setRevisao({
-          projetoId: resultadoImportacao.projeto_id,
-          vinculos,
-          alertas,
-        });
-        setConfirmando(false);
-        return;
-      }
-
+      // Ao concluir, o preview (etapas/OSs) some e sobe o card de "Projeto
+      // criado" com os detalhes — sem redirecionar automaticamente.
       setResultado(resultadoImportacao);
+      setRevisao({
+        projetoId: resultadoImportacao.projeto_id,
+        vinculos,
+        alertas,
+      });
+      setPreview(null);
+      setConfirmando(false);
 
-      window.location.href = `/projetos/${resultadoImportacao.projeto_id}`;
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     } catch (error) {
       const message =
         error instanceof Error
@@ -546,51 +541,68 @@ export default function ImportarClient() {
             ) : null}
 
             {resultado ? (
-              <div className="mt-5 rounded-2xl border border-green-400/30 bg-green-500/10 p-4 text-sm text-green-100">
-                Importação concluída. Abrindo projeto...
-              </div>
-            ) : null}
-
-            {revisao ? (
-              <div className="mt-5 space-y-4 rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+              <div className="mt-5 space-y-4 rounded-2xl border border-green-400/30 bg-green-500/10 p-5">
                 <div>
-                  <p className="text-base font-semibold text-white">
-                    Importação concluída
+                  <p className="text-lg font-bold text-white">
+                    ✓ Projeto criado
                   </p>
-                  <p className="mt-1 text-sm text-white/55">
-                    O projeto foi criado. Revise os vínculos automáticos abaixo
-                    antes de continuar.
+                  <p className="mt-1 text-sm text-white/70">
+                    <strong>{resultado.projeto_nome}</strong> foi{" "}
+                    {resultado.os_atualizadas > 0 && resultado.os_criadas === 0
+                      ? "atualizado"
+                      : "criado"}{" "}
+                    com sucesso.
                   </p>
                 </div>
 
-                {revisao.vinculos.gestor ? (
-                  <div className="rounded-xl border border-green-400/25 bg-green-500/10 p-3 text-sm text-green-100">
-                    Gestor comercial vinculado:{" "}
-                    <strong>{revisao.vinculos.gestor}</strong>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.05] p-3 text-center">
+                    <p className="text-2xl font-black text-white">
+                      {resultado.etapas_processadas}
+                    </p>
+                    <p className="text-xs text-white/55">etapas</p>
                   </div>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.05] p-3 text-center">
+                    <p className="text-2xl font-black text-white">
+                      {resultado.os_criadas}
+                    </p>
+                    <p className="text-xs text-white/55">OSs criadas</p>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.05] p-3 text-center">
+                    <p className="text-2xl font-black text-white">
+                      {resultado.os_atualizadas}
+                    </p>
+                    <p className="text-xs text-white/55">OSs atualizadas</p>
+                  </div>
+                </div>
+
+                {revisao?.vinculos.gestor ? (
+                  <p className="text-sm text-green-100">
+                    Gestor vinculado:{" "}
+                    <strong>{revisao.vinculos.gestor}</strong>
+                  </p>
                 ) : null}
 
-                {revisao.vinculos.montadores.length > 0 ? (
-                  <div className="rounded-xl border border-green-400/25 bg-green-500/10 p-3 text-sm text-green-100">
+                {revisao && revisao.vinculos.montadores.length > 0 ? (
+                  <p className="text-sm text-green-100">
                     Montadores vinculados:{" "}
                     <strong>{revisao.vinculos.montadores.join(", ")}</strong>
-                  </div>
+                  </p>
                 ) : null}
 
-                {revisao.alertas.gestorNaoReconhecido ? (
+                {revisao?.alertas.gestorNaoReconhecido ? (
                   <div className="rounded-xl border border-yellow-400/30 bg-yellow-500/10 p-3 text-sm text-yellow-100">
-                    Gestor comercial não reconhecido:{" "}
-                    <strong>{revisao.alertas.gestorNaoReconhecido}</strong>. O
-                    projeto foi criado com esse nome como texto, mas sem vínculo.
-                    Cadastre o gestor e vincule pela tela de Equipe do projeto.
+                    Gestor não reconhecido:{" "}
+                    <strong>{revisao.alertas.gestorNaoReconhecido}</strong>.
+                    Defina o gestor na tela de Equipe do projeto.
                   </div>
                 ) : null}
 
-                {revisao.alertas.equipesNaoReconhecidas.length > 0 ? (
+                {revisao && revisao.alertas.equipesNaoReconhecidas.length > 0 ? (
                   <div className="rounded-xl border border-yellow-400/30 bg-yellow-500/10 p-3 text-sm text-yellow-100">
                     <p>
-                      Equipes sem montador reconhecido (cadastre e vincule
-                      manualmente):
+                      Equipes sem montador reconhecido — cadastre em Usuários e
+                      vincule na Equipe do projeto:
                     </p>
                     <ul className="mt-2 list-inside list-disc space-y-1 text-yellow-100/85">
                       {revisao.alertas.equipesNaoReconhecidas.map((nome) => (
@@ -602,14 +614,14 @@ export default function ImportarClient() {
 
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <a
-                    href={`/projetos/${revisao.projetoId}`}
+                    href={`/projetos/${resultado.projeto_id}`}
                     className="h-11 flex-1 rounded-2xl bg-[var(--fdl-cream)] px-5 text-center text-sm font-semibold leading-[2.75rem] text-[var(--fdl-purple-dark)] transition hover:brightness-95"
                   >
                     Abrir projeto
                   </a>
 
                   <a
-                    href={`/projetos/${revisao.projetoId}/equipe`}
+                    href={`/projetos/${resultado.projeto_id}/equipe`}
                     className="h-11 flex-1 rounded-2xl border border-white/15 px-5 text-center text-sm font-semibold leading-[2.75rem] text-white/80 transition hover:bg-white/10 hover:text-white"
                   >
                     Ir para Equipe do projeto
