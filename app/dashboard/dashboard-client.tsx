@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ROTULO_OCORRENCIA } from "@/lib/ocorrencias";
@@ -249,6 +250,7 @@ export default function DashboardClient({
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [dados, setDados] = useState<DashboardData>(emptyDashboard);
+  const [chamadosPendentes, setChamadosPendentes] = useState(0);
   const [progressosPonderados, setProgressosPonderados] = useState<
     Record<string, ProgressoPonderadoProjetoDashboard>
   >({});
@@ -410,6 +412,25 @@ export default function DashboardClient({
     carregarDashboard();
   }, [gestorSelecionado, projetoSelecionado, supabase]);
 
+  // Chamados resolvidos aguardando validação da gestão (para o card de alerta).
+  useEffect(() => {
+    if (somenteLeitura) {
+      setChamadosPendentes(0);
+      return;
+    }
+    let ativo = true;
+    supabase.rpc("fdl_resumo_chamados_gestao").then(({ data }) => {
+      if (!ativo) return;
+      const row = Array.isArray(data) ? data[0] : data;
+      setChamadosPendentes(
+        Number((row as { aguardando_validacao?: number } | null)?.aguardando_validacao ?? 0)
+      );
+    });
+    return () => {
+      ativo = false;
+    };
+  }, [supabase, somenteLeitura]);
+
   function limparFiltros() {
     setGestorSelecionado("");
     setProjetoSelecionado("");
@@ -552,6 +573,34 @@ export default function DashboardClient({
           </div>
         </div>
       </header>
+
+      {!somenteLeitura && chamadosPendentes > 0 ? (
+        <Link
+          href="/chamados"
+          className="flex items-center justify-between gap-4 rounded-3xl border border-yellow-400/30 bg-yellow-500/10 p-5 transition hover:bg-yellow-500/15"
+        >
+          <div className="flex items-center gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-yellow-400/20 text-2xl">
+              🔔
+            </span>
+            <div>
+              <p className="text-sm font-bold text-yellow-100">
+                {chamadosPendentes}{" "}
+                {chamadosPendentes === 1
+                  ? "chamado aguardando validação"
+                  : "chamados aguardando validação"}
+              </p>
+              <p className="mt-0.5 text-xs text-yellow-100/70">
+                Montadores resolveram e aguardam sua validação para liberar ao
+                cliente.
+              </p>
+            </div>
+          </div>
+          <span className="shrink-0 rounded-full bg-yellow-400/20 px-4 py-2 text-xs font-bold text-yellow-100">
+            Revisar →
+          </span>
+        </Link>
+      ) : null}
 
       <section className="fdl-ui-kpi-grid">
         <div className="fdl-ui-kpi">
