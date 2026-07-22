@@ -13,6 +13,14 @@ type EtapaPreview = {
   terminoPrevisto: string;
   responsavelComercial: string;
   equipe: string;
+  // Campos do template "mundos" (Natal do Bem / prefeituras). Opcionais para
+  // manter o formato legado intacto.
+  idEspaco?: string;
+  contrato?: string;
+  statusProducao?: string;
+  inicioProgramado?: string;
+  terminoProgramado?: string;
+  progressoReferencia?: string;
 };
 
 type OsPreview = {
@@ -29,7 +37,14 @@ type OsPreview = {
   progresso: string;
   responsavelComercial: string;
   equipe: string;
+  // Template "mundos": contrato e o par de datas programadas (contrato). As
+  // datas "previstas" acima passam a carregar a Proposta (base do SLA).
+  contrato?: string;
+  inicioProgramado?: string;
+  terminoProgramado?: string;
 };
+
+type TemplateCronograma = "legado" | "mundos";
 
 type CronogramaPreview = {
   arquivo: string;
@@ -43,6 +58,9 @@ type CronogramaPreview = {
   etapas: EtapaPreview[];
   ordensServico: OsPreview[];
   avisos: string[];
+  // Identifica o formato lido e marca o projeto-chave (Natal do Bem).
+  template: TemplateCronograma;
+  isChave?: boolean;
 };
 
 type ResultadoImportacao = {
@@ -190,6 +208,234 @@ function encontrarAbaCronograma(workbook: XLSX.WorkBook) {
   return abaCronograma ?? workbook.SheetNames[0];
 }
 
+// ---------------------------------------------------------------------------
+// Template "mundos" (Natal do Bem / prefeituras)
+//
+// Reconhecido pelas abas SÍNTESE (um resumo por MUNDO, com a EQUIPE) e
+// CRONOG-MONT (uma linha por TAREFA, cujo Item "9.3" pertence ao mundo "9").
+// Mapeamos: mundo -> etapa (com equipe) e tarefa -> OS. As datas "previstas"
+// carregam a Proposta (base do SLA); a Programada (contrato) vai à parte.
+// ---------------------------------------------------------------------------
+
+function normalizarCabecalho(valor: CellValue) {
+  return limparTexto(valor)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function acharAba(workbook: XLSX.WorkBook, regex: RegExp) {
+  return workbook.SheetNames.find((nome) =>
+    regex.test(
+      nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    )
+  );
+}
+
+function ehTemplateMundos(workbook: XLSX.WorkBook) {
+  return Boolean(
+    acharAba(workbook, /sintese/) && acharAba(workbook, /cronog-?mont/)
+  );
+}
+
+// Localiza a linha de cabeçalho (a que contém "Item") e devolve um mapa
+// nome-normalizado -> índice de coluna, tolerante a colunas deslocadas.
+function mapearColunas(rows: RowValue[], ateLinha = 12) {
+  for (let i = 0; i < Math.min(rows.length, ateLinha); i += 1) {
+    const linha = rows[i] ?? [];
+    const indices: Record<string, number> = {};
+
+    linha.forEach((celula, idx) => {
+      const chave = normalizarCabecalho(celula);
+      if (chave) indices[chave] = idx;
+    });
+
+    if ("item" in indices) {
+      return { headerIndex: i, indices };
+    }
+  }
+
+  return { headerIndex: -1, indices: {} as Record<string, number> };
+}
+
+function acharIndice(
+  indices: Record<string, number>,
+  ...alternativas: string[]
+) {
+  for (const alt of alternativas) {
+    for (const chave of Object.keys(indices)) {
+      if (chave === alt || chave.includes(alt)) return indices[chave];
+    }
+  }
+  return -1;
+}
+
+function prefixoMundo(item: string) {
+  const match = item.match(/^\s*(\d+)/);
+  return match ? match[1] : "";
+}
+
+function interpretarCronogramaMundos(
+  file: File,
+  workbook: XLSX.WorkBook
+): CronogramaPreview {
+  const abaSintese = acharAba(workbook, /sintese/)!;
+  const abaMont = acharAba(workbook, /cronog-?mont/)!;
+
+  const sintese = XLSX.utils.sheet_to_json<RowValue>(
+    workbook.Sheets[abaSintese],
+    { header: 1, raw: true, defval: "" }
+  );
+  const mont = XLSX.utils.sheet_to_json<RowValue>(workbook.Sheets[abaMont], {
+    header: 1,
+    raw: true,
+    defval: "",
+  });
+
+  const avisos: string[] = [];
+
+  // ---- MUNDOS (etapas), a partir da SÍNTESE --------------------------------
+  const colS = mapearColunas(sintese);
+  const sItem = acharIndice(colS.indices, "item");
+  const sId = acharIndice(colS.indices, "id");
+  const sEquipe = acharIndice(colS.indices, "equipe");
+  const sEspaco = acharIndice(colS.indices, "espaco");
+  const sStatus = acharIndice(colS.indices, "status");
+  const sContrato = acharIndice(colS.indices, "contrato");
+  const sInicioProp = acharIndice(colS.indices, "inicio");
+  const sFimProp = acharIndice(colS.indices, "conclusao", "termino", "fim");
+  const sProgresso = 0; // coluna sem rótulo à esquerda: % de avanço do mundo
+
+  const etapas: EtapaPreview[] = [];
+  const equipePorMundo = new Map<string, string>();
+
+  sintese.forEach((row, index) => {
+    if (index <= colS.headerIndex) return;
+
+    const item = limparTexto(row[sItem]);
+    const codigo = prefixoMundo(item);
+    const espaco = limparTexto(row[sEspaco]);
+
+    if (!codigo || !espaco) return; // ignora linhas sem mundo numerado
+
+    const equipe = sEquipe >= 0 ? limparTexto(row[sEquipe]) : "";
+    equipePorMundo.set(codigo, equipe);
+
+    etapas.push({
+      id: codigo,
+      tarefa: espaco,
+      inicioPrevisto: sInicioProp >= 0 ? formatarData(row[sInicioProp]) : "",
+      terminoPrevisto: sFimProp >= 0 ? formatarData(row[sFimProp]) : "",
+      responsavelComercial: "",
+      equipe: equipe || "Não informada",
+      idEspaco: sId >= 0 ? limparTexto(row[sId]) : "",
+      contrato: sContrato >= 0 ? limparTexto(row[sContrato]) : "",
+      statusProducao: sStatus >= 0 ? limparTexto(row[sStatus]) : "",
+      progressoReferencia: formatarProgresso(row[sProgresso]),
+    });
+  });
+
+  // ---- TAREFAS (OSs), a partir da CRONOG-MONT ------------------------------
+  const colM = mapearColunas(mont);
+  const mItem = acharIndice(colM.indices, "item");
+  const mEspaco = acharIndice(colM.indices, "espaco");
+  const mDesc = acharIndice(colM.indices, "descricao", "atividade");
+  const mContrato = acharIndice(colM.indices, "contrato");
+
+  // Datas: há dois pares (Programada e Proposta), na ordem
+  // início/conclusão. Coletamos todos os índices de "inicio" e de
+  // "conclusao/termino" e assumimos [0]=Programada, [1]=Proposta.
+  const inicios = Object.keys(colM.indices)
+    .filter((k) => k.includes("inicio"))
+    .map((k) => colM.indices[k])
+    .sort((a, b) => a - b);
+  const fins = Object.keys(colM.indices)
+    .filter((k) => k.includes("conclusao") || k.includes("termino") || k.includes("fim"))
+    .map((k) => colM.indices[k])
+    .sort((a, b) => a - b);
+
+  const idxInicioProg = inicios[0] ?? -1;
+  const idxInicioProp = inicios[1] ?? inicios[0] ?? -1;
+  const idxFimProg = fins[0] ?? -1;
+  const idxFimProp = fins[1] ?? fins[0] ?? -1;
+
+  const ordensServico: OsPreview[] = [];
+
+  mont.forEach((row, index) => {
+    if (index <= colM.headerIndex) return;
+
+    const item = limparTexto(row[mItem]);
+    if (!/^\d+\.\d+/.test(item)) return; // só tarefas "mundo.tarefa"
+
+    const etapaId = prefixoMundo(item);
+    const espaco = mEspaco >= 0 ? limparTexto(row[mEspaco]) : "";
+    const etapa = etapas.find((e) => e.id === etapaId);
+
+    if (!etapa) {
+      avisos.push(
+        `Tarefa ${item} (${espaco}) não casou com nenhum mundo da SÍNTESE.`
+      );
+    }
+
+    ordensServico.push({
+      id: item,
+      etapaId,
+      etapaNome: etapa?.tarefa ?? espaco ?? "Mundo não identificado",
+      tarefa: mDesc >= 0 ? limparTexto(row[mDesc]) : "",
+      inicioPrevisto: idxInicioProp >= 0 ? formatarData(row[idxInicioProp]) : "",
+      duracaoPrevista: "",
+      terminoPrevisto: idxFimProp >= 0 ? formatarData(row[idxFimProp]) : "",
+      inicioReal: "",
+      duracaoReal: "",
+      terminoReal: "",
+      progresso: "0%",
+      responsavelComercial: "",
+      equipe: equipePorMundo.get(etapaId) || etapa?.equipe || "Não informada",
+      contrato: mContrato >= 0 ? limparTexto(row[mContrato]) : "",
+      inicioProgramado: idxInicioProg >= 0 ? formatarData(row[idxInicioProg]) : "",
+      terminoProgramado: idxFimProg >= 0 ? formatarData(row[idxFimProg]) : "",
+    });
+  });
+
+  // ---- Cabeçalho do projeto-chave ------------------------------------------
+  // Nome vem do título da própria aba (linha 2, ex.: "NATAL DO BEM - 1ª Etapa").
+  const tituloMont = limparTexto(workbook.Sheets[abaMont]?.["B2"]?.v);
+  const nomeProjeto =
+    tituloMont.replace(/\s*-\s*\d+.?\s*etapa.*$/i, "").trim() || "Natal do Bem";
+
+  const datasInicio = ordensServico
+    .map((os) => os.inicioPrevisto)
+    .filter(Boolean)
+    .sort();
+  const inicioOperacoes = datasInicio[0] || "Não informado";
+
+  if (etapas.length === 0) {
+    avisos.push("Nenhum mundo foi identificado na aba SÍNTESE.");
+  }
+  if (ordensServico.length === 0) {
+    avisos.push("Nenhuma tarefa foi identificada na aba CRONOG-MONT.");
+  }
+  avisos.push(
+    "UF/cidade do projeto-chave não vêm da planilha — confirme antes de importar."
+  );
+
+  return {
+    arquivo: file.name,
+    aba: `${abaSintese} + ${abaMont}`,
+    cliente: nomeProjeto,
+    shopping: nomeProjeto,
+    uf: "GO",
+    responsavelComercial: "Não informado",
+    equipe: "Por mundo (ver etapas)",
+    inicioOperacoes,
+    etapas,
+    ordensServico,
+    avisos,
+    template: "mundos",
+    isChave: true,
+  };
+}
+
 function interpretarCronograma(file: File, workbook: XLSX.WorkBook) {
   const aba = encontrarAbaCronograma(workbook);
   const sheet = workbook.Sheets[aba];
@@ -255,6 +501,7 @@ function interpretarCronograma(file: File, workbook: XLSX.WorkBook) {
     etapas: [],
     ordensServico: [],
     avisos: [],
+    template: "legado",
   };
 
   let etapaAtual: EtapaPreview | null = null;
@@ -404,7 +651,9 @@ export default function ImportarClient() {
         cellDates: true,
       });
 
-      const cronograma = interpretarCronograma(file, workbook);
+      const cronograma = ehTemplateMundos(workbook)
+        ? interpretarCronogramaMundos(file, workbook)
+        : interpretarCronograma(file, workbook);
 
       setPreview(cronograma);
     } catch (error) {
