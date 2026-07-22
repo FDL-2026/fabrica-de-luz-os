@@ -320,9 +320,10 @@ export default function ProgressoMundos({
                                 </span>
                                 <a
                                   href={`/projetos/${projetoId}/os/${os.id}`}
-                                  className="whitespace-nowrap rounded-lg border border-white/15 px-2.5 py-1 text-xs font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+                                  className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg bg-[var(--fdl-cream)]/10 px-2.5 py-1 text-xs font-semibold text-[var(--fdl-cream)] transition hover:bg-[var(--fdl-cream)]/20"
                                 >
                                   Detalhes
+                                  <span aria-hidden="true">→</span>
                                 </a>
                               </div>
                             </div>
