@@ -933,7 +933,7 @@ export default function ImportarClient() {
               <div className="mt-5 space-y-4 rounded-2xl border border-green-400/30 bg-green-500/10 p-5">
                 <div>
                   <p className="text-lg font-bold text-white">
-                    ✓ Projeto criado
+                    Projeto criado
                   </p>
                   <p className="mt-1 text-sm text-white/70">
                     <strong>{resultado.projeto_nome}</strong> foi{" "}
@@ -1006,14 +1006,14 @@ export default function ImportarClient() {
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <a
                     href={`/projetos/${resultado.projeto_id}`}
-                    className="h-11 flex-1 rounded-2xl bg-[var(--fdl-cream)] px-5 text-center text-sm font-semibold leading-[2.75rem] text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                    className="fdl-ui-btn fdl-ui-btn-primary flex-1"
                   >
                     Abrir projeto
                   </a>
 
                   <a
                     href={`/projetos/${resultado.projeto_id}/equipe`}
-                    className="h-11 flex-1 rounded-2xl border border-white/15 px-5 text-center text-sm font-semibold leading-[2.75rem] text-white/80 transition hover:bg-white/10 hover:text-white"
+                    className="fdl-ui-btn fdl-ui-btn-ghost flex-1"
                   >
                     Ir para Equipe do projeto
                   </a>
@@ -1394,7 +1394,7 @@ export default function ImportarClient() {
                   preview.ordensServico.length === 0 ||
                   Boolean(revisao)
                 }
-                className="mt-6 h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+                className="fdl-ui-btn fdl-ui-btn-primary mt-6 w-full"
               >
                 {confirmando
                   ? "Confirmando importação..."

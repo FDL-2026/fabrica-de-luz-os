@@ -456,7 +456,7 @@ export default function ChamadoDetalheMontadorClient({ codigo, chamadoId }: Prop
                       : "cursor-pointer hover:brightness-95"
                   }`}
                 >
-                  {enviando ? "Enviando..." : "📷 Tirar foto"}
+                  {enviando ? "Enviando..." : "Tirar foto"}
                   <input
                     type="file"
                     accept="image/*"

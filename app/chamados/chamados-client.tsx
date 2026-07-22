@@ -643,7 +643,7 @@ function DetalheModal({
         {c.status === "resolvido" ? (
           c.validado_em ? (
             <div className="mt-4 rounded-2xl border border-green-400/30 bg-green-500/10 p-4 text-sm text-green-100">
-              ✓ Resolução validada em {formatDateTime(c.validado_em)}. O cliente
+              Resolução validada em {formatDateTime(c.validado_em)}. O cliente
               já consegue ver as fotos da resolução.
             </div>
           ) : (
@@ -659,7 +659,7 @@ function DetalheModal({
                 type="button"
                 onClick={onValidar}
                 disabled={salvando}
-                className="mt-3 h-10 rounded-xl bg-green-500/90 px-5 text-sm font-semibold text-white transition hover:bg-green-500 disabled:opacity-50"
+                className="fdl-ui-btn fdl-ui-btn-primary mt-3"
               >
                 {salvando ? "Validando..." : "Validar resolução"}
               </button>

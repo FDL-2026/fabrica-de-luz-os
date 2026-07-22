@@ -575,31 +575,26 @@ export default function DashboardClient({
       </header>
 
       {!somenteLeitura && chamadosPendentes > 0 ? (
-        <Link
-          href="/chamados"
-          className="flex items-center justify-between gap-4 rounded-3xl border border-yellow-400/30 bg-yellow-500/10 p-5 transition hover:bg-yellow-500/15"
-        >
-          <div className="flex items-center gap-4">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-yellow-400/20 text-2xl">
-              🔔
-            </span>
-            <div>
-              <p className="text-sm font-bold text-yellow-100">
-                {chamadosPendentes}{" "}
-                {chamadosPendentes === 1
-                  ? "chamado aguardando validação"
-                  : "chamados aguardando validação"}
-              </p>
-              <p className="mt-0.5 text-xs text-yellow-100/70">
-                Montadores resolveram e aguardam sua validação para liberar ao
-                cliente.
-              </p>
-            </div>
+        <div className="flex flex-col gap-4 rounded-3xl border border-yellow-400/30 bg-yellow-500/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-bold text-yellow-100">
+              {chamadosPendentes}{" "}
+              {chamadosPendentes === 1
+                ? "chamado aguardando validação"
+                : "chamados aguardando validação"}
+            </p>
+            <p className="mt-0.5 text-xs text-yellow-100/70">
+              Montadores resolveram e aguardam sua validação para liberar ao
+              cliente.
+            </p>
           </div>
-          <span className="shrink-0 rounded-full bg-yellow-400/20 px-4 py-2 text-xs font-bold text-yellow-100">
-            Revisar →
-          </span>
-        </Link>
+          <Link
+            href="/chamados"
+            className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-primary shrink-0"
+          >
+            Revisar chamados
+          </Link>
+        </div>
       ) : null}
 
       <section className="fdl-ui-kpi-grid">

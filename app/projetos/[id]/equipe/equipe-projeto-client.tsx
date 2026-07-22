@@ -273,7 +273,7 @@ export default function EquipeProjetoClient({
             type="button"
             onClick={salvarGestor}
             disabled={salvandoGestor || gestorSel === gestorAtual}
-            className="h-11 rounded-2xl bg-[var(--fdl-cream)] px-6 text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+            className="fdl-ui-btn fdl-ui-btn-primary"
           >
             {salvandoGestor ? "Salvando..." : "Salvar gestor"}
           </button>

@@ -285,7 +285,7 @@ export default function ProjetosListaClient({
                               className="ml-2 inline-block rounded-full bg-[var(--fdl-cream)] px-2 py-0.5 align-middle text-[0.65rem] font-bold uppercase tracking-[0.12em] text-[var(--fdl-purple-dark)]"
                               title="Projeto-chave com mundos (microprojetos)"
                             >
-                              ★ Projeto-chave
+                              Projeto-chave
                             </span>
                           ) : null}
                         </p>
