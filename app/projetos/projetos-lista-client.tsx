@@ -15,6 +15,7 @@ type ProjetoLista = {
   data_inicio: string | null;
   data_fim: string | null;
   responsavel_comercial?: string | null;
+  is_chave?: boolean | null;
 };
 
 type ProjetosClientProps = {
@@ -279,6 +280,14 @@ export default function ProjetosListaClient({
                       <td>
                         <p className="fdl-ui-table-primary">
                           {projeto.cliente || projeto.shopping}
+                          {projeto.is_chave ? (
+                            <span
+                              className="ml-2 inline-block rounded-full bg-[var(--fdl-cream)] px-2 py-0.5 align-middle text-[0.65rem] font-bold uppercase tracking-[0.12em] text-[var(--fdl-purple-dark)]"
+                              title="Projeto-chave com mundos (microprojetos)"
+                            >
+                              ★ Projeto-chave
+                            </span>
+                          ) : null}
                         </p>
                         <p className="fdl-ui-table-secondary">
                           {[projeto.cidade, projeto.temporada]
