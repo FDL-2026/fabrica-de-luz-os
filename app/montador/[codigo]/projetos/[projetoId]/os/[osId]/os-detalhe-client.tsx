@@ -661,7 +661,7 @@ export default function OsDetalheClient({
 
         <a
           href={`/montador/${codigo}/projetos/${projetoId}`}
-          className="block h-12 rounded-2xl bg-[var(--fdl-cream)] px-5 py-3 text-center text-sm font-semibold text-[var(--fdl-purple-dark)]"
+          className="fdl-mobile-btn fdl-mobile-btn-primary"
         >
           Voltar para OSs do projeto
         </a>
@@ -829,8 +829,8 @@ export default function OsDetalheClient({
 
         <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[var(--fdl-cream)] text-sm font-bold text-[var(--fdl-purple-dark)] transition hover:brightness-95">
-              📷 Tirar foto agora
+            <label className="fdl-mobile-btn fdl-mobile-btn-primary cursor-pointer gap-2">
+              Tirar foto agora
               <input
                 key={`camera-${inputArquivosKey}`}
                 type="file"
@@ -841,8 +841,8 @@ export default function OsDetalheClient({
               />
             </label>
 
-            <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/[0.06] text-sm font-bold text-white/85 transition hover:bg-white/10">
-              🖼 Escolher da galeria
+            <label className="fdl-mobile-btn fdl-mobile-btn-ghost cursor-pointer gap-2">
+              Escolher da galeria
               <input
                 key={`galeria-${inputArquivosKey}`}
                 type="file"
@@ -1026,7 +1026,7 @@ export default function OsDetalheClient({
             type="button"
             disabled={!podeIniciar || salvando}
             onClick={() => atualizarStatus("em_andamento")}
-            className="h-12 rounded-2xl border border-white/15 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="fdl-mobile-btn fdl-mobile-btn-ghost"
           >
             {salvando ? "Salvando..." : "Iniciar OS"}
           </button>
@@ -1035,7 +1035,7 @@ export default function OsDetalheClient({
             type="button"
             disabled={!podeConcluir || salvando}
             onClick={() => atualizarStatus("concluida")}
-            className="h-12 rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+            className="fdl-mobile-btn fdl-mobile-btn-primary"
           >
             {salvando ? "Salvando..." : "Concluir OS"}
           </button>

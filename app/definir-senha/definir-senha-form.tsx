@@ -105,7 +105,7 @@ export default function DefinirSenhaForm() {
       <button
         type="submit"
         disabled={salvando}
-        className="h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+        className="fdl-mobile-btn fdl-mobile-btn-primary"
       >
         {salvando ? "Salvando..." : "Definir senha e continuar"}
       </button>

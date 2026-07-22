@@ -300,7 +300,7 @@ export default function ChamadoClient({
 
         <a
           href={`/chamado/acompanhar?p=${encodeURIComponent(protocolo)}`}
-          className="mt-6 block h-12 rounded-2xl bg-[var(--fdl-cream)] px-5 text-center text-sm font-semibold leading-[3rem] text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+          className="fdl-mobile-btn fdl-mobile-btn-primary mt-6"
         >
           Acompanhar este chamado
         </a>
@@ -308,7 +308,7 @@ export default function ChamadoClient({
         <button
           type="button"
           onClick={novoChamado}
-          className="mt-3 h-12 w-full rounded-2xl border border-white/15 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+          className="fdl-mobile-btn fdl-mobile-btn-ghost mt-3"
         >
           Registrar outro chamado
         </button>
@@ -612,14 +612,14 @@ export default function ChamadoClient({
             <button
               type="button"
               onClick={() => camRef.current?.click()}
-              className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-[var(--fdl-cream)] text-sm font-bold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+              className="fdl-mobile-btn fdl-mobile-btn-primary gap-2"
             >
               <IconeCamera /> Tirar foto
             </button>
             <button
               type="button"
               onClick={() => galRef.current?.click()}
-              className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/[0.06] text-sm font-bold text-white/85 transition hover:bg-white/10"
+              className="fdl-mobile-btn fdl-mobile-btn-ghost gap-2"
             >
               <IconeImagem /> Da galeria
             </button>
@@ -674,7 +674,7 @@ export default function ChamadoClient({
           type="button"
           onClick={enviar}
           disabled={enviando || arquivos.length < MIN_FOTOS}
-          className="h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+          className="fdl-mobile-btn fdl-mobile-btn-primary"
         >
           {enviando
             ? "Enviando..."

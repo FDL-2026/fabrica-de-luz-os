@@ -450,10 +450,10 @@ export default function ChamadoDetalheMontadorClient({ codigo, chamadoId }: Prop
                 </div>
 
                 <label
-                  className={`mt-3 flex h-11 items-center justify-center gap-2 rounded-xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] ${
+                  className={`fdl-mobile-btn fdl-mobile-btn-primary mt-3 gap-2 ${
                     enviando || resolvido
                       ? "cursor-not-allowed opacity-60"
-                      : "cursor-pointer hover:brightness-95"
+                      : "cursor-pointer"
                   }`}
                 >
                   {enviando ? "Enviando..." : "Tirar foto"}
@@ -472,10 +472,10 @@ export default function ChamadoDetalheMontadorClient({ codigo, chamadoId }: Prop
                 </label>
 
                 <label
-                  className={`mt-2 flex h-9 items-center justify-center gap-2 rounded-xl border border-white/15 text-xs font-semibold text-white/70 ${
+                  className={`fdl-mobile-btn fdl-mobile-btn-ghost mt-2 gap-2 ${
                     enviando || resolvido
                       ? "cursor-not-allowed opacity-60"
-                      : "cursor-pointer hover:bg-white/10"
+                      : "cursor-pointer"
                   }`}
                 >
                   Escolher da galeria
