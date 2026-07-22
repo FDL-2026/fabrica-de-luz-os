@@ -242,6 +242,15 @@ export async function POST(request: NextRequest) {
         .eq("id", resultado.projeto_id);
     }
 
+    // Projeto-chave (template "mundos", ex.: Natal do Bem): marca para o
+    // destaque no sistema. A RPC de importação não toca nesse campo.
+    if (payloadComTemporada.isChave === true) {
+      await supabase
+        .from("projetos")
+        .update({ is_chave: true })
+        .eq("id", resultado.projeto_id);
+    }
+
     if (gestorResolvido) {
       const { error: erroGestor } = await supabase.rpc(
         "fdl_adicionar_usuario_projeto",
