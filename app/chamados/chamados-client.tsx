@@ -8,6 +8,7 @@ type Resumo = {
   em_andamento: number;
   aguardando: number;
   resolvidos: number;
+  aguardando_validacao: number;
   total: number;
 };
 
@@ -34,11 +35,13 @@ type ChamadoLista = {
   criado_em: string | null;
   atualizado_em: string | null;
   resolvido_em: string | null;
+  validado_em?: string | null;
 };
 
 type Anexo = {
   id: string;
   tipo: string | null;
+  fase?: string | null;
   nome_arquivo: string | null;
   url_visualizacao: string | null;
   external_file_id: string | null;
@@ -209,9 +212,29 @@ export default function ChamadosClient() {
     carregar();
   }
 
+  async function validar() {
+    if (!detalhe) return;
+    setSalvando(true);
+    const { data, error } = await supabase.rpc("fdl_validar_chamado_gestao", {
+      p_chamado_id: detalhe.chamado.chamado_id,
+    });
+    setSalvando(false);
+    if (error) {
+      setErro(error.message);
+      return;
+    }
+    setDetalhe(data as Detalhe);
+    carregar();
+  }
+
   const kpis = [
     { label: "Abertos", valor: resumo?.abertos ?? 0, filtro: "aberto" },
     { label: "Em andamento", valor: resumo?.em_andamento ?? 0, filtro: "em_andamento" },
+    {
+      label: "Aguardando validação",
+      valor: resumo?.aguardando_validacao ?? 0,
+      filtro: "resolvido",
+    },
     { label: "Resolvidos", valor: resumo?.resolvidos ?? 0, filtro: "resolvido" },
   ];
 
@@ -344,6 +367,7 @@ export default function ChamadosClient() {
           obs={obs}
           setObs={setObs}
           onAtualizar={atualizar}
+          onValidar={validar}
           onFechar={() => setDetalhe(null)}
         />
       ) : null}
@@ -358,6 +382,7 @@ function DetalheModal({
   obs,
   setObs,
   onAtualizar,
+  onValidar,
   onFechar,
 }: {
   detalhe: Detalhe;
@@ -370,6 +395,7 @@ function DetalheModal({
     atribuido?: string | null;
     observacao?: string;
   }) => void;
+  onValidar: () => void;
   onFechar: () => void;
 }) {
   const c = detalhe.chamado;
@@ -448,6 +474,16 @@ function DetalheModal({
           <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
             {CATEGORIA_LABEL[c.categoria ?? ""] ?? c.categoria}
           </span>
+          {c.status === "resolvido" && !c.validado_em ? (
+            <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+              Aguardando validação
+            </span>
+          ) : null}
+          {c.validado_em ? (
+            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+              Validado
+            </span>
+          ) : null}
         </div>
 
         {/* Dados */}
@@ -540,50 +576,95 @@ function DetalheModal({
           </p>
         </div>
 
-        {/* Fotos — miniaturas inline, abrem em tela cheia sem sair da página */}
+        {/* Fotos — agrupadas por origem (cliente) e fase do montador */}
         {detalhe.anexos.length > 0 ? (
-          <div className="mt-4">
-            <p className="mb-2 text-xs uppercase tracking-[0.22em] text-white/40">
-              Fotos ({detalhe.anexos.length})
-            </p>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {detalhe.anexos.map((a) => {
-                const ehFoto = a.tipo !== "video" && a.external_file_id;
-                if (ehFoto) {
-                  return (
-                    <button
-                      key={a.id}
-                      type="button"
-                      onClick={() =>
-                        setLightbox(`/api/anexos/${a.external_file_id}`)
+          <div className="mt-4 space-y-4">
+            {(
+              [
+                ["Do cliente", detalhe.anexos.filter((a) => !a.fase)],
+                [
+                  "Antes (montador)",
+                  detalhe.anexos.filter((a) => a.fase === "antes"),
+                ],
+                [
+                  "Depois (montador)",
+                  detalhe.anexos.filter((a) => a.fase === "depois"),
+                ],
+              ] as const
+            ).map(([titulo, itens]) =>
+              itens.length === 0 ? null : (
+                <div key={titulo}>
+                  <p className="mb-2 text-xs uppercase tracking-[0.22em] text-white/40">
+                    {titulo} ({itens.length})
+                  </p>
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                    {itens.map((a) => {
+                      const ehFoto = a.tipo !== "video" && a.external_file_id;
+                      if (ehFoto) {
+                        return (
+                          <button
+                            key={a.id}
+                            type="button"
+                            onClick={() =>
+                              setLightbox(`/api/anexos/${a.external_file_id}`)
+                            }
+                            className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={`/api/anexos/${a.external_file_id}?thumb=1`}
+                              alt={a.nome_arquivo || "Foto do chamado"}
+                              loading="lazy"
+                              className="h-24 w-full object-cover transition group-hover:opacity-90"
+                            />
+                          </button>
+                        );
                       }
-                      className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={`/api/anexos/${a.external_file_id}?thumb=1`}
-                        alt={a.nome_arquivo || "Foto do chamado"}
-                        loading="lazy"
-                        className="h-24 w-full object-cover transition group-hover:opacity-90"
-                      />
-                    </button>
-                  );
-                }
-                // Vídeo (ou sem id): abre no Drive
-                return a.url_visualizacao ? (
-                  <a
-                    key={a.id}
-                    href={a.url_visualizacao}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex h-24 items-center justify-center rounded-xl border border-white/10 bg-white/[0.06] text-2xl hover:bg-white/10"
-                  >
-                    🎬
-                  </a>
-                ) : null;
-              })}
-            </div>
+                      return a.url_visualizacao ? (
+                        <a
+                          key={a.id}
+                          href={a.url_visualizacao}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex h-24 items-center justify-center rounded-xl border border-white/10 bg-white/[0.06] text-2xl hover:bg-white/10"
+                        >
+                          🎬
+                        </a>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )
+            )}
           </div>
+        ) : null}
+
+        {/* Validação da resolução */}
+        {c.status === "resolvido" ? (
+          c.validado_em ? (
+            <div className="mt-4 rounded-2xl border border-green-400/30 bg-green-500/10 p-4 text-sm text-green-100">
+              ✓ Resolução validada em {formatDateTime(c.validado_em)}. O cliente
+              já consegue ver as fotos da resolução.
+            </div>
+          ) : (
+            <div className="mt-4 rounded-2xl border border-yellow-400/30 bg-yellow-500/10 p-4">
+              <p className="text-sm font-semibold text-yellow-100">
+                Resolução aguardando validação
+              </p>
+              <p className="mt-1 text-xs text-yellow-100/80">
+                Revise as fotos de antes/depois. Ao validar, o cliente passa a
+                ver o chamado como resolvido e as fotos-prova.
+              </p>
+              <button
+                type="button"
+                onClick={onValidar}
+                disabled={salvando}
+                className="mt-3 h-10 rounded-xl bg-green-500/90 px-5 text-sm font-semibold text-white transition hover:bg-green-500 disabled:opacity-50"
+              >
+                {salvando ? "Validando..." : "Validar resolução"}
+              </button>
+            </div>
+          )
         ) : null}
 
         {/* Ações */}

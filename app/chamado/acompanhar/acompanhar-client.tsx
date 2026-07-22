@@ -12,6 +12,11 @@ type Evento = {
   criado_em: string;
 };
 
+type FotoResolucao = {
+  external_file_id: string | null;
+  fase: string | null;
+};
+
 type Chamado = {
   protocolo: string;
   status: string;
@@ -21,6 +26,8 @@ type Chamado = {
   shopping: string | null;
   criado_em: string;
   resolvido_em: string | null;
+  validado?: boolean;
+  fotos_resolucao?: FotoResolucao[];
   linha_tempo: Evento[];
 };
 
@@ -75,6 +82,7 @@ export default function AcompanharClient() {
   const [chamado, setChamado] = useState<Chamado | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState("");
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   const consultar = useCallback(
     async (valor: string) => {
@@ -223,7 +231,68 @@ export default function AcompanharClient() {
               </ol>
             </div>
           ) : null}
+
+          {chamado.validado &&
+          (chamado.fotos_resolucao?.length ?? 0) > 0 ? (
+            <div>
+              <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/40">
+                Fotos da resolução
+              </p>
+              {(["antes", "depois"] as const).map((fase) => {
+                const lista = (chamado.fotos_resolucao ?? []).filter(
+                  (f) => f.fase === fase && f.external_file_id
+                );
+                if (lista.length === 0) return null;
+                return (
+                  <div key={fase} className="mb-3">
+                    <p className="mb-1 text-xs font-semibold text-white/60">
+                      {fase === "antes" ? "Antes" : "Depois"}
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                      {lista.map((f) => {
+                        const params = new URLSearchParams({
+                          protocolo: chamado.protocolo,
+                          fileId: f.external_file_id as string,
+                        });
+                        const full = `/api/chamado/anexo?${params.toString()}`;
+                        return (
+                          <button
+                            key={f.external_file_id}
+                            type="button"
+                            onClick={() => setLightbox(full)}
+                            className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={`${full}&thumb=1`}
+                              alt={`Foto ${fase} da resolução`}
+                              loading="lazy"
+                              className="h-20 w-full object-cover"
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
         </section>
+      ) : null}
+
+      {lightbox ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-4"
+          onClick={() => setLightbox(null)}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightbox}
+            alt="Foto da resolução"
+            className="max-h-[92vh] max-w-full rounded-xl object-contain"
+          />
+        </div>
       ) : null}
 
       {!chamado ? (

@@ -27,6 +27,7 @@ type Chamado = {
   titulo: string | null;
   descricao: string | null;
   status: string | null;
+  validado_em: string | null;
   solicitante_nome: string | null;
   solicitante_contato: string | null;
   criado_em: string | null;
@@ -404,9 +405,13 @@ export default function ChamadoDetalheMontadorClient({ codigo, chamadoId }: Prop
                 {salvando ? "Salvando..." : "Resolver chamado"}
               </button>
             </div>
-          ) : (
+          ) : c.validado_em ? (
             <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-              Chamado resolvido
+              Resolvido e validado
+            </span>
+          ) : (
+            <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+              Resolvido — aguardando validação da gestão
             </span>
           )}
         </div>
