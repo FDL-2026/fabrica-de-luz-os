@@ -149,7 +149,7 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
 
   const { data: ordensServico } = await supabase
     .from("ordens_servico")
-    .select("id, codigo_os, local, servico, equipe, status, prioridade")
+    .select("id, codigo_os, local, servico, equipe, status, prioridade, etapa_id")
     .eq("projeto_id", id)
     .order("codigo_os", { ascending: true });
 
@@ -291,7 +291,10 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
 
           {isChave ? (
             <div className="mt-6">
-              <ProgressoMundos projetoId={projeto.id} />
+              <ProgressoMundos
+                projetoId={projeto.id}
+                ordensServico={ordensServicoSeguras}
+              />
             </div>
           ) : null}
 
@@ -458,10 +461,12 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
         ordensAguardandoValidacao={ordensAguardandoValidacao}
       />
 
-      <OsTableClient
-        projetoId={projeto.id}
-        ordensServico={ordensServicoSeguras}
-      />
+      {!isChave ? (
+        <OsTableClient
+          projetoId={projeto.id}
+          ordensServico={ordensServicoSeguras}
+        />
+      ) : null}
 
       <HistoricoProjetoClient projetoId={projeto.id} />
 

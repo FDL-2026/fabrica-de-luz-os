@@ -3,8 +3,28 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+type OsResumo = {
+  id: string;
+  codigo_os: string | null;
+  servico: string | null;
+  local: string | null;
+  status: string | null;
+  etapa_id: string | null;
+};
+
 type ProgressoMundosProps = {
   projetoId: string;
+  ordensServico?: OsResumo[];
+};
+
+const STATUS_OS: Record<string, { label: string; cls: string }> = {
+  pendente: { label: "Pendente", cls: "text-white/45" },
+  em_andamento: { label: "Em andamento", cls: "text-sky-200" },
+  aguardando_validacao: {
+    label: "Aguardando validação",
+    cls: "text-yellow-200",
+  },
+  concluida: { label: "Validada", cls: "text-[var(--fdl-cream)]" },
 };
 
 type MundoRow = {
@@ -49,12 +69,27 @@ function Barra({ valor }: { valor: number }) {
   );
 }
 
-export default function ProgressoMundos({ projetoId }: ProgressoMundosProps) {
+export default function ProgressoMundos({
+  projetoId,
+  ordensServico,
+}: ProgressoMundosProps) {
   const supabase = useMemo(() => createClient(), []);
 
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [mundos, setMundos] = useState<MundoRow[]>([]);
+  const [aberto, setAberto] = useState<string | null>(null);
+
+  const osPorMundo = useMemo(() => {
+    const mapa = new Map<string, OsResumo[]>();
+    for (const os of ordensServico ?? []) {
+      if (!os.etapa_id) continue;
+      const lista = mapa.get(os.etapa_id) ?? [];
+      lista.push(os);
+      mapa.set(os.etapa_id, lista);
+    }
+    return mapa;
+  }, [ordensServico]);
 
   useEffect(() => {
     let ativo = true;
@@ -153,53 +188,130 @@ export default function ProgressoMundos({ projetoId }: ProgressoMundosProps) {
         <Barra valor={total.progresso} />
       </div>
 
-      <div className="mt-6 grid gap-3 md:grid-cols-2">
-        {mundos.map((mundo) => (
-          <article
-            key={mundo.etapa_id}
-            className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-[var(--fdl-cream)]">
-                  Mundo {mundo.codigo}
-                  {mundo.id_espaco ? ` · ${mundo.id_espaco}` : ""}
-                </p>
-                <h3 className="mt-1 font-semibold">{mundo.nome}</h3>
-                <p className="mt-1 text-xs text-white/50">
-                  Equipe: {mundo.equipe || "Não informada"}
-                </p>
-              </div>
-              <span className="whitespace-nowrap text-2xl font-black text-white">
-                {formatPercent(mundo.progresso_validado)}
-              </span>
-            </div>
+      <p className="mt-6 text-xs text-white/40">
+        Clique em um mundo para ver as OSs do microprojeto.
+      </p>
 
-            <div className="mt-3">
-              <Barra valor={mundo.progresso_validado} />
-            </div>
+      <div className="mt-2 grid gap-3 md:grid-cols-2">
+        {mundos.map((mundo) => {
+          const estaAberto = aberto === mundo.etapa_id;
+          const osDoMundo = osPorMundo.get(mundo.etapa_id) ?? [];
 
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/55">
-              <span>{mundo.total_os} OSs</span>
-              <span className="text-[var(--fdl-cream)]">
-                {mundo.os_validadas} validadas
-              </span>
-              {mundo.os_aguardando > 0 ? (
-                <span className="text-yellow-200/80">
-                  {mundo.os_aguardando} aguardando
-                </span>
+          return (
+            <article
+              key={mundo.etapa_id}
+              className={`rounded-2xl border bg-white/[0.04] transition ${
+                estaAberto
+                  ? "border-[var(--fdl-cream)]/40 md:col-span-2"
+                  : "border-white/10 hover:border-white/25"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  setAberto(estaAberto ? null : mundo.etapa_id)
+                }
+                aria-expanded={estaAberto}
+                className="w-full p-4 text-left"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-[var(--fdl-cream)]">
+                      Mundo {mundo.codigo}
+                      {mundo.id_espaco ? ` · ${mundo.id_espaco}` : ""}
+                    </p>
+                    <h3 className="mt-1 font-semibold">{mundo.nome}</h3>
+                    <p className="mt-1 text-xs text-white/50">
+                      Equipe: {mundo.equipe || "Não informada"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="whitespace-nowrap text-2xl font-black text-white">
+                      {formatPercent(mundo.progresso_validado)}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className={`text-white/40 transition-transform ${
+                        estaAberto ? "rotate-180" : ""
+                      }`}
+                    >
+                      ▾
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <Barra valor={mundo.progresso_validado} />
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/55">
+                  <span>{mundo.total_os} OSs</span>
+                  <span className="text-[var(--fdl-cream)]">
+                    {mundo.os_validadas} validadas
+                  </span>
+                  {mundo.os_aguardando > 0 ? (
+                    <span className="text-yellow-200/80">
+                      {mundo.os_aguardando} aguardando
+                    </span>
+                  ) : null}
+                  {mundo.os_em_andamento > 0 ? (
+                    <span>{mundo.os_em_andamento} em andamento</span>
+                  ) : null}
+                  {mundo.os_pendentes > 0 ? (
+                    <span className="text-white/40">
+                      {mundo.os_pendentes} pendentes
+                    </span>
+                  ) : null}
+                </div>
+              </button>
+
+              {estaAberto ? (
+                <div className="border-t border-white/10 p-4">
+                  {osDoMundo.length === 0 ? (
+                    <p className="text-sm text-white/45">
+                      Nenhuma OS encontrada para este mundo.
+                    </p>
+                  ) : (
+                    <ul className="space-y-1.5">
+                      {osDoMundo.map((os) => {
+                        const info =
+                          STATUS_OS[os.status ?? ""] ?? {
+                            label: os.status ?? "-",
+                            cls: "text-white/50",
+                          };
+                        return (
+                          <li
+                            key={os.id}
+                            className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate text-sm text-white/85">
+                                <span className="font-semibold text-white">
+                                  {os.codigo_os}
+                                </span>{" "}
+                                {os.servico}
+                              </p>
+                              {os.local ? (
+                                <p className="truncate text-xs text-white/40">
+                                  {os.local}
+                                </p>
+                              ) : null}
+                            </div>
+                            <span
+                              className={`whitespace-nowrap text-xs font-semibold ${info.cls}`}
+                            >
+                              {info.label}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
               ) : null}
-              {mundo.os_em_andamento > 0 ? (
-                <span>{mundo.os_em_andamento} em andamento</span>
-              ) : null}
-              {mundo.os_pendentes > 0 ? (
-                <span className="text-white/40">
-                  {mundo.os_pendentes} pendentes
-                </span>
-              ) : null}
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
       </div>
     </section>
   );
