@@ -149,7 +149,9 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
 
   const { data: ordensServico } = await supabase
     .from("ordens_servico")
-    .select("id, codigo_os, local, servico, equipe, status, prioridade, etapa_id")
+    .select(
+      "id, codigo_os, local, servico, equipe, status, prioridade, etapa_id, inicio_previsto, termino_previsto"
+    )
     .eq("projeto_id", id)
     .order("codigo_os", { ascending: true });
 
