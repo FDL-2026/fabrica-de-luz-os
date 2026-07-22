@@ -838,14 +838,20 @@ export default function ImportarClient() {
                 {revisao.alertas.equipesNaoReconhecidas.length > 0 ? (
                   <div className="rounded-xl border border-yellow-400/30 bg-yellow-500/10 p-3 text-sm text-yellow-100">
                     <p>
-                      Equipes sem montador reconhecido (cadastre e vincule
-                      manualmente):
+                      Equipes sem montador reconhecido. Sugerimos cadastrar estes
+                      montadores e depois vinculá-los ao projeto:
                     </p>
                     <ul className="mt-2 list-inside list-disc space-y-1 text-yellow-100/85">
                       {revisao.alertas.equipesNaoReconhecidas.map((nome) => (
                         <li key={nome}>{nome}</li>
                       ))}
                     </ul>
+                    <a
+                      href="/usuarios"
+                      className="mt-3 inline-flex h-9 items-center rounded-xl border border-yellow-300/40 bg-yellow-400/10 px-4 text-xs font-semibold text-yellow-100 transition hover:bg-yellow-400/20"
+                    >
+                      Cadastrar montadores
+                    </a>
                   </div>
                 ) : null}
 
@@ -891,6 +897,19 @@ export default function ImportarClient() {
 
       {preview ? (
         <>
+          {preview.template === "mundos" ? (
+            <section className="flex flex-wrap items-center gap-3 rounded-3xl border border-[var(--fdl-cream)]/30 bg-[var(--fdl-cream)]/10 p-5">
+              <span className="rounded-full bg-[var(--fdl-cream)] px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[var(--fdl-purple-dark)]">
+                Projeto-chave
+              </span>
+              <p className="text-sm text-white/80">
+                Cronograma por <strong>mundos</strong> reconhecido:{" "}
+                <strong>{preview.cliente}</strong> entra como projeto-chave, com
+                cada mundo como microprojeto (etapa) e sua equipe.
+              </p>
+            </section>
+          ) : null}
+
           <section className="grid gap-4 md:grid-cols-4">
             <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
               <p className="text-sm text-[#7d6488]">Etapas</p>
@@ -999,9 +1018,15 @@ export default function ImportarClient() {
           <section className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
             <div className="fdl-form-card p-6">
               <div className="mb-5">
-                <h2 className="text-xl font-semibold">Etapas identificadas</h2>
+                <h2 className="text-xl font-semibold">
+                  {preview.template === "mundos"
+                    ? "Mundos (microprojetos)"
+                    : "Etapas identificadas"}
+                </h2>
                 <p className="mt-1 text-sm text-white/50">
-                  IDs inteiros do cronograma.
+                  {preview.template === "mundos"
+                    ? "Cada mundo vira uma etapa com sua equipe de montagem."
+                    : "IDs inteiros do cronograma."}
                 </p>
               </div>
 
@@ -1011,11 +1036,38 @@ export default function ImportarClient() {
                     key={etapa.id}
                     className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
                   >
-                    <p className="text-xs uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
-                      Etapa {etapa.id}
-                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
+                        {preview.template === "mundos" ? "Mundo" : "Etapa"}{" "}
+                        {etapa.id}
+                        {etapa.idEspaco ? ` · ${etapa.idEspaco}` : ""}
+                      </p>
+                      {etapa.progressoReferencia ? (
+                        <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-white/80">
+                          {etapa.progressoReferencia}
+                        </span>
+                      ) : null}
+                    </div>
 
                     <h3 className="mt-2 font-semibold">{etapa.tarefa}</h3>
+
+                    {preview.template === "mundos" ? (
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                        <span className="rounded-full bg-[var(--fdl-cream)]/15 px-2.5 py-0.5 font-semibold text-[var(--fdl-cream)]">
+                          Equipe: {etapa.equipe || "Não informada"}
+                        </span>
+                        {etapa.contrato ? (
+                          <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-white/70">
+                            {etapa.contrato}
+                          </span>
+                        ) : null}
+                        {etapa.statusProducao ? (
+                          <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-white/70">
+                            {etapa.statusProducao}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
 
                     <p className="mt-2 text-sm text-white/50">
                       {etapa.inicioPrevisto || "Sem início"} até{" "}
@@ -1055,12 +1107,19 @@ export default function ImportarClient() {
                           <p>{os.tarefa}</p>
                           <p className="mt-1 text-xs text-white/40">
                             {os.etapaNome}
+                            {os.contrato ? ` · ${os.contrato}` : ""}
                           </p>
                         </td>
 
                         <td className="px-4 py-3 text-white/70">
                           {os.inicioPrevisto || "-"} até{" "}
                           {os.terminoPrevisto || "-"}
+                          {os.inicioProgramado || os.terminoProgramado ? (
+                            <span className="mt-1 block text-xs text-white/40">
+                              Contrato: {os.inicioProgramado || "-"} até{" "}
+                              {os.terminoProgramado || "-"}
+                            </span>
+                          ) : null}
                         </td>
 
                         <td className="px-4 py-3 text-white/70">
