@@ -232,6 +232,7 @@ export default function ChamadoDetalheMontadorClient({ codigo, chamadoId }: Prop
   const fotosAntes = anexosFoto.filter((a) => a.fase === "antes");
   const fotosDepois = anexosFoto.filter((a) => a.fase === "depois");
   const resolvido = c.status === "resolvido";
+  const podeResolver = fotosAntes.length >= 1 && fotosDepois.length >= 1;
 
   return (
     <div className="space-y-6">
@@ -399,8 +400,13 @@ export default function ChamadoDetalheMontadorClient({ codigo, chamadoId }: Prop
               <button
                 type="button"
                 onClick={() => atualizarChamado("resolvido")}
-                disabled={salvando}
-                className="h-9 rounded-xl bg-green-500/90 px-4 text-xs font-semibold text-white transition hover:bg-green-500 disabled:opacity-50"
+                disabled={salvando || !podeResolver}
+                title={
+                  podeResolver
+                    ? undefined
+                    : "Anexe 1 foto de antes e 1 de depois para resolver."
+                }
+                className="h-9 rounded-xl bg-green-500/90 px-4 text-xs font-semibold text-white transition hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {salvando ? "Salvando..." : "Resolver chamado"}
               </button>
@@ -415,6 +421,13 @@ export default function ChamadoDetalheMontadorClient({ codigo, chamadoId }: Prop
             </span>
           )}
         </div>
+
+        {!resolvido && !podeResolver ? (
+          <p className="mt-2 text-xs text-yellow-200/80">
+            Para resolver, anexe pelo menos 1 foto de <strong>antes</strong> e 1
+            de <strong>depois</strong>.
+          </p>
+        ) : null}
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {(

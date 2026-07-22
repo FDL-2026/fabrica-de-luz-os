@@ -109,6 +109,18 @@ begin
   if p_status is not null
      and p_status in ('em_andamento', 'resolvido')
      and p_status <> v_status_atual then
+    -- Para RESOLVER, exige pelo menos 1 foto ANTES e 1 foto DEPOIS.
+    if p_status = 'resolvido' then
+      if (select count(*) from public.chamado_anexos a
+            where a.chamado_id = p_chamado_id and a.fase = 'antes') < 1
+         or (select count(*) from public.chamado_anexos a
+            where a.chamado_id = p_chamado_id and a.fase = 'depois') < 1 then
+        raise exception
+          'Para resolver o chamado, anexe pelo menos 1 foto de ANTES e 1 de DEPOIS.'
+          using errcode = 'P0001';
+      end if;
+    end if;
+
     update public.chamados
       set status = p_status,
           resolvido_em = case when p_status = 'resolvido' then now()
@@ -187,6 +199,9 @@ grant execute on function public.fdl_validar_chamado_gestao(uuid) to authenticat
 -- ----------------------------------------------------------------------------
 -- GESTÃO — resumo e lista agora sinalizam "aguardando validação"
 -- ----------------------------------------------------------------------------
+-- Assinatura mudou (nova coluna): é preciso dropar antes de recriar.
+drop function if exists public.fdl_resumo_chamados_gestao();
+
 create or replace function public.fdl_resumo_chamados_gestao()
 returns table (
   abertos               bigint,
@@ -227,6 +242,9 @@ $$;
 
 revoke all on function public.fdl_resumo_chamados_gestao() from public, anon;
 grant execute on function public.fdl_resumo_chamados_gestao() to authenticated;
+
+-- Assinatura mudou (nova coluna validado_em): dropar antes de recriar.
+drop function if exists public.fdl_listar_chamados_gestao(text, uuid);
 
 create or replace function public.fdl_listar_chamados_gestao(
   p_status     text default null,
