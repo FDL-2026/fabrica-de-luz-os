@@ -80,6 +80,9 @@ function statusLabel(s: string | null) {
   return (s && STATUS_LABEL[s]) || s || "—";
 }
 
+// Mínimo de fotos que o shopping precisa anexar para abrir um chamado.
+const MIN_FOTOS = 3;
+
 function statusClass(s: string | null) {
   switch (s) {
     case "resolvido":
@@ -187,6 +190,12 @@ export default function ChamadoClient({
     }
     if (descricao.trim().length < 5) {
       setErro("Descreva o problema com um pouco mais de detalhe.");
+      return;
+    }
+    if (arquivos.length < MIN_FOTOS) {
+      setErro(
+        `Anexe pelo menos ${MIN_FOTOS} fotos do problema para registrar o chamado.`
+      );
       return;
     }
 
@@ -565,9 +574,22 @@ export default function ChamadoClient({
 
         {/* Fotos */}
         <div>
-          <label className="mb-2 block text-sm font-semibold text-white">
-            Fotos (opcional)
+          <label className="mb-1 block text-sm font-semibold text-white">
+            Fotos do problema (mínimo {MIN_FOTOS}) *
           </label>
+          <p
+            className={`mb-2 text-xs ${
+              arquivos.length >= MIN_FOTOS
+                ? "text-green-300"
+                : "text-[var(--fdl-cream)]"
+            }`}
+          >
+            {arquivos.length >= MIN_FOTOS
+              ? `✓ ${arquivos.length} foto(s) anexada(s).`
+              : `Anexe pelo menos ${MIN_FOTOS} fotos — faltam ${
+                  MIN_FOTOS - arquivos.length
+                }.`}
+          </p>
           <input
             ref={camRef}
             key={`cam-${inputKey}`}
@@ -651,10 +673,14 @@ export default function ChamadoClient({
         <button
           type="button"
           onClick={enviar}
-          disabled={enviando}
+          disabled={enviando || arquivos.length < MIN_FOTOS}
           className="h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {enviando ? "Enviando..." : "Enviar chamado"}
+          {enviando
+            ? "Enviando..."
+            : arquivos.length < MIN_FOTOS
+              ? `Anexe ${MIN_FOTOS} fotos para enviar`
+              : "Enviar chamado"}
         </button>
       </section>
     </div>
