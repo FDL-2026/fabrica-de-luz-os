@@ -3920,6 +3920,28 @@ main:has(.fdl-mobile-card) a[href*="/montador/"][class*="bg-[var(--fdl-cream)]"]
   padding-bottom: 34px !important;
 }
 
+/* Adaptação para desktop: no mobile continua tela cheia; a partir de 1024px o
+   montador ganha um cabeçalho enxuto e o conteúdo num painel recuado, para não
+   parecer uma "tela de celular esticada". */
+@media (min-width: 1024px) {
+  .fdl-montador-main header.fdl-montador-header {
+    justify-content: flex-start !important;
+    margin-bottom: 22px !important;
+  }
+
+  .fdl-montador-main header.fdl-montador-header img {
+    max-width: 190px !important;
+  }
+
+  .fdl-montador-content {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 28px;
+    padding: 30px 30px 34px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.28);
+  }
+}
+
 /* Logo do montador */
 .fdl-montador-main header {
   margin-bottom: 30px !important;
