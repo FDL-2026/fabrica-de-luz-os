@@ -15,6 +15,7 @@ const itens = [
   { href: "/dashboard", label: "Painel geral" },
   { href: "/projetos", label: "Projetos" },
   { href: "/chamados", label: "Chamados" },
+  { href: "/manutencoes", label: "Manutenções" },
   { href: "/usuarios", label: "Usuários" },
   { href: "/importar", label: "Importar cronograma" },
   { href: "/relatorios/diario", label: "Relatório diário" },

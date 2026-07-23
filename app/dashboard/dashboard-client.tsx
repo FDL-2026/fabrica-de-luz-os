@@ -251,6 +251,7 @@ export default function DashboardClient({
   const [erro, setErro] = useState("");
   const [dados, setDados] = useState<DashboardData>(emptyDashboard);
   const [chamadosPendentes, setChamadosPendentes] = useState(0);
+  const [manutencoesRecentes, setManutencoesRecentes] = useState(0);
   const [progressosPonderados, setProgressosPonderados] = useState<
     Record<string, ProgressoPonderadoProjetoDashboard>
   >({});
@@ -431,6 +432,25 @@ export default function DashboardClient({
     };
   }, [supabase, somenteLeitura]);
 
+  // Manutenções registradas nos últimos 7 dias (aviso ao gestor).
+  useEffect(() => {
+    if (somenteLeitura) {
+      setManutencoesRecentes(0);
+      return;
+    }
+    let ativo = true;
+    supabase.rpc("fdl_resumo_manutencoes_gestao").then(({ data }) => {
+      if (!ativo) return;
+      const row = Array.isArray(data) ? data[0] : data;
+      setManutencoesRecentes(
+        Number((row as { recentes?: number } | null)?.recentes ?? 0)
+      );
+    });
+    return () => {
+      ativo = false;
+    };
+  }, [supabase, somenteLeitura]);
+
   function limparFiltros() {
     setGestorSelecionado("");
     setProjetoSelecionado("");
@@ -593,6 +613,29 @@ export default function DashboardClient({
             className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-primary shrink-0"
           >
             Revisar chamados
+          </Link>
+        </div>
+      ) : null}
+
+      {!somenteLeitura && manutencoesRecentes > 0 ? (
+        <div className="flex flex-col gap-4 rounded-3xl border border-[var(--fdl-cream)]/25 bg-[var(--fdl-cream)]/[0.08] p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-bold text-[var(--fdl-cream)]">
+              {manutencoesRecentes}{" "}
+              {manutencoesRecentes === 1
+                ? "manutenção registrada nos últimos 7 dias"
+                : "manutenções registradas nos últimos 7 dias"}
+            </p>
+            <p className="mt-0.5 text-xs text-white/60">
+              Reparos feitos pela equipe, já visíveis ao cliente no link do
+              shopping.
+            </p>
+          </div>
+          <Link
+            href="/manutencoes"
+            className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary shrink-0"
+          >
+            Ver manutenções
           </Link>
         </div>
       ) : null}
