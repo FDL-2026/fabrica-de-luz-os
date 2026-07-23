@@ -9,6 +9,7 @@ import HistoricoProjetoClient from "./historico-projeto-client";
 import ProgressoPonderadoProjeto from "@/components/progresso/progresso-ponderado-projeto";
 import ProgressoPonderadoKpi from "@/components/progresso/progresso-ponderado-kpi";
 import ProgressoMundos from "@/components/progresso/progresso-mundos";
+import RegistrarManutencao from "@/components/manutencao/registrar-manutencao";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -140,6 +141,17 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
     .maybeSingle();
   const isChave =
     (chaveRow as { is_chave?: boolean | null } | null)?.is_chave === true;
+
+  // Mundos (etapas) para o seletor de "Registrar manutenção". Tolerante: se a
+  // leitura falhar, o registro apenas fica sem o seletor de mundo.
+  const { data: etapasMundos } = await supabase
+    .from("etapas_projeto")
+    .select("id, nome, ordem")
+    .eq("projeto_id", id)
+    .order("ordem", { ascending: true });
+  const mundos = ((etapasMundos ?? []) as { id: string; nome: string | null }[])
+    .filter((e) => e.nome)
+    .map((e) => ({ id: e.id, nome: e.nome as string }));
 
   const { data: noites } = await supabase
     .from("noites_montagem")
@@ -297,6 +309,12 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
                 projetoId={projeto.id}
                 ordensServico={ordensServicoSeguras}
               />
+            </div>
+          ) : null}
+
+          {!somenteLeitura ? (
+            <div className="mt-6">
+              <RegistrarManutencao projetoId={projeto.id} etapas={mundos} />
             </div>
           ) : null}
 
