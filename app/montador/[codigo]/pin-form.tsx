@@ -380,7 +380,7 @@ export default function PinForm({ codigo }: PinFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="h-12 w-full rounded-2xl bg-[var(--fdl-cream)] font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70"
+        className="fdl-mobile-btn fdl-mobile-btn-primary"
       >
         {loading ? "Validando..." : "Liberar acesso"}
       </button>

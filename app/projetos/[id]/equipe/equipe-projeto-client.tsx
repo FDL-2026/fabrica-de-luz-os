@@ -40,17 +40,25 @@ export default function EquipeProjetoClient({
   const [vinculados, setVinculados] = useState<Set<string>>(new Set());
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
 
+  const [gestores, setGestores] = useState<
+    { usuario_id: string; nome: string }[]
+  >([]);
+  const [gestorSel, setGestorSel] = useState("");
+  const [gestorAtual, setGestorAtual] = useState("");
+  const [salvandoGestor, setSalvandoGestor] = useState(false);
+
   async function carregar() {
     setCarregando(true);
     setErro("");
 
-    const [equipeResult, usuariosResult] = await Promise.all([
+    const [equipeResult, usuariosResult, gestaoResult] = await Promise.all([
       supabase.rpc("fdl_listar_equipe_projeto", {
         p_projeto_id: projetoId,
       }),
       supabase.rpc("fdl_listar_usuarios_para_vinculo", {
         p_projeto_id: projetoId,
       }),
+      supabase.rpc("fdl_listar_usuarios_gestao"),
     ]);
 
     if (equipeResult.error || usuariosResult.error) {
@@ -66,9 +74,29 @@ export default function EquipeProjetoClient({
       return;
     }
 
-    const equipe = ((equipeResult.data ?? []) as UsuarioRpc[]).filter(
+    const equipeCompleta = (equipeResult.data ?? []) as UsuarioRpc[];
+
+    const equipe = equipeCompleta.filter(
       (usuario) => usuario.perfil === "montador"
     );
+
+    const gestorMembro = equipeCompleta.find(
+      (usuario) =>
+        usuario.perfil === "gestor_comercial" ||
+        usuario.funcao === "gestor_comercial"
+    );
+
+    const listaGestores = ((gestaoResult.data ?? []) as UsuarioRpc[])
+      .filter((u) => u.perfil === "gestor_comercial" && u.ativo !== false)
+      .map((u) => ({
+        usuario_id: u.usuario_id,
+        nome: u.nome?.trim() || "Sem nome",
+      }))
+      .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+
+    setGestores(listaGestores);
+    setGestorAtual(gestorMembro?.usuario_id ?? "");
+    setGestorSel(gestorMembro?.usuario_id ?? "");
 
     const idsEquipe = new Set(equipe.map((usuario) => usuario.usuario_id));
 
@@ -133,6 +161,27 @@ export default function EquipeProjetoClient({
 
   const houveMudanca = adicionar.length > 0 || remover.length > 0;
 
+  async function salvarGestor() {
+    setErro("");
+    setSucesso("");
+    setSalvandoGestor(true);
+
+    const { error } = await supabase.rpc("fdl_definir_gestor_projeto", {
+      p_projeto_id: projetoId,
+      p_usuario_id: gestorSel || null,
+    });
+
+    if (error) {
+      setErro(error.message);
+      setSalvandoGestor(false);
+      return;
+    }
+
+    setSucesso("Gestor comercial atualizado.");
+    await carregar();
+    setSalvandoGestor(false);
+  }
+
   async function salvar() {
     setErro("");
     setSucesso("");
@@ -193,6 +242,49 @@ export default function EquipeProjetoClient({
           usuários com perfil montador aparecem nesta lista.
         </p>
       </header>
+
+      <section className="fdl-form-card p-6">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold">Gestor Comercial</h2>
+          <p className="mt-1 text-sm text-white/55">
+            Responsável comercial do projeto. Cronogramas por mundos não trazem
+            gestor — defina aqui.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <label className="fdl-ui-label">Gestor</label>
+            <select
+              className="fdl-select mt-2 w-full"
+              value={gestorSel}
+              onChange={(event) => setGestorSel(event.target.value)}
+            >
+              <option value="">Sem gestor</option>
+              {gestores.map((gestor) => (
+                <option key={gestor.usuario_id} value={gestor.usuario_id}>
+                  {gestor.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={salvarGestor}
+            disabled={salvandoGestor || gestorSel === gestorAtual}
+            className="fdl-ui-btn fdl-ui-btn-primary"
+          >
+            {salvandoGestor ? "Salvando..." : "Salvar gestor"}
+          </button>
+        </div>
+
+        {gestores.length === 0 ? (
+          <p className="mt-3 text-xs text-yellow-100/80">
+            Nenhum gestor comercial disponível para você. Cadastre em Usuários.
+          </p>
+        ) : null}
+      </section>
 
       <section className="fdl-form-card p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

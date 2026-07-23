@@ -80,6 +80,9 @@ function statusLabel(s: string | null) {
   return (s && STATUS_LABEL[s]) || s || "—";
 }
 
+// Mínimo de fotos que o shopping precisa anexar para abrir um chamado.
+const MIN_FOTOS = 3;
+
 function statusClass(s: string | null) {
   switch (s) {
     case "resolvido":
@@ -189,6 +192,12 @@ export default function ChamadoClient({
       setErro("Descreva o problema com um pouco mais de detalhe.");
       return;
     }
+    if (arquivos.length < MIN_FOTOS) {
+      setErro(
+        `Anexe pelo menos ${MIN_FOTOS} fotos do problema para registrar o chamado.`
+      );
+      return;
+    }
 
     setEnviando(true);
     setProgresso("Registrando o chamado...");
@@ -291,7 +300,7 @@ export default function ChamadoClient({
 
         <a
           href={`/chamado/acompanhar?p=${encodeURIComponent(protocolo)}`}
-          className="mt-6 block h-12 rounded-2xl bg-[var(--fdl-cream)] px-5 text-center text-sm font-semibold leading-[3rem] text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+          className="fdl-mobile-btn fdl-mobile-btn-primary mt-6"
         >
           Acompanhar este chamado
         </a>
@@ -299,7 +308,7 @@ export default function ChamadoClient({
         <button
           type="button"
           onClick={novoChamado}
-          className="mt-3 h-12 w-full rounded-2xl border border-white/15 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+          className="fdl-mobile-btn fdl-mobile-btn-ghost mt-3"
         >
           Registrar outro chamado
         </button>
@@ -565,9 +574,22 @@ export default function ChamadoClient({
 
         {/* Fotos */}
         <div>
-          <label className="mb-2 block text-sm font-semibold text-white">
-            Fotos (opcional)
+          <label className="mb-1 block text-sm font-semibold text-white">
+            Fotos do problema (mínimo {MIN_FOTOS}) *
           </label>
+          <p
+            className={`mb-2 text-xs ${
+              arquivos.length >= MIN_FOTOS
+                ? "text-green-300"
+                : "text-[var(--fdl-cream)]"
+            }`}
+          >
+            {arquivos.length >= MIN_FOTOS
+              ? `✓ ${arquivos.length} foto(s) anexada(s).`
+              : `Anexe pelo menos ${MIN_FOTOS} fotos — faltam ${
+                  MIN_FOTOS - arquivos.length
+                }.`}
+          </p>
           <input
             ref={camRef}
             key={`cam-${inputKey}`}
@@ -590,14 +612,14 @@ export default function ChamadoClient({
             <button
               type="button"
               onClick={() => camRef.current?.click()}
-              className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-[var(--fdl-cream)] text-sm font-bold text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+              className="fdl-mobile-btn fdl-mobile-btn-primary gap-2"
             >
               <IconeCamera /> Tirar foto
             </button>
             <button
               type="button"
               onClick={() => galRef.current?.click()}
-              className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/[0.06] text-sm font-bold text-white/85 transition hover:bg-white/10"
+              className="fdl-mobile-btn fdl-mobile-btn-ghost gap-2"
             >
               <IconeImagem /> Da galeria
             </button>
@@ -651,10 +673,14 @@ export default function ChamadoClient({
         <button
           type="button"
           onClick={enviar}
-          disabled={enviando}
-          className="h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={enviando || arquivos.length < MIN_FOTOS}
+          className="fdl-mobile-btn fdl-mobile-btn-primary"
         >
-          {enviando ? "Enviando..." : "Enviar chamado"}
+          {enviando
+            ? "Enviando..."
+            : arquivos.length < MIN_FOTOS
+              ? `Anexe ${MIN_FOTOS} fotos para enviar`
+              : "Enviar chamado"}
         </button>
       </section>
     </div>

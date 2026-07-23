@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
+
+import { createClient } from "@/lib/supabase/client";
 
 type CellValue = string | number | boolean | Date | null | undefined;
 type RowValue = CellValue[];
@@ -13,6 +15,14 @@ type EtapaPreview = {
   terminoPrevisto: string;
   responsavelComercial: string;
   equipe: string;
+  // Campos do template "mundos" (Natal do Bem / prefeituras). Opcionais para
+  // manter o formato legado intacto.
+  idEspaco?: string;
+  contrato?: string;
+  statusProducao?: string;
+  inicioProgramado?: string;
+  terminoProgramado?: string;
+  progressoReferencia?: string;
 };
 
 type OsPreview = {
@@ -29,7 +39,14 @@ type OsPreview = {
   progresso: string;
   responsavelComercial: string;
   equipe: string;
+  // Template "mundos": contrato e o par de datas programadas (contrato). As
+  // datas "previstas" acima passam a carregar a Proposta (base do SLA).
+  contrato?: string;
+  inicioProgramado?: string;
+  terminoProgramado?: string;
 };
+
+type TemplateCronograma = "legado" | "mundos";
 
 type CronogramaPreview = {
   arquivo: string;
@@ -43,6 +60,9 @@ type CronogramaPreview = {
   etapas: EtapaPreview[];
   ordensServico: OsPreview[];
   avisos: string[];
+  // Identifica o formato lido e marca o projeto-chave (Natal do Bem).
+  template: TemplateCronograma;
+  isChave?: boolean;
 };
 
 type ResultadoImportacao = {
@@ -190,6 +210,234 @@ function encontrarAbaCronograma(workbook: XLSX.WorkBook) {
   return abaCronograma ?? workbook.SheetNames[0];
 }
 
+// ---------------------------------------------------------------------------
+// Template "mundos" (Natal do Bem / prefeituras)
+//
+// Reconhecido pelas abas SÍNTESE (um resumo por MUNDO, com a EQUIPE) e
+// CRONOG-MONT (uma linha por TAREFA, cujo Item "9.3" pertence ao mundo "9").
+// Mapeamos: mundo -> etapa (com equipe) e tarefa -> OS. As datas "previstas"
+// carregam a Proposta (base do SLA); a Programada (contrato) vai à parte.
+// ---------------------------------------------------------------------------
+
+function normalizarCabecalho(valor: CellValue) {
+  return limparTexto(valor)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function acharAba(workbook: XLSX.WorkBook, regex: RegExp) {
+  return workbook.SheetNames.find((nome) =>
+    regex.test(
+      nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    )
+  );
+}
+
+function ehTemplateMundos(workbook: XLSX.WorkBook) {
+  return Boolean(
+    acharAba(workbook, /sintese/) && acharAba(workbook, /cronog-?mont/)
+  );
+}
+
+// Localiza a linha de cabeçalho (a que contém "Item") e devolve um mapa
+// nome-normalizado -> índice de coluna, tolerante a colunas deslocadas.
+function mapearColunas(rows: RowValue[], ateLinha = 12) {
+  for (let i = 0; i < Math.min(rows.length, ateLinha); i += 1) {
+    const linha = rows[i] ?? [];
+    const indices: Record<string, number> = {};
+
+    linha.forEach((celula, idx) => {
+      const chave = normalizarCabecalho(celula);
+      if (chave) indices[chave] = idx;
+    });
+
+    if ("item" in indices) {
+      return { headerIndex: i, indices };
+    }
+  }
+
+  return { headerIndex: -1, indices: {} as Record<string, number> };
+}
+
+function acharIndice(
+  indices: Record<string, number>,
+  ...alternativas: string[]
+) {
+  for (const alt of alternativas) {
+    for (const chave of Object.keys(indices)) {
+      if (chave === alt || chave.includes(alt)) return indices[chave];
+    }
+  }
+  return -1;
+}
+
+function prefixoMundo(item: string) {
+  const match = item.match(/^\s*(\d+)/);
+  return match ? match[1] : "";
+}
+
+function interpretarCronogramaMundos(
+  file: File,
+  workbook: XLSX.WorkBook
+): CronogramaPreview {
+  const abaSintese = acharAba(workbook, /sintese/)!;
+  const abaMont = acharAba(workbook, /cronog-?mont/)!;
+
+  const sintese = XLSX.utils.sheet_to_json<RowValue>(
+    workbook.Sheets[abaSintese],
+    { header: 1, raw: true, defval: "" }
+  );
+  const mont = XLSX.utils.sheet_to_json<RowValue>(workbook.Sheets[abaMont], {
+    header: 1,
+    raw: true,
+    defval: "",
+  });
+
+  const avisos: string[] = [];
+
+  // ---- MUNDOS (etapas), a partir da SÍNTESE --------------------------------
+  const colS = mapearColunas(sintese);
+  const sItem = acharIndice(colS.indices, "item");
+  const sId = acharIndice(colS.indices, "id");
+  const sEquipe = acharIndice(colS.indices, "equipe");
+  const sEspaco = acharIndice(colS.indices, "espaco");
+  const sStatus = acharIndice(colS.indices, "status");
+  const sContrato = acharIndice(colS.indices, "contrato");
+  const sInicioProp = acharIndice(colS.indices, "inicio");
+  const sFimProp = acharIndice(colS.indices, "conclusao", "termino", "fim");
+  const sProgresso = 0; // coluna sem rótulo à esquerda: % de avanço do mundo
+
+  const etapas: EtapaPreview[] = [];
+  const equipePorMundo = new Map<string, string>();
+
+  sintese.forEach((row, index) => {
+    if (index <= colS.headerIndex) return;
+
+    const item = limparTexto(row[sItem]);
+    const codigo = prefixoMundo(item);
+    const espaco = limparTexto(row[sEspaco]);
+
+    if (!codigo || !espaco) return; // ignora linhas sem mundo numerado
+
+    const equipe = sEquipe >= 0 ? limparTexto(row[sEquipe]) : "";
+    equipePorMundo.set(codigo, equipe);
+
+    etapas.push({
+      id: codigo,
+      tarefa: espaco,
+      inicioPrevisto: sInicioProp >= 0 ? formatarData(row[sInicioProp]) : "",
+      terminoPrevisto: sFimProp >= 0 ? formatarData(row[sFimProp]) : "",
+      responsavelComercial: "",
+      equipe: equipe || "Não informada",
+      idEspaco: sId >= 0 ? limparTexto(row[sId]) : "",
+      contrato: sContrato >= 0 ? limparTexto(row[sContrato]) : "",
+      statusProducao: sStatus >= 0 ? limparTexto(row[sStatus]) : "",
+      progressoReferencia: formatarProgresso(row[sProgresso]),
+    });
+  });
+
+  // ---- TAREFAS (OSs), a partir da CRONOG-MONT ------------------------------
+  const colM = mapearColunas(mont);
+  const mItem = acharIndice(colM.indices, "item");
+  const mEspaco = acharIndice(colM.indices, "espaco");
+  const mDesc = acharIndice(colM.indices, "descricao", "atividade");
+  const mContrato = acharIndice(colM.indices, "contrato");
+
+  // Datas: há dois pares (Programada e Proposta), na ordem
+  // início/conclusão. Coletamos todos os índices de "inicio" e de
+  // "conclusao/termino" e assumimos [0]=Programada, [1]=Proposta.
+  const inicios = Object.keys(colM.indices)
+    .filter((k) => k.includes("inicio"))
+    .map((k) => colM.indices[k])
+    .sort((a, b) => a - b);
+  const fins = Object.keys(colM.indices)
+    .filter((k) => k.includes("conclusao") || k.includes("termino") || k.includes("fim"))
+    .map((k) => colM.indices[k])
+    .sort((a, b) => a - b);
+
+  const idxInicioProg = inicios[0] ?? -1;
+  const idxInicioProp = inicios[1] ?? inicios[0] ?? -1;
+  const idxFimProg = fins[0] ?? -1;
+  const idxFimProp = fins[1] ?? fins[0] ?? -1;
+
+  const ordensServico: OsPreview[] = [];
+
+  mont.forEach((row, index) => {
+    if (index <= colM.headerIndex) return;
+
+    const item = limparTexto(row[mItem]);
+    if (!/^\d+\.\d+/.test(item)) return; // só tarefas "mundo.tarefa"
+
+    const etapaId = prefixoMundo(item);
+    const espaco = mEspaco >= 0 ? limparTexto(row[mEspaco]) : "";
+    const etapa = etapas.find((e) => e.id === etapaId);
+
+    if (!etapa) {
+      avisos.push(
+        `Tarefa ${item} (${espaco}) não casou com nenhum mundo da SÍNTESE.`
+      );
+    }
+
+    ordensServico.push({
+      id: item,
+      etapaId,
+      etapaNome: etapa?.tarefa ?? espaco ?? "Mundo não identificado",
+      tarefa: mDesc >= 0 ? limparTexto(row[mDesc]) : "",
+      inicioPrevisto: idxInicioProp >= 0 ? formatarData(row[idxInicioProp]) : "",
+      duracaoPrevista: "",
+      terminoPrevisto: idxFimProp >= 0 ? formatarData(row[idxFimProp]) : "",
+      inicioReal: "",
+      duracaoReal: "",
+      terminoReal: "",
+      progresso: "0%",
+      responsavelComercial: "",
+      equipe: equipePorMundo.get(etapaId) || etapa?.equipe || "Não informada",
+      contrato: mContrato >= 0 ? limparTexto(row[mContrato]) : "",
+      inicioProgramado: idxInicioProg >= 0 ? formatarData(row[idxInicioProg]) : "",
+      terminoProgramado: idxFimProg >= 0 ? formatarData(row[idxFimProg]) : "",
+    });
+  });
+
+  // ---- Cabeçalho do projeto-chave ------------------------------------------
+  // Nome vem do título da própria aba (linha 2, ex.: "NATAL DO BEM - 1ª Etapa").
+  const tituloMont = limparTexto(workbook.Sheets[abaMont]?.["B2"]?.v);
+  const nomeProjeto =
+    tituloMont.replace(/\s*-\s*\d+.?\s*etapa.*$/i, "").trim() || "Natal do Bem";
+
+  const datasInicio = ordensServico
+    .map((os) => os.inicioPrevisto)
+    .filter(Boolean)
+    .sort();
+  const inicioOperacoes = datasInicio[0] || "Não informado";
+
+  if (etapas.length === 0) {
+    avisos.push("Nenhum mundo foi identificado na aba SÍNTESE.");
+  }
+  if (ordensServico.length === 0) {
+    avisos.push("Nenhuma tarefa foi identificada na aba CRONOG-MONT.");
+  }
+  avisos.push(
+    "UF/cidade do projeto-chave não vêm da planilha — confirme antes de importar."
+  );
+
+  return {
+    arquivo: file.name,
+    aba: `${abaSintese} + ${abaMont}`,
+    cliente: nomeProjeto,
+    shopping: nomeProjeto,
+    uf: "GO",
+    responsavelComercial: "Não informado",
+    equipe: "Por mundo (ver etapas)",
+    inicioOperacoes,
+    etapas,
+    ordensServico,
+    avisos,
+    template: "mundos",
+    isChave: true,
+  };
+}
+
 function interpretarCronograma(file: File, workbook: XLSX.WorkBook) {
   const aba = encontrarAbaCronograma(workbook);
   const sheet = workbook.Sheets[aba];
@@ -255,6 +503,7 @@ function interpretarCronograma(file: File, workbook: XLSX.WorkBook) {
     etapas: [],
     ordensServico: [],
     avisos: [],
+    template: "legado",
   };
 
   let etapaAtual: EtapaPreview | null = null;
@@ -347,6 +596,45 @@ function interpretarCronograma(file: File, workbook: XLSX.WorkBook) {
   return preview;
 }
 
+type UsuarioLista = {
+  usuario_id: string;
+  nome: string | null;
+  perfil: string | null;
+  ativo: boolean | null;
+};
+
+// Rótulos de "equipe" que não representam um líder cadastrável e, portanto,
+// não devem tentar casar com um montador.
+const EQUIPE_PLACEHOLDERS = new Set([
+  "",
+  "nao informada",
+  "nao informado",
+  "sem equipe",
+  "a definir",
+  "a confirmar",
+  "mista",
+  "verificar",
+]);
+
+function normalizarNomeLocal(valor: string) {
+  return valor
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s/]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// "RAY / ADENILDA" -> ["ray", "adenilda"]; "JEFERSON (ZÉ)" -> ["jeferson"].
+// Devolve o primeiro nome de cada parte, que é o que casa com o montador.
+function primeirosNomesEquipe(label: string) {
+  return normalizarNomeLocal(label)
+    .split("/")
+    .map((parte) => parte.trim().split(" ")[0])
+    .filter(Boolean);
+}
+
 export default function ImportarClient() {
   const [preview, setPreview] = useState<CronogramaPreview | null>(null);
   const [erro, setErro] = useState("");
@@ -354,6 +642,99 @@ export default function ImportarClient() {
   const [confirmando, setConfirmando] = useState(false);
   const [resultado, setResultado] = useState<ResultadoImportacao | null>(null);
   const [revisao, setRevisao] = useState<RevisaoImportacao | null>(null);
+  const [templateCriado, setTemplateCriado] =
+    useState<TemplateCronograma | null>(null);
+
+  // Seleção de responsáveis (template "mundos"): gestor comercial e os
+  // montadores das equipes envolvidas.
+  const [usuarios, setUsuarios] = useState<UsuarioLista[]>([]);
+  const [gestorId, setGestorId] = useState("");
+  const [montadoresSel, setMontadoresSel] = useState<Set<string>>(new Set());
+
+  const gestores = useMemo(
+    () =>
+      usuarios.filter(
+        (u) => u.perfil === "gestor_comercial" && u.ativo !== false
+      ),
+    [usuarios]
+  );
+
+  const montadores = useMemo(
+    () => usuarios.filter((u) => u.perfil === "montador" && u.ativo !== false),
+    [usuarios]
+  );
+
+  const equipesCronograma = useMemo(() => {
+    if (!preview) return [] as string[];
+    const mapa = new Map<string, string>();
+    for (const etapa of preview.etapas) {
+      const label = (etapa.equipe || "").trim();
+      if (!label || EQUIPE_PLACEHOLDERS.has(normalizarNomeLocal(label))) continue;
+      mapa.set(normalizarNomeLocal(label), label);
+    }
+    return [...mapa.values()];
+  }, [preview]);
+
+  // Carrega usuários e pré-casa os montadores pelos primeiros nomes das equipes.
+  useEffect(() => {
+    if (preview?.template !== "mundos") {
+      setUsuarios([]);
+      setGestorId("");
+      setMontadoresSel(new Set());
+      return;
+    }
+
+    let ativo = true;
+
+    (async () => {
+      const supabase = createClient();
+      const { data } = await supabase.rpc("fdl_listar_usuarios_gestao");
+
+      if (!ativo) return;
+
+      const lista = (data ?? []) as UsuarioLista[];
+      setUsuarios(lista);
+
+      const montadoresLista = lista.filter(
+        (u) => u.perfil === "montador" && u.ativo !== false
+      );
+      const preSelecionados = new Set<string>();
+
+      for (const etapa of preview.etapas) {
+        const label = etapa.equipe || "";
+        if (EQUIPE_PLACEHOLDERS.has(normalizarNomeLocal(label))) continue;
+
+        for (const primeiro of primeirosNomesEquipe(label)) {
+          for (const montador of montadoresLista) {
+            const primeiroMontador = normalizarNomeLocal(
+              montador.nome ?? ""
+            ).split(" ")[0];
+            if (primeiroMontador && primeiroMontador === primeiro) {
+              preSelecionados.add(montador.usuario_id);
+            }
+          }
+        }
+      }
+
+      setMontadoresSel(preSelecionados);
+    })();
+
+    return () => {
+      ativo = false;
+    };
+  }, [preview]);
+
+  function alternarMontador(id: string) {
+    setMontadoresSel((anterior) => {
+      const proximo = new Set(anterior);
+      if (proximo.has(id)) {
+        proximo.delete(id);
+      } else {
+        proximo.add(id);
+      }
+      return proximo;
+    });
+  }
 
   const resumo = useMemo(() => {
     if (!preview) {
@@ -384,6 +765,7 @@ export default function ImportarClient() {
     setPreview(null);
     setResultado(null);
     setRevisao(null);
+    setTemplateCriado(null);
 
     if (!file) return;
 
@@ -404,7 +786,9 @@ export default function ImportarClient() {
         cellDates: true,
       });
 
-      const cronograma = interpretarCronograma(file, workbook);
+      const cronograma = ehTemplateMundos(workbook)
+        ? interpretarCronogramaMundos(file, workbook)
+        : interpretarCronograma(file, workbook);
 
       setPreview(cronograma);
     } catch (error) {
@@ -433,7 +817,11 @@ export default function ImportarClient() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(preview),
+        body: JSON.stringify({
+          ...preview,
+          gestorId: gestorId || null,
+          montadorIds: [...montadoresSel],
+        }),
       });
 
       const json = await response.json();
@@ -460,6 +848,7 @@ export default function ImportarClient() {
 
       // Ao concluir, o preview (etapas/OSs) some e sobe o card de "Projeto
       // criado" com os detalhes — sem redirecionar automaticamente.
+      setTemplateCriado(preview.template);
       setResultado(resultadoImportacao);
       setRevisao({
         projetoId: resultadoImportacao.projeto_id,
@@ -544,7 +933,7 @@ export default function ImportarClient() {
               <div className="mt-5 space-y-4 rounded-2xl border border-green-400/30 bg-green-500/10 p-5">
                 <div>
                   <p className="text-lg font-bold text-white">
-                    ✓ Projeto criado
+                    Projeto criado
                   </p>
                   <p className="mt-1 text-sm text-white/70">
                     <strong>{resultado.projeto_nome}</strong> foi{" "}
@@ -560,7 +949,9 @@ export default function ImportarClient() {
                     <p className="text-2xl font-black text-white">
                       {resultado.etapas_processadas}
                     </p>
-                    <p className="text-xs text-white/55">etapas</p>
+                    <p className="text-xs text-white/55">
+                      {templateCriado === "mundos" ? "mundos" : "etapas"}
+                    </p>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-white/[0.05] p-3 text-center">
                     <p className="text-2xl font-black text-white">
@@ -615,14 +1006,14 @@ export default function ImportarClient() {
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <a
                     href={`/projetos/${resultado.projeto_id}`}
-                    className="h-11 flex-1 rounded-2xl bg-[var(--fdl-cream)] px-5 text-center text-sm font-semibold leading-[2.75rem] text-[var(--fdl-purple-dark)] transition hover:brightness-95"
+                    className="fdl-ui-btn fdl-ui-btn-primary flex-1"
                   >
                     Abrir projeto
                   </a>
 
                   <a
                     href={`/projetos/${resultado.projeto_id}/equipe`}
-                    className="h-11 flex-1 rounded-2xl border border-white/15 px-5 text-center text-sm font-semibold leading-[2.75rem] text-white/80 transition hover:bg-white/10 hover:text-white"
+                    className="fdl-ui-btn fdl-ui-btn-ghost flex-1"
                   >
                     Ir para Equipe do projeto
                   </a>
@@ -654,6 +1045,19 @@ export default function ImportarClient() {
 
       {preview ? (
         <>
+          {preview.template === "mundos" ? (
+            <section className="flex flex-wrap items-center gap-3 rounded-3xl border border-[var(--fdl-cream)]/30 bg-[var(--fdl-cream)]/10 p-5">
+              <span className="rounded-full bg-[var(--fdl-cream)] px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[var(--fdl-purple-dark)]">
+                Projeto-chave
+              </span>
+              <p className="text-sm text-white/80">
+                Cronograma por <strong>mundos</strong> reconhecido:{" "}
+                <strong>{preview.cliente}</strong> entra como projeto-chave, com
+                cada mundo como microprojeto (etapa) e sua equipe.
+              </p>
+            </section>
+          ) : null}
+
           <section className="grid gap-4 md:grid-cols-4">
             <div className="rounded-3xl border border-white/10 bg-white p-6 text-[var(--fdl-text-dark)] shadow-xl">
               <p className="text-sm text-[#7d6488]">Etapas</p>
@@ -759,12 +1163,112 @@ export default function ImportarClient() {
             ) : null}
           </section>
 
+          {preview.template === "mundos" ? (
+            <section className="fdl-form-card p-6">
+              <div className="mb-5">
+                <h2 className="text-xl font-semibold">
+                  Responsáveis do projeto
+                </h2>
+                <p className="mt-1 text-sm text-white/50">
+                  O cronograma por mundos não traz o gestor, e as equipes são
+                  por mundo. Escolha o gestor comercial e confirme os montadores
+                  envolvidos — todos os marcados são vinculados ao projeto.
+                </p>
+              </div>
+
+              <div className="grid gap-6 lg:grid-cols-2">
+                <div>
+                  <label className="fdl-ui-label">Gestor Comercial</label>
+                  <select
+                    className="fdl-select mt-2 w-full"
+                    value={gestorId}
+                    onChange={(event) => setGestorId(event.target.value)}
+                  >
+                    <option value="">Selecionar gestor…</option>
+                    {gestores.map((gestor) => (
+                      <option key={gestor.usuario_id} value={gestor.usuario_id}>
+                        {gestor.nome ?? "Sem nome"}
+                      </option>
+                    ))}
+                  </select>
+                  {gestores.length === 0 ? (
+                    <p className="mt-2 text-xs text-yellow-100/80">
+                      Nenhum gestor comercial disponível para você. Cadastre em
+                      Usuários ou defina depois na Equipe do projeto.
+                    </p>
+                  ) : null}
+                </div>
+
+                <div>
+                  <label className="fdl-ui-label">
+                    Equipes de montagem (montadores envolvidos)
+                  </label>
+
+                  {equipesCronograma.length > 0 ? (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {equipesCronograma.map((label) => (
+                        <span
+                          key={label}
+                          className="rounded-full bg-white/10 px-2.5 py-0.5 text-xs text-white/70"
+                        >
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  <div className="mt-3 max-h-56 space-y-1 overflow-auto rounded-2xl border border-white/10 bg-white/[0.03] p-2">
+                    {montadores.length === 0 ? (
+                      <p className="p-2 text-xs text-white/50">
+                        Nenhum montador cadastrado. Cadastre em Usuários e
+                        reimporte para vincular.
+                      </p>
+                    ) : (
+                      montadores.map((montador) => {
+                        const marcado = montadoresSel.has(montador.usuario_id);
+                        return (
+                          <label
+                            key={montador.usuario_id}
+                            className="flex cursor-pointer items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-white/5"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={marcado}
+                              onChange={() =>
+                                alternarMontador(montador.usuario_id)
+                              }
+                            />
+                            <span className="text-sm text-white/80">
+                              {montador.nome ?? "Sem nome"}
+                            </span>
+                          </label>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  <p className="mt-2 text-xs text-white/45">
+                    {montadoresSel.size} montador(es) marcado(s). Líderes sem
+                    correspondência aparecem nos chips acima — cadastre-os em
+                    Usuários e reimporte, ou marque manualmente.
+                  </p>
+                </div>
+              </div>
+            </section>
+          ) : null}
+
           <section className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
             <div className="fdl-form-card p-6">
               <div className="mb-5">
-                <h2 className="text-xl font-semibold">Etapas identificadas</h2>
+                <h2 className="text-xl font-semibold">
+                  {preview.template === "mundos"
+                    ? "Mundos (microprojetos)"
+                    : "Etapas identificadas"}
+                </h2>
                 <p className="mt-1 text-sm text-white/50">
-                  IDs inteiros do cronograma.
+                  {preview.template === "mundos"
+                    ? "Cada mundo vira uma etapa com sua equipe de montagem."
+                    : "IDs inteiros do cronograma."}
                 </p>
               </div>
 
@@ -774,11 +1278,38 @@ export default function ImportarClient() {
                     key={etapa.id}
                     className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
                   >
-                    <p className="text-xs uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
-                      Etapa {etapa.id}
-                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs uppercase tracking-[0.22em] text-[var(--fdl-cream)]">
+                        {preview.template === "mundos" ? "Mundo" : "Etapa"}{" "}
+                        {etapa.id}
+                        {etapa.idEspaco ? ` · ${etapa.idEspaco}` : ""}
+                      </p>
+                      {etapa.progressoReferencia ? (
+                        <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-white/80">
+                          {etapa.progressoReferencia}
+                        </span>
+                      ) : null}
+                    </div>
 
                     <h3 className="mt-2 font-semibold">{etapa.tarefa}</h3>
+
+                    {preview.template === "mundos" ? (
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                        <span className="rounded-full bg-[var(--fdl-cream)]/15 px-2.5 py-0.5 font-semibold text-[var(--fdl-cream)]">
+                          Equipe: {etapa.equipe || "Não informada"}
+                        </span>
+                        {etapa.contrato ? (
+                          <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-white/70">
+                            {etapa.contrato}
+                          </span>
+                        ) : null}
+                        {etapa.statusProducao ? (
+                          <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-white/70">
+                            {etapa.statusProducao}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
 
                     <p className="mt-2 text-sm text-white/50">
                       {etapa.inicioPrevisto || "Sem início"} até{" "}
@@ -818,12 +1349,19 @@ export default function ImportarClient() {
                           <p>{os.tarefa}</p>
                           <p className="mt-1 text-xs text-white/40">
                             {os.etapaNome}
+                            {os.contrato ? ` · ${os.contrato}` : ""}
                           </p>
                         </td>
 
                         <td className="px-4 py-3 text-white/70">
                           {os.inicioPrevisto || "-"} até{" "}
                           {os.terminoPrevisto || "-"}
+                          {os.inicioProgramado || os.terminoProgramado ? (
+                            <span className="mt-1 block text-xs text-white/40">
+                              Contrato: {os.inicioProgramado || "-"} até{" "}
+                              {os.terminoProgramado || "-"}
+                            </span>
+                          ) : null}
                         </td>
 
                         <td className="px-4 py-3 text-white/70">
@@ -856,7 +1394,7 @@ export default function ImportarClient() {
                   preview.ordensServico.length === 0 ||
                   Boolean(revisao)
                 }
-                className="mt-6 h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+                className="fdl-ui-btn fdl-ui-btn-primary mt-6 w-full"
               >
                 {confirmando
                   ? "Confirmando importação..."

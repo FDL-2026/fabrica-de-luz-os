@@ -8,6 +8,7 @@ import LinkChamado from "./link-chamado";
 import HistoricoProjetoClient from "./historico-projeto-client";
 import ProgressoPonderadoProjeto from "@/components/progresso/progresso-ponderado-projeto";
 import ProgressoPonderadoKpi from "@/components/progresso/progresso-ponderado-kpi";
+import ProgressoMundos from "@/components/progresso/progresso-mundos";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -130,6 +131,16 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
     (tokenRow as { chamado_token?: string | null } | null)?.chamado_token ??
     null;
 
+  // Busca tolerante: se a coluna is_chave ainda não existir, o projeto apenas
+  // não é tratado como projeto-chave (sem a seção de mundos).
+  const { data: chaveRow } = await supabase
+    .from("projetos")
+    .select("is_chave")
+    .eq("id", id)
+    .maybeSingle();
+  const isChave =
+    (chaveRow as { is_chave?: boolean | null } | null)?.is_chave === true;
+
   const { data: noites } = await supabase
     .from("noites_montagem")
     .select("id, numero_noite, data, horario_inicio, horario_fim, status")
@@ -138,7 +149,9 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
 
   const { data: ordensServico } = await supabase
     .from("ordens_servico")
-    .select("id, codigo_os, local, servico, equipe, status, prioridade")
+    .select(
+      "id, codigo_os, local, servico, equipe, status, prioridade, etapa_id, inicio_previsto, termino_previsto"
+    )
     .eq("projeto_id", id)
     .order("codigo_os", { ascending: true });
 
@@ -277,6 +290,15 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
           <div className="mt-6">
             <ProgressoPonderadoProjeto projetoId={projeto.id} />
           </div>
+
+          {isChave ? (
+            <div className="mt-6">
+              <ProgressoMundos
+                projetoId={projeto.id}
+                ordensServico={ordensServicoSeguras}
+              />
+            </div>
+          ) : null}
 
           <section className="mt-8 grid gap-6 xl:grid-cols-[1fr_1.2fr]">
             <div className="fdl-form-card p-6">
@@ -441,10 +463,12 @@ export default async function ProjetoDetalhePage({ params }: PageProps) {
         ordensAguardandoValidacao={ordensAguardandoValidacao}
       />
 
-      <OsTableClient
-        projetoId={projeto.id}
-        ordensServico={ordensServicoSeguras}
-      />
+      {!isChave ? (
+        <OsTableClient
+          projetoId={projeto.id}
+          ordensServico={ordensServicoSeguras}
+        />
+      ) : null}
 
       <HistoricoProjetoClient projetoId={projeto.id} />
 

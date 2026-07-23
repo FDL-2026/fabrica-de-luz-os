@@ -28,11 +28,11 @@ export default function MontadorShell({
           widths[maxWidth]
         } ${center ? "justify-center" : ""}`}
       >
-        <header className="mb-8 flex justify-center">
+        <header className="fdl-montador-header mb-8 flex justify-center">
           <BrandLogo className="h-auto max-h-28 w-full max-w-sm object-contain sm:max-h-36 sm:max-w-lg" />
         </header>
 
-        <div className="w-full">{children}</div>
+        <div className="fdl-montador-content w-full">{children}</div>
 
         {showFooter ? (
           <footer className="mt-6 text-center text-xs text-white/40">

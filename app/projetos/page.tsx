@@ -16,6 +16,7 @@ type ProjetoRow = {
   data_inicio: string | null;
   data_fim: string | null;
   responsavel_comercial?: string | null;
+  is_chave?: boolean | null;
 };
 
 export default async function ProjetosPage() {
@@ -24,7 +25,7 @@ export default async function ProjetosPage() {
   const projetosResult = await supabase
     .from("projetos")
     .select(
-      "id, cliente, shopping, cidade, uf, temporada, status, data_inicio, data_fim, responsavel_comercial"
+      "id, cliente, shopping, cidade, uf, temporada, status, data_inicio, data_fim, responsavel_comercial, is_chave"
     )
     .order("criado_em", { ascending: false });
 

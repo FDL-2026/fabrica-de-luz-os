@@ -117,7 +117,7 @@ export default function MontadorLoginClient() {
         <button
           type="submit"
           disabled={carregando}
-          className="h-12 w-full rounded-2xl bg-[var(--fdl-cream)] text-sm font-semibold text-[var(--fdl-purple-dark)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+          className="fdl-mobile-btn fdl-mobile-btn-primary"
         >
           {carregando ? "Validando..." : "Acessar projetos"}
         </button>
