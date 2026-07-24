@@ -141,6 +141,10 @@ revoke all on public.vistorias, public.vistoria_locais, public.vistoria_pontos,
 -- p_titulo é opcional: se vazio, é derivado do projeto.
 -- (p_endereco mantido por compatibilidade de assinatura; não é mais usado.)
 -- ----------------------------------------------------------------------------
+-- Assinatura anterior usava p_pontos; renomeamos para p_locais, então é
+-- preciso dropar antes (o CREATE OR REPLACE não renomeia parâmetros).
+drop function if exists public.fdl_criar_vistoria(uuid, text, text, text, date, jsonb);
+
 create or replace function public.fdl_criar_vistoria(
   p_projeto_id    uuid,
   p_titulo        text,
