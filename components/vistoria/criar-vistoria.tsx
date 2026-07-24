@@ -21,7 +21,14 @@ type PontoRascunho = {
   nome: string;
   tipo: string;
   itens: ItemVT[];
-  fotosRef: File[]; // fotos de referência anexadas pela gestão (onde instalar)
+  fotosRef: File[]; // fotos de referência (onde instalar)
+};
+
+type LocalRascunho = {
+  uid: string;
+  nome: string;
+  endereco: string;
+  pontos: PontoRascunho[];
 };
 
 function novoUid() {
@@ -32,15 +39,15 @@ function nomeProjeto(p: ProjetoBusca) {
   return [p.cliente || p.shopping, p.cidade, p.uf].filter(Boolean).join(" · ");
 }
 
-export default function CriarVistoria({
-  onCriada,
-}: {
-  onCriada?: () => void;
-}) {
+function novoPonto(): PontoRascunho {
+  const tipo = "fachada";
+  return { uid: novoUid(), nome: "", tipo, itens: itensDoTipo(tipo), fotosRef: [] };
+}
+
+export default function CriarVistoria({ onCriada }: { onCriada?: () => void }) {
   const supabase = useMemo(() => createClient(), []);
 
-  const [titulo, setTitulo] = useState("");
-  const [endereco, setEndereco] = useState("");
+  const [identificacao, setIdentificacao] = useState("");
   const [eng, setEng] = useState("");
   const [dataPrevista, setDataPrevista] = useState("");
 
@@ -50,7 +57,9 @@ export default function CriarVistoria({
     null
   );
 
-  const [pontos, setPontos] = useState<PontoRascunho[]>([]);
+  const [locais, setLocais] = useState<LocalRascunho[]>([
+    { uid: novoUid(), nome: "", endereco: "", pontos: [] },
+  ]);
   const [salvando, setSalvando] = useState(false);
   const [fase, setFase] = useState<"criando" | "fotos" | null>(null);
   const [erro, setErro] = useState("");
@@ -78,67 +87,65 @@ export default function CriarVistoria({
 
   function escolherProjeto(p: ProjetoBusca) {
     setProjeto({ id: p.projeto_id, nome: nomeProjeto(p) });
-    if (!titulo.trim()) setTitulo(p.cliente || p.shopping || "");
     setBusca("");
     setResultados([]);
   }
 
-  function adicionarPonto() {
-    const tipo = "fachada";
-    setPontos((l) => [
+  // --- Locais ---
+  function adicionarLocal() {
+    setLocais((l) => [
       ...l,
-      { uid: novoUid(), nome: "", tipo, itens: itensDoTipo(tipo), fotosRef: [] },
+      { uid: novoUid(), nome: "", endereco: "", pontos: [] },
     ]);
   }
+  function removerLocal(uid: string) {
+    setLocais((l) => (l.length <= 1 ? l : l.filter((x) => x.uid !== uid)));
+  }
+  function alterarLocal(uid: string, patch: Partial<LocalRascunho>) {
+    setLocais((l) => l.map((x) => (x.uid === uid ? { ...x, ...patch } : x)));
+  }
 
-  function adicionarFotoRef(uid: string, files: FileList | null) {
-    if (!files || files.length === 0) return;
-    const novas = Array.from(files);
-    setPontos((l) =>
-      l.map((p) =>
-        p.uid === uid ? { ...p, fotosRef: [...p.fotosRef, ...novas] } : p
-      )
+  // --- Pontos dentro de um local ---
+  function mutPontos(
+    localUid: string,
+    fn: (pontos: PontoRascunho[]) => PontoRascunho[]
+  ) {
+    setLocais((l) =>
+      l.map((x) => (x.uid === localUid ? { ...x, pontos: fn(x.pontos) } : x))
     );
   }
-
-  function removerFotoRef(uid: string, idx: number) {
-    setPontos((l) =>
-      l.map((p) =>
-        p.uid === uid
-          ? { ...p, fotosRef: p.fotosRef.filter((_, i) => i !== idx) }
-          : p
-      )
+  function adicionarPonto(localUid: string) {
+    mutPontos(localUid, (ps) => [...ps, novoPonto()]);
+  }
+  function removerPonto(localUid: string, uid: string) {
+    mutPontos(localUid, (ps) => ps.filter((p) => p.uid !== uid));
+  }
+  function alterarPonto(
+    localUid: string,
+    uid: string,
+    patch: Partial<PontoRascunho>
+  ) {
+    mutPontos(localUid, (ps) =>
+      ps.map((p) => (p.uid === uid ? { ...p, ...patch } : p))
     );
   }
-
-  function removerPonto(uid: string) {
-    setPontos((l) => l.filter((p) => p.uid !== uid));
+  function trocarTipo(localUid: string, uid: string, tipo: string) {
+    alterarPonto(localUid, uid, { tipo, itens: itensDoTipo(tipo) });
   }
-
-  function alterarPonto(uid: string, patch: Partial<PontoRascunho>) {
-    setPontos((l) => l.map((p) => (p.uid === uid ? { ...p, ...patch } : p)));
-  }
-
-  function trocarTipo(uid: string, tipo: string) {
-    // Reaplica o checklist sugerido do novo tipo.
-    alterarPonto(uid, { tipo, itens: itensDoTipo(tipo) });
-  }
-
-  function removerItem(uid: string, chave: string) {
-    setPontos((l) =>
-      l.map((p) =>
+  function removerItem(localUid: string, uid: string, chave: string) {
+    mutPontos(localUid, (ps) =>
+      ps.map((p) =>
         p.uid === uid
           ? { ...p, itens: p.itens.filter((it) => it.chave !== chave) }
           : p
       )
     );
   }
-
-  function adicionarItem(uid: string, label: string) {
+  function adicionarItem(localUid: string, uid: string, label: string) {
     const texto = label.trim();
     if (!texto) return;
-    setPontos((l) =>
-      l.map((p) =>
+    mutPontos(localUid, (ps) =>
+      ps.map((p) =>
         p.uid === uid
           ? {
               ...p,
@@ -157,38 +164,64 @@ export default function CriarVistoria({
       )
     );
   }
-
-  function restaurarChecklist(uid: string, tipo: string) {
-    alterarPonto(uid, { itens: itensDoTipo(tipo) });
+  function restaurarChecklist(localUid: string, uid: string, tipo: string) {
+    alterarPonto(localUid, uid, { itens: itensDoTipo(tipo) });
+  }
+  function adicionarFotoRef(
+    localUid: string,
+    uid: string,
+    files: FileList | null
+  ) {
+    if (!files || files.length === 0) return;
+    const novas = Array.from(files);
+    mutPontos(localUid, (ps) =>
+      ps.map((p) =>
+        p.uid === uid ? { ...p, fotosRef: [...p.fotosRef, ...novas] } : p
+      )
+    );
+  }
+  function removerFotoRef(localUid: string, uid: string, idx: number) {
+    mutPontos(localUid, (ps) =>
+      ps.map((p) =>
+        p.uid === uid
+          ? { ...p, fotosRef: p.fotosRef.filter((_, i) => i !== idx) }
+          : p
+      )
+    );
   }
 
   async function salvar() {
     setErro("");
-    if (titulo.trim().length < 2) {
-      setErro("Informe um título/identificação para a vistoria.");
+    if (!projeto && identificacao.trim().length < 2) {
+      setErro("Selecione um projeto ou informe uma identificação.");
       return;
     }
-    if (pontos.length === 0) {
+    const totalPontos = locais.reduce((n, l) => n + l.pontos.length, 0);
+    if (totalPontos === 0) {
       setErro("Adicione pelo menos um ponto para vistoriar.");
       return;
     }
     setSalvando(true);
     setFase("criando");
     try {
-      const payloadPontos = pontos.map((p) => ({
-        nome: p.nome.trim() || "Ponto",
-        tipo: p.tipo,
-        itens: p.itens,
-        anotacoes: null,
+      const payloadLocais = locais.map((l, i) => ({
+        nome: l.nome.trim() || `Local ${i + 1}`,
+        endereco: l.endereco.trim() || null,
+        pontos: l.pontos.map((p) => ({
+          nome: p.nome.trim() || "Ponto",
+          tipo: p.tipo,
+          itens: p.itens,
+          anotacoes: null,
+        })),
       }));
 
       const { data, error } = await supabase.rpc("fdl_criar_vistoria", {
         p_projeto_id: projeto?.id ?? null,
-        p_titulo: titulo,
-        p_endereco: endereco || null,
+        p_titulo: projeto ? null : identificacao,
+        p_endereco: null,
         p_eng: eng || null,
         p_data_prevista: dataPrevista || null,
-        p_pontos: payloadPontos,
+        p_locais: payloadLocais,
       });
       if (error) throw new Error(error.message);
 
@@ -197,30 +230,44 @@ export default function CriarVistoria({
       const id = (row as { vistoria_id?: string } | null)?.vistoria_id;
       if (!token || !id) throw new Error("Não foi possível gerar o link.");
 
-      // Sobe as fotos de referência (se houver). Os pontos foram inseridos na
-      // ordem do array; recupero os ids reais e caso por ordem.
-      const temFotos = pontos.some((p) => p.fotosRef.length > 0);
+      // Sobe fotos de referência, casando local/ponto por ordem.
+      const temFotos = locais.some((l) =>
+        l.pontos.some((p) => p.fotosRef.length > 0)
+      );
       if (temFotos) {
         setFase("fotos");
         const { data: det } = await supabase.rpc("fdl_obter_vistoria_gestao", {
           p_id: id,
         });
-        const pontosSalvos = ((det as { pontos?: Array<{ id: string; ordem: number }> })
-          ?.pontos ?? []).slice().sort((a, b) => a.ordem - b.ordem);
+        const locaisSalvos = (
+          (det as {
+            locais?: Array<{
+              ordem: number;
+              pontos?: Array<{ id: string; ordem: number }>;
+            }>;
+          })?.locais ?? []
+        )
+          .slice()
+          .sort((a, b) => a.ordem - b.ordem);
 
-        for (let i = 0; i < pontos.length; i++) {
-          const pontoId = pontosSalvos[i]?.id;
-          if (!pontoId) continue;
-          for (const file of pontos[i].fotosRef) {
-            const form = new FormData();
-            form.append("token", token);
-            form.append("pontoId", pontoId);
-            form.append("categoria", "referencia");
-            form.append("file", file);
-            await fetch("/api/vistoria/anexos/upload", {
-              method: "POST",
-              body: form,
-            });
+        for (let li = 0; li < locais.length; li++) {
+          const pontosSalvos = (locaisSalvos[li]?.pontos ?? [])
+            .slice()
+            .sort((a, b) => a.ordem - b.ordem);
+          for (let pi = 0; pi < locais[li].pontos.length; pi++) {
+            const pontoId = pontosSalvos[pi]?.id;
+            if (!pontoId) continue;
+            for (const file of locais[li].pontos[pi].fotosRef) {
+              const form = new FormData();
+              form.append("token", token);
+              form.append("pontoId", pontoId);
+              form.append("categoria", "referencia");
+              form.append("file", file);
+              await fetch("/api/vistoria/anexos/upload", {
+                method: "POST",
+                body: form,
+              });
+            }
           }
         }
       }
@@ -228,7 +275,9 @@ export default function CriarVistoria({
       setCriada({ token, id });
       onCriada?.();
     } catch (e) {
-      setErro(e instanceof Error ? e.message : "Não foi possível criar a vistoria.");
+      setErro(
+        e instanceof Error ? e.message : "Não foi possível criar a vistoria."
+      );
     } finally {
       setSalvando(false);
       setFase(null);
@@ -246,17 +295,15 @@ export default function CriarVistoria({
   }
 
   function novaVistoria() {
-    setTitulo("");
-    setEndereco("");
+    setIdentificacao("");
     setEng("");
     setDataPrevista("");
     setProjeto(null);
-    setPontos([]);
+    setLocais([{ uid: novoUid(), nome: "", endereco: "", pontos: [] }]);
     setCriada(null);
     setErro("");
   }
 
-  // --- Tela de sucesso: link pronto para compartilhar ---
   if (criada) {
     return (
       <div className="rounded-3xl border border-[var(--fdl-cream)]/25 bg-[var(--fdl-cream)]/[0.08] p-6">
@@ -307,8 +354,8 @@ export default function CriarVistoria({
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
       <h2 className="text-lg font-bold text-white">Nova vistoria técnica</h2>
       <p className="mt-1 text-sm text-white/55">
-        Pré-preencha os dados e os pontos. Cada tipo de decoração já traz um
-        checklist sugerido para guiar a V.T.
+        Vincule ao projeto, adicione os locais/praças e, em cada um, os pontos a
+        vistoriar. Cada tipo de decoração já traz um checklist sugerido.
       </p>
 
       {erro ? (
@@ -320,17 +367,7 @@ export default function CriarVistoria({
       {/* Cabeçalho */}
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <label className="fdl-ui-label">Título / identificação *</label>
-          <input
-            className="fdl-field mt-1.5 w-full"
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            placeholder="Ex.: Natal do Bem — Shopping X"
-          />
-        </div>
-
-        <div className="sm:col-span-2">
-          <label className="fdl-ui-label">Projeto (opcional)</label>
+          <label className="fdl-ui-label">Projeto</label>
           {projeto ? (
             <div className="mt-1.5 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3">
               <span className="text-sm text-white">{projeto.nome}</span>
@@ -348,7 +385,7 @@ export default function CriarVistoria({
                 className="fdl-field mt-1.5 w-full"
                 value={busca}
                 onChange={(e) => buscarProjeto(e.target.value)}
-                placeholder="Buscar shopping/cliente (opcional)"
+                placeholder="Buscar shopping/cliente"
               />
               {resultados.length > 0 ? (
                 <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-2xl border border-white/10 bg-[#3a2456] shadow-xl">
@@ -368,15 +405,19 @@ export default function CriarVistoria({
           )}
         </div>
 
-        <div className="sm:col-span-2">
-          <label className="fdl-ui-label">Endereço</label>
-          <input
-            className="fdl-field mt-1.5 w-full"
-            value={endereco}
-            onChange={(e) => setEndereco(e.target.value)}
-            placeholder="Endereço do local"
-          />
-        </div>
+        {!projeto ? (
+          <div className="sm:col-span-2">
+            <label className="fdl-ui-label">
+              Identificação (se não vincular projeto)
+            </label>
+            <input
+              className="fdl-field mt-1.5 w-full"
+              value={identificacao}
+              onChange={(e) => setIdentificacao(e.target.value)}
+              placeholder="Ex.: Prefeitura de Goiânia — Natal 2026"
+            />
+          </div>
+        ) : null}
 
         <div>
           <label className="fdl-ui-label">Eng. responsável</label>
@@ -398,45 +439,115 @@ export default function CriarVistoria({
         </div>
       </div>
 
-      {/* Pontos */}
-      <div className="mt-6">
+      {/* Locais */}
+      <div className="mt-6 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-white">
-            Pontos a vistoriar ({pontos.length})
+            Locais / praças ({locais.length})
           </h3>
           <button
             type="button"
-            onClick={adicionarPonto}
+            onClick={adicionarLocal}
             className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary"
           >
-            Adicionar ponto
+            Adicionar local
           </button>
         </div>
 
-        {pontos.length === 0 ? (
-          <p className="mt-3 rounded-2xl border border-dashed border-white/15 p-5 text-center text-sm text-white/45">
-            Nenhum ponto ainda. Adicione os locais/layouts que serão
-            vistoriados.
-          </p>
-        ) : (
-          <div className="mt-3 space-y-3">
-            {pontos.map((p, idx) => (
-              <PontoEditor
-                key={p.uid}
-                indice={idx + 1}
-                ponto={p}
-                onNome={(nome) => alterarPonto(p.uid, { nome })}
-                onTipo={(tipo) => trocarTipo(p.uid, tipo)}
-                onRemoverItem={(chave) => removerItem(p.uid, chave)}
-                onAdicionarItem={(label) => adicionarItem(p.uid, label)}
-                onRestaurar={() => restaurarChecklist(p.uid, p.tipo)}
-                onRemover={() => removerPonto(p.uid)}
-                onAdicionarFotoRef={(files) => adicionarFotoRef(p.uid, files)}
-                onRemoverFotoRef={(idx) => removerFotoRef(p.uid, idx)}
-              />
-            ))}
+        {locais.map((local, li) => (
+          <div
+            key={local.uid}
+            className="rounded-2xl border border-[var(--fdl-cream)]/20 bg-white/[0.03] p-4"
+          >
+            <div className="flex items-start gap-3">
+              <span className="mt-2 flex h-6 shrink-0 items-center justify-center rounded-full bg-[var(--fdl-cream)]/15 px-2 text-xs font-bold text-[var(--fdl-cream)]">
+                Local {li + 1}
+              </span>
+              <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="fdl-ui-label">Nome do local / praça</label>
+                  <input
+                    className="fdl-field mt-1.5 w-full"
+                    value={local.nome}
+                    onChange={(e) =>
+                      alterarLocal(local.uid, { nome: e.target.value })
+                    }
+                    placeholder="Ex.: Praça Cívica"
+                  />
+                </div>
+                <div>
+                  <label className="fdl-ui-label">Endereço</label>
+                  <input
+                    className="fdl-field mt-1.5 w-full"
+                    value={local.endereco}
+                    onChange={(e) =>
+                      alterarLocal(local.uid, { endereco: e.target.value })
+                    }
+                    placeholder="Endereço do local"
+                  />
+                </div>
+              </div>
+              {locais.length > 1 ? (
+                <button
+                  type="button"
+                  onClick={() => removerLocal(local.uid)}
+                  className="mt-1 shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-red-200/80 hover:bg-red-500/10"
+                >
+                  Remover
+                </button>
+              ) : null}
+            </div>
+
+            <div className="mt-4 border-t border-white/10 pt-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-white/80">
+                  Pontos ({local.pontos.length})
+                </p>
+                <button
+                  type="button"
+                  onClick={() => adicionarPonto(local.uid)}
+                  className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-ghost"
+                >
+                  Adicionar ponto
+                </button>
+              </div>
+
+              {local.pontos.length === 0 ? (
+                <p className="mt-3 rounded-xl border border-dashed border-white/15 p-4 text-center text-xs text-white/45">
+                  Nenhum ponto neste local ainda.
+                </p>
+              ) : (
+                <div className="mt-3 space-y-3">
+                  {local.pontos.map((p, pi) => (
+                    <PontoEditor
+                      key={p.uid}
+                      indice={pi + 1}
+                      ponto={p}
+                      onNome={(nome) => alterarPonto(local.uid, p.uid, { nome })}
+                      onTipo={(tipo) => trocarTipo(local.uid, p.uid, tipo)}
+                      onRemoverItem={(chave) =>
+                        removerItem(local.uid, p.uid, chave)
+                      }
+                      onAdicionarItem={(label) =>
+                        adicionarItem(local.uid, p.uid, label)
+                      }
+                      onRestaurar={() =>
+                        restaurarChecklist(local.uid, p.uid, p.tipo)
+                      }
+                      onRemover={() => removerPonto(local.uid, p.uid)}
+                      onAdicionarFotoRef={(files) =>
+                        adicionarFotoRef(local.uid, p.uid, files)
+                      }
+                      onRemoverFotoRef={(idx) =>
+                        removerFotoRef(local.uid, p.uid, idx)
+                      }
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        ))}
       </div>
 
       <div className="mt-6 flex flex-col gap-2 sm:flex-row">
@@ -483,7 +594,7 @@ function PontoEditor({
   const [novoItem, setNovoItem] = useState("");
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+    <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
       <div className="flex items-start gap-3">
         <span className="mt-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white/70">
           {indice}
@@ -522,7 +633,7 @@ function PontoEditor({
         </button>
       </div>
 
-      <div className="mt-4 rounded-xl border border-white/10 bg-black/10 p-3">
+      <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-3">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold text-white/70">
             Checklist sugerido ({ponto.itens.length})
@@ -590,8 +701,8 @@ function PontoEditor({
         </div>
       </div>
 
-      {/* Fotos de referência (onde instalar) — anexadas pela gestão */}
-      <div className="mt-3 rounded-xl border border-white/10 bg-black/10 p-3">
+      {/* Fotos de referência (onde instalar) */}
+      <div className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold text-white/70">
             Fotos de referência ({ponto.fotosRef.length})

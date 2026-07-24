@@ -16,9 +16,11 @@ type RouteContext = {
 // Coleta os external_file_id de todas as fotos do relatório.
 function coletarFileIds(v: VistoriaRelatorio): string[] {
   const ids: string[] = [];
-  for (const p of v.pontos ?? []) {
-    for (const f of p.fotos ?? []) {
-      if (f.external_file_id) ids.push(f.external_file_id);
+  for (const local of v.locais ?? []) {
+    for (const p of local.pontos ?? []) {
+      for (const f of p.fotos ?? []) {
+        if (f.external_file_id) ids.push(f.external_file_id);
+      }
     }
   }
   return ids;

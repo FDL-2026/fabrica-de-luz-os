@@ -7,22 +7,23 @@
 //
 // Fonte única (front + relatório). O banco só guarda o JSON com as respostas.
 
-export type CampoTipo = "texto" | "check";
+export type CampoTipo = "texto" | "numero" | "check" | "select";
 
-// Campo dentro de um item (ex.: Tensão/Fase, ou Gancho/Pitão/Cabo de aço).
+// Campo dentro de um item (ex.: Tensão/Fase, Gancho/Pitão, Quantidade, Tipo…).
 export type CampoVT = {
   chave: string;
   label: string;
   tipo: CampoTipo;
-  valor?: string; // usado quando tipo = "texto"
-  marcado?: boolean; // usado quando tipo = "check"
+  valor?: string; // texto/numero/select
+  marcado?: boolean; // check
+  opcoes?: string[]; // select
 };
 
 // Item do checklist de um ponto.
 export type ItemVT = {
   chave: string;
   label: string;
-  simNao: boolean; // maioria tem resposta Sim/Não
+  simNao: boolean; // exibe resposta Sim/Não
   resposta?: "sim" | "nao" | null;
   campos: CampoVT[];
 };
@@ -85,15 +86,17 @@ const fachadaVidro = (): ItemVT => ({
   ],
 });
 
+// Utilização de equipamentos — inclui "outro (descreva)".
 const equipamentos = (): ItemVT => ({
   chave: "equipamentos",
-  label: "Utilização de equipamentos",
+  label: "Necessidade de equipamento",
   simNao: true,
   resposta: null,
   campos: [
     { chave: "munck", label: "Munck", tipo: "check", marcado: false },
     { chave: "guindaste", label: "Guindaste", tipo: "check", marcado: false },
     { chave: "plataforma", label: "Plataforma", tipo: "check", marcado: false },
+    { chave: "outro", label: "Outro (descreva)", tipo: "texto", valor: "" },
   ],
 });
 
@@ -114,6 +117,104 @@ const permissaoFurar = (): ItemVT => ({
   simNao: true,
   resposta: null,
   campos: [],
+});
+
+// Vegetação — levantamento (quantidade, tipo, altura média).
+const vegetacaoLevantamento = (): ItemVT => ({
+  chave: "vegetacao_levantamento",
+  label: "Levantamento da vegetação",
+  simNao: false,
+  resposta: null,
+  campos: [
+    { chave: "quantidade", label: "Quantidade", tipo: "numero", valor: "" },
+    {
+      chave: "tipo",
+      label: "Tipo",
+      tipo: "select",
+      valor: "",
+      opcoes: ["Palmeira", "Árvore de galhos"],
+    },
+    { chave: "altura_media", label: "Altura média", tipo: "texto", valor: "" },
+  ],
+});
+
+// Árvore de Natal — terreno.
+const terrenoTipo = (): ItemVT => ({
+  chave: "terreno_tipo",
+  label: "Tipo de terreno",
+  simNao: false,
+  resposta: null,
+  campos: [
+    {
+      chave: "tipo",
+      label: "Terreno",
+      tipo: "select",
+      valor: "",
+      opcoes: ["Terra", "Concreto", "Asfalto", "Paralelepípedo", "Outro"],
+    },
+  ],
+});
+
+const terrenoNivelado = (): ItemVT => ({
+  chave: "terreno_nivelado",
+  label: "Terreno nivelado",
+  simNao: true,
+  resposta: null,
+  campos: [],
+});
+
+const acessoGuindaste = (): ItemVT => ({
+  chave: "acesso_guindaste",
+  label: "Acesso fácil para guindaste/munck",
+  simNao: true,
+  resposta: null,
+  campos: [],
+});
+
+// Decoração interna.
+const dimensoesPraca = (): ItemVT => ({
+  chave: "dimensoes_praca",
+  label: "Dimensões da praça",
+  simNao: false,
+  resposta: null,
+  campos: [
+    { chave: "medidas", label: "Medidas (C × L)", tipo: "texto", valor: "" },
+  ],
+});
+
+const peDireito = (): ItemVT => ({
+  chave: "pe_direito",
+  label: "Altura do pé-direito",
+  simNao: false,
+  resposta: null,
+  campos: [{ chave: "altura", label: "Altura", tipo: "texto", valor: "" }],
+});
+
+const decoracaoAerea = (): ItemVT => ({
+  chave: "decoracao_aerea",
+  label: "Decoração aérea",
+  simNao: true,
+  resposta: null,
+  campos: [
+    {
+      chave: "fixacao",
+      label: "Como são os pontos de fixação",
+      tipo: "texto",
+      valor: "",
+    },
+  ],
+});
+
+const acessoInstalacao = (): ItemVT => ({
+  chave: "acesso_instalacao",
+  label: "Acesso para instalação",
+  simNao: false,
+  resposta: null,
+  campos: [
+    { chave: "plataforma", label: "Plataforma", tipo: "check", marcado: false },
+    { chave: "alpinista", label: "Alpinista", tipo: "check", marcado: false },
+    { chave: "outro", label: "Outro (descreva)", tipo: "texto", valor: "" },
+  ],
 });
 
 // --- Tipos de decoração -----------------------------------------------------
@@ -139,6 +240,9 @@ export const TIPOS_DECORACAO: TipoDecoracao[] = [
     descricao: "Árvores e peças de grande porte com içamento.",
     itens: [
       pontoEletrico(),
+      terrenoTipo(),
+      terrenoNivelado(),
+      acessoGuindaste(),
       fixacao(),
       ancoragemVida(),
       estaiamento(),
@@ -152,6 +256,7 @@ export const TIPOS_DECORACAO: TipoDecoracao[] = [
     descricao: "Rotatórias, jardins e árvores existentes.",
     itens: [
       pontoEletrico(),
+      vegetacaoLevantamento(),
       fixacao(),
       ancoragemVida(),
       equipamentos(),
@@ -168,6 +273,19 @@ export const TIPOS_DECORACAO: TipoDecoracao[] = [
       fixacao(),
       estaiamento(),
       equipamentos(),
+      permissaoFurar(),
+    ],
+  },
+  {
+    chave: "decoracao_interna",
+    nome: "Decoração interna",
+    descricao: "Praças internas, decoração aérea e de piso.",
+    itens: [
+      dimensoesPraca(),
+      peDireito(),
+      pontoEletrico(),
+      decoracaoAerea(),
+      acessoInstalacao(),
       permissaoFurar(),
     ],
   },
@@ -202,7 +320,7 @@ export function itensDoTipo(chave: string): ItemVT[] {
   return JSON.parse(JSON.stringify(tipo.itens)) as ItemVT[];
 }
 
-// --- Conferência inicial (uma vez por VT) -----------------------------------
+// --- Conferência inicial (uma vez por relatório) ----------------------------
 
 export type Conferencia = {
   deposito: string; // altura x largura x comprimento

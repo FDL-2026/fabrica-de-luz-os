@@ -15,17 +15,25 @@ type Ponto = {
   fotos: Foto[] | null;
 };
 
+type Local = {
+  nome: string;
+  endereco: string | null;
+  pontos: Ponto[] | null;
+};
+
 export type VistoriaRelatorio = {
   titulo: string | null;
   projeto_nome: string | null;
-  endereco: string | null;
   eng_responsavel: string | null;
   data_prevista: string | null;
   status: string | null;
   preenchido_por_nome: string | null;
+  acompanhante_nome: string | null;
+  acompanhante_contato: string | null;
+  acompanhante_area: string | null;
   concluida_em: string | null;
   conferencia: Record<string, unknown> | null;
-  pontos: Ponto[];
+  locais: Local[];
 };
 
 function esc(v: unknown): string {
@@ -187,11 +195,16 @@ export function relatorioVistoriaBody(
     <h1 style="margin:4px 0 0;color:${COR_ROXO};font-size:22px;">${esc(
       v.titulo
     )}</h1>
-  </div>
-  <table style="border-collapse:collapse;width:100%;font-size:12px;margin-bottom:6px;">
+  </div>`;
+
+  const acomp = [v.acompanhante_nome, v.acompanhante_area, v.acompanhante_contato]
+    .filter((x) => x && String(x).trim())
+    .map((x) => esc(x))
+    .join(" · ");
+
+  const cabecalhoTabela = `<table style="border-collapse:collapse;width:100%;font-size:12px;margin-bottom:6px;">
     <tbody>
-      ${linhaTabela("Projeto", esc(v.projeto_nome))}
-      ${linhaTabela("Endereço", esc(v.endereco))}
+      ${linhaTabela("Projeto", esc(v.projeto_nome || v.titulo))}
       ${linhaTabela("Eng. responsável", esc(v.eng_responsavel))}
       ${linhaTabela("Data prevista", dataBR(v.data_prevista))}
       ${linhaTabela(
@@ -201,15 +214,36 @@ export function relatorioVistoriaBody(
           : "Aguardando preenchimento"
       )}
       ${linhaTabela("Preenchida por", esc(v.preenchido_por_nome))}
+      ${acomp ? linhaTabela("Acompanhante", acomp) : ""}
     </tbody>
   </table>`;
 
   const conferencia = renderConferencia(v.conferencia);
 
-  const pontos = `<h2 style="margin:24px 0 4px;color:${COR_ROXO};font-size:16px;border-bottom:2px solid ${COR_ROXO};padding-bottom:4px;">Pontos vistoriados</h2>
-  ${(v.pontos ?? []).map((p) => renderPonto(p, fotoSrc)).join("")}`;
+  const locais = (v.locais ?? [])
+    .map((local, i) => {
+      const pontos = (local.pontos ?? [])
+        .map((p) => renderPonto(p, fotoSrc))
+        .join("");
+      return `<div style="margin-top:24px;page-break-inside:avoid;">
+        <h2 style="margin:0 0 2px;color:${COR_ROXO};font-size:16px;border-bottom:2px solid ${COR_ROXO};padding-bottom:4px;">
+          Local ${i + 1}: ${esc(local.nome)}
+        </h2>
+        ${
+          local.endereco && local.endereco.trim()
+            ? `<p style="margin:4px 0 0;font-size:12px;color:#555;">${esc(
+                local.endereco
+              )}</p>`
+            : ""
+        }
+        ${pontos}
+      </div>`;
+    })
+    .join("");
 
-  return `${cabecalho}${conferencia}${pontos}`;
+  const secaoLocais = `<h2 style="margin:24px 0 0;color:${COR_ROXO};font-size:16px;">Locais vistoriados</h2>${locais}`;
+
+  return `${cabecalho}${cabecalhoTabela}${conferencia}${secaoLocais}`;
 }
 
 // Documento .doc completo (Word abre HTML como Word).
