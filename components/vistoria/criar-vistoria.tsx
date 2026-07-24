@@ -21,6 +21,7 @@ type PontoRascunho = {
   nome: string;
   tipo: string;
   itens: ItemVT[];
+  fotosRef: File[]; // fotos de referência anexadas pela gestão (onde instalar)
 };
 
 function novoUid() {
@@ -51,6 +52,7 @@ export default function CriarVistoria({
 
   const [pontos, setPontos] = useState<PontoRascunho[]>([]);
   const [salvando, setSalvando] = useState(false);
+  const [fase, setFase] = useState<"criando" | "fotos" | null>(null);
   const [erro, setErro] = useState("");
   const [criada, setCriada] = useState<{ token: string; id: string } | null>(
     null
@@ -85,8 +87,28 @@ export default function CriarVistoria({
     const tipo = "fachada";
     setPontos((l) => [
       ...l,
-      { uid: novoUid(), nome: "", tipo, itens: itensDoTipo(tipo) },
+      { uid: novoUid(), nome: "", tipo, itens: itensDoTipo(tipo), fotosRef: [] },
     ]);
+  }
+
+  function adicionarFotoRef(uid: string, files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const novas = Array.from(files);
+    setPontos((l) =>
+      l.map((p) =>
+        p.uid === uid ? { ...p, fotosRef: [...p.fotosRef, ...novas] } : p
+      )
+    );
+  }
+
+  function removerFotoRef(uid: string, idx: number) {
+    setPontos((l) =>
+      l.map((p) =>
+        p.uid === uid
+          ? { ...p, fotosRef: p.fotosRef.filter((_, i) => i !== idx) }
+          : p
+      )
+    );
   }
 
   function removerPonto(uid: string) {
@@ -151,6 +173,7 @@ export default function CriarVistoria({
       return;
     }
     setSalvando(true);
+    setFase("criando");
     try {
       const payloadPontos = pontos.map((p) => ({
         nome: p.nome.trim() || "Ponto",
@@ -174,12 +197,41 @@ export default function CriarVistoria({
       const id = (row as { vistoria_id?: string } | null)?.vistoria_id;
       if (!token || !id) throw new Error("Não foi possível gerar o link.");
 
+      // Sobe as fotos de referência (se houver). Os pontos foram inseridos na
+      // ordem do array; recupero os ids reais e caso por ordem.
+      const temFotos = pontos.some((p) => p.fotosRef.length > 0);
+      if (temFotos) {
+        setFase("fotos");
+        const { data: det } = await supabase.rpc("fdl_obter_vistoria_gestao", {
+          p_id: id,
+        });
+        const pontosSalvos = ((det as { pontos?: Array<{ id: string; ordem: number }> })
+          ?.pontos ?? []).slice().sort((a, b) => a.ordem - b.ordem);
+
+        for (let i = 0; i < pontos.length; i++) {
+          const pontoId = pontosSalvos[i]?.id;
+          if (!pontoId) continue;
+          for (const file of pontos[i].fotosRef) {
+            const form = new FormData();
+            form.append("token", token);
+            form.append("pontoId", pontoId);
+            form.append("categoria", "referencia");
+            form.append("file", file);
+            await fetch("/api/vistoria/anexos/upload", {
+              method: "POST",
+              body: form,
+            });
+          }
+        }
+      }
+
       setCriada({ token, id });
       onCriada?.();
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Não foi possível criar a vistoria.");
     } finally {
       setSalvando(false);
+      setFase(null);
     }
   }
 
@@ -379,6 +431,8 @@ export default function CriarVistoria({
                 onAdicionarItem={(label) => adicionarItem(p.uid, label)}
                 onRestaurar={() => restaurarChecklist(p.uid, p.tipo)}
                 onRemover={() => removerPonto(p.uid)}
+                onAdicionarFotoRef={(files) => adicionarFotoRef(p.uid, files)}
+                onRemoverFotoRef={(idx) => removerFotoRef(p.uid, idx)}
               />
             ))}
           </div>
@@ -392,7 +446,11 @@ export default function CriarVistoria({
           disabled={salvando}
           className="fdl-ui-btn fdl-ui-btn-primary flex-1"
         >
-          {salvando ? "Gerando link…" : "Criar vistoria e gerar link"}
+          {salvando
+            ? fase === "fotos"
+              ? "Enviando fotos de referência…"
+              : "Gerando link…"
+            : "Criar vistoria e gerar link"}
         </button>
       </div>
     </div>
@@ -408,6 +466,8 @@ function PontoEditor({
   onAdicionarItem,
   onRestaurar,
   onRemover,
+  onAdicionarFotoRef,
+  onRemoverFotoRef,
 }: {
   indice: number;
   ponto: PontoRascunho;
@@ -417,6 +477,8 @@ function PontoEditor({
   onAdicionarItem: (label: string) => void;
   onRestaurar: () => void;
   onRemover: () => void;
+  onAdicionarFotoRef: (files: FileList | null) => void;
+  onRemoverFotoRef: (idx: number) => void;
 }) {
   const [novoItem, setNovoItem] = useState("");
 
@@ -526,6 +588,56 @@ function PontoEditor({
             Adicionar
           </button>
         </div>
+      </div>
+
+      {/* Fotos de referência (onde instalar) — anexadas pela gestão */}
+      <div className="mt-3 rounded-xl border border-white/10 bg-black/10 p-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-white/70">
+            Fotos de referência ({ponto.fotosRef.length})
+          </p>
+          <span className="text-[11px] text-white/40">onde instalar</span>
+        </div>
+
+        {ponto.fotosRef.length > 0 ? (
+          <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {ponto.fotosRef.map((file, idx) => (
+              <div
+                key={`${file.name}-${idx}`}
+                className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="Referência"
+                  className="h-20 w-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => onRemoverFotoRef(idx)}
+                  aria-label="Remover foto"
+                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-xs text-white"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        <label className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-ghost mt-2 w-full cursor-pointer">
+          Anexar fotos de referência
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              onAdicionarFotoRef(e.target.files);
+              e.target.value = "";
+            }}
+          />
+        </label>
       </div>
     </div>
   );

@@ -31,6 +31,10 @@ export async function POST(request: Request) {
 
     const token = String(form.get("token") ?? "").trim();
     const pontoId = String(form.get("pontoId") ?? "").trim();
+    const categoria =
+      String(form.get("categoria") ?? "").trim() === "referencia"
+        ? "referencia"
+        : "in_loco";
     const file = form.get("file");
 
     if (!token || !pontoId) {
@@ -96,10 +100,13 @@ export async function POST(request: Request) {
       `Vistoria ${contexto.vistoria_id.slice(0, 8)}`
     );
 
+    const pastaCategoria = categoria === "referencia" ? "Referencia" : "In loco";
+
     const temporadaFolderId = await ensureFolder(accessToken, rootFolderId, temporada);
     const projetoFolderId = await ensureFolder(accessToken, temporadaFolderId, nomeProjeto);
     const raizId = await ensureFolder(accessToken, projetoFolderId, "05 - Vistorias Técnicas");
     const vistoriaFolderId = await ensureFolder(accessToken, raizId, nomeVistoria);
+    const categoriaFolderId = await ensureFolder(accessToken, vistoriaFolderId, pastaCategoria);
 
     const originalName = sanitizeFolderName(file.name || "foto");
     const fileName = `${Date.now()} - ${originalName}`;
@@ -107,7 +114,7 @@ export async function POST(request: Request) {
 
     const driveFile = await uploadFileToDrive({
       accessToken,
-      folderId: vistoriaFolderId,
+      folderId: categoriaFolderId,
       fileName,
       mimeType: file.type || "image/jpeg",
       buffer,
@@ -118,6 +125,7 @@ export async function POST(request: Request) {
       nomeProjeto,
       "05 - Vistorias Técnicas",
       nomeVistoria,
+      pastaCategoria,
       fileName,
     ].join("/");
 
@@ -135,6 +143,7 @@ export async function POST(request: Request) {
         p_external_folder_id: vistoriaFolderId,
         p_url_visualizacao: driveFile.webViewLink ?? "",
         p_caminho_arquivo: caminhoArquivo,
+        p_categoria: categoria,
       }
     );
 

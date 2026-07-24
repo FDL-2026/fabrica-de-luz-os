@@ -5,7 +5,7 @@
 
 import { nomeTipo, type CampoVT, type ItemVT } from "./templates";
 
-type Foto = { external_file_id: string | null };
+type Foto = { external_file_id: string | null; categoria?: string | null };
 
 type Ponto = {
   nome: string;
@@ -98,14 +98,33 @@ function renderPonto(
     .map(renderItem)
     .join("");
 
-  const fotos = (p.fotos ?? [])
-    .map((f) => (f.external_file_id ? fotoSrc(f.external_file_id) : null))
-    .filter((src): src is string => Boolean(src))
-    .map(
-      (src) =>
-        `<img src="${src}" alt="Foto do ponto" style="width:180px;height:135px;object-fit:cover;border:1px solid ${COR_LINHA};margin:0 6px 6px 0;border-radius:4px;" />`
-    )
-    .join("");
+  const galeria = (lista: Foto[], titulo: string): string => {
+    const imgs = lista
+      .map((f) => (f.external_file_id ? fotoSrc(f.external_file_id) : null))
+      .filter((src): src is string => Boolean(src))
+      .map(
+        (src) =>
+          `<img src="${src}" alt="${esc(
+            titulo
+          )}" style="width:180px;height:135px;object-fit:cover;border:1px solid ${COR_LINHA};margin:0 6px 6px 0;border-radius:4px;" />`
+      )
+      .join("");
+    if (!imgs) return "";
+    return `<p style="margin:8px 0 2px;font-size:12px;font-weight:bold;color:${COR_ROXO};">${esc(
+      titulo
+    )}</p><div>${imgs}</div>`;
+  };
+
+  const todas = p.fotos ?? [];
+  const fotos =
+    galeria(
+      todas.filter((f) => f.categoria === "referencia"),
+      "Referência — onde instalar"
+    ) +
+    galeria(
+      todas.filter((f) => f.categoria !== "referencia"),
+      "Registros in loco"
+    );
 
   return `<div style="margin-top:22px;page-break-inside:avoid;">
     <h3 style="margin:0 0 2px;color:${COR_ROXO};font-size:15px;">${esc(

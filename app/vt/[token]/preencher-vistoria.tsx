@@ -11,13 +11,16 @@ import {
   type ItemVT,
 } from "@/lib/vistoria/templates";
 
+type FotoToken = { external_file_id: string | null; categoria?: string | null };
+
 type PontoEstado = {
   id: string;
   nome: string;
   tipo: string;
   itens: ItemVT[];
   anotacoes: string;
-  fotos: string[];
+  fotosRef: string[]; // referência (onde instalar) — só leitura
+  fotos: string[]; // registros in loco feitos pelo responsável
 };
 
 type VistoriaToken = {
@@ -36,7 +39,7 @@ type VistoriaToken = {
     tipo: string;
     itens: ItemVT[] | null;
     anotacoes: string | null;
-    fotos: string[] | null;
+    fotos: FotoToken[] | null;
   }>;
 };
 
@@ -88,14 +91,22 @@ export default function PreencherVistoria({
     vistoria.preenchido_por_nome ?? ""
   );
   const [pontos, setPontos] = useState<PontoEstado[]>(
-    vistoria.pontos.map((p) => ({
-      id: p.id,
-      nome: p.nome,
-      tipo: p.tipo,
-      itens: (p.itens ?? []) as ItemVT[],
-      anotacoes: p.anotacoes ?? "",
-      fotos: (p.fotos ?? []).filter(Boolean) as string[],
-    }))
+    vistoria.pontos.map((p) => {
+      const fotos = (p.fotos ?? []).filter((f) => f && f.external_file_id);
+      return {
+        id: p.id,
+        nome: p.nome,
+        tipo: p.tipo,
+        itens: (p.itens ?? []) as ItemVT[],
+        anotacoes: p.anotacoes ?? "",
+        fotosRef: fotos
+          .filter((f) => f.categoria === "referencia")
+          .map((f) => f.external_file_id as string),
+        fotos: fotos
+          .filter((f) => f.categoria !== "referencia")
+          .map((f) => f.external_file_id as string),
+      };
+    })
   );
 
   const [enviando, setEnviando] = useState<string | null>(null);
@@ -168,6 +179,7 @@ export default function PreencherVistoria({
       const form = new FormData();
       form.append("token", token);
       form.append("pontoId", pontoId);
+      form.append("categoria", "in_loco");
       form.append("file", carimbada);
       const r = await fetch("/api/vistoria/anexos/upload", {
         method: "POST",
@@ -425,11 +437,41 @@ export default function PreencherVistoria({
               />
             </Campo>
 
-            {/* Fotos */}
+            {/* Fotos de referência (onde instalar) — enviadas pela gestão */}
+            {p.fotosRef.length > 0 ? (
+              <div className="rounded-xl border border-[var(--fdl-cream)]/25 bg-[var(--fdl-cream)]/[0.06] p-3">
+                <p className="text-xs font-semibold text-[var(--fdl-cream)]">
+                  Referência — onde instalar
+                </p>
+                <p className="mt-0.5 text-[11px] text-white/50">
+                  Fotos enviadas pela equipe para orientar a vistoria.
+                </p>
+                <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {p.fotosRef.map((fileId) => (
+                    <button
+                      key={fileId}
+                      type="button"
+                      onClick={() => setLightbox(urlFoto(fileId))}
+                      className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={urlFoto(fileId, true)}
+                        alt="Foto de referência"
+                        loading="lazy"
+                        className="h-20 w-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {/* Registros in loco (feitos pelo responsável, geo-carimbados) */}
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold text-white">
-                  Fotos do ponto
+                  Registros in loco
                 </p>
                 <span className="text-xs text-white/40">
                   {p.fotos.length} foto(s)

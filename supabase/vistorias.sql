@@ -56,6 +56,7 @@ create table if not exists public.vistoria_anexos (
   vistoria_id        uuid not null references public.vistorias(id) on delete cascade,
   ponto_id           uuid references public.vistoria_pontos(id) on delete cascade,
   tipo               text not null default 'foto',
+  categoria          text not null default 'in_loco', -- 'referencia' | 'in_loco'
   nome_arquivo       text,
   mime_type          text,
   tamanho_bytes      bigint,
@@ -66,6 +67,10 @@ create table if not exists public.vistoria_anexos (
   caminho_arquivo    text,
   criado_em          timestamptz not null default now()
 );
+
+-- Para bancos já criados antes desta coluna:
+alter table public.vistoria_anexos
+  add column if not exists categoria text not null default 'in_loco';
 
 create index if not exists vistoria_anexos_idx       on public.vistoria_anexos (vistoria_id);
 create index if not exists vistoria_anexos_ponto_idx on public.vistoria_anexos (ponto_id);
@@ -302,6 +307,7 @@ begin
                'fotos', coalesce((
                  select jsonb_agg(jsonb_build_object(
                           'id', a.id, 'external_file_id', a.external_file_id,
+                          'categoria', a.categoria,
                           'criado_em', a.criado_em) order by a.criado_em)
                  from public.vistoria_anexos a
                  where a.ponto_id = vp.id and a.external_file_id is not null), '[]'::jsonb)
@@ -391,7 +397,9 @@ begin
                'id', vp.id, 'nome', vp.nome, 'tipo', vp.tipo,
                'ordem', vp.ordem, 'itens', vp.itens, 'anotacoes', vp.anotacoes,
                'fotos', coalesce((
-                 select jsonb_agg(a.external_file_id order by a.criado_em)
+                 select jsonb_agg(jsonb_build_object(
+                          'external_file_id', a.external_file_id,
+                          'categoria', a.categoria) order by a.criado_em)
                  from public.vistoria_anexos a
                  where a.ponto_id = vp.id and a.external_file_id is not null), '[]'::jsonb)
              ) order by vp.ordem)
@@ -524,6 +532,10 @@ grant execute on function public.fdl_contexto_vistoria_token(text, uuid) to anon
 -- ----------------------------------------------------------------------------
 -- PÚBLICO (token) — registra o anexo (foto) de um ponto
 -- ----------------------------------------------------------------------------
+-- Assinatura anterior (sem categoria) — removida para recriar com p_categoria.
+drop function if exists public.fdl_registrar_anexo_vistoria_token(
+  text, uuid, text, text, text, bigint, text, text, text, text, text);
+
 create or replace function public.fdl_registrar_anexo_vistoria_token(
   p_token              text,
   p_ponto_id           uuid,
@@ -535,7 +547,8 @@ create or replace function public.fdl_registrar_anexo_vistoria_token(
   p_external_file_id   text,
   p_external_folder_id text,
   p_url_visualizacao   text,
-  p_caminho_arquivo    text
+  p_caminho_arquivo    text,
+  p_categoria          text default 'in_loco'
 )
 returns table (anexo_id uuid)
 language plpgsql
@@ -556,10 +569,11 @@ begin
   end if;
 
   insert into public.vistoria_anexos (
-    vistoria_id, ponto_id, tipo, nome_arquivo, mime_type, tamanho_bytes,
+    vistoria_id, ponto_id, tipo, categoria, nome_arquivo, mime_type, tamanho_bytes,
     provider, external_file_id, external_folder_id, url_visualizacao, caminho_arquivo
   ) values (
     v_id, p_ponto_id, coalesce(nullif(trim(p_tipo), ''), 'foto'),
+    case when nullif(trim(p_categoria), '') = 'referencia' then 'referencia' else 'in_loco' end,
     p_nome_arquivo, p_mime_type, p_tamanho_bytes,
     coalesce(nullif(trim(p_provider), ''), 'google_drive'),
     p_external_file_id, p_external_folder_id, p_url_visualizacao, p_caminho_arquivo
@@ -570,8 +584,8 @@ begin
 end;
 $$;
 
-revoke all on function public.fdl_registrar_anexo_vistoria_token(text, uuid, text, text, text, bigint, text, text, text, text, text) from public;
-grant execute on function public.fdl_registrar_anexo_vistoria_token(text, uuid, text, text, text, bigint, text, text, text, text, text) to anon, authenticated;
+revoke all on function public.fdl_registrar_anexo_vistoria_token(text, uuid, text, text, text, bigint, text, text, text, text, text, text) from public;
+grant execute on function public.fdl_registrar_anexo_vistoria_token(text, uuid, text, text, text, bigint, text, text, text, text, text, text) to anon, authenticated;
 
 -- ----------------------------------------------------------------------------
 -- PÚBLICO — autorização do proxy de foto (link de preenchimento)
