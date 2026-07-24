@@ -252,6 +252,8 @@ export default function DashboardClient({
   const [dados, setDados] = useState<DashboardData>(emptyDashboard);
   const [chamadosPendentes, setChamadosPendentes] = useState(0);
   const [manutencoesRecentes, setManutencoesRecentes] = useState(0);
+  const [vistoriasConcluidas, setVistoriasConcluidas] = useState(0);
+  const [vistoriasAguardando, setVistoriasAguardando] = useState(0);
   const [progressosPonderados, setProgressosPonderados] = useState<
     Record<string, ProgressoPonderadoProjetoDashboard>
   >({});
@@ -451,6 +453,30 @@ export default function DashboardClient({
     };
   }, [supabase, somenteLeitura]);
 
+  // Vistorias técnicas: concluídas nos últimos 7 dias (aviso) e aguardando.
+  useEffect(() => {
+    if (somenteLeitura) {
+      setVistoriasConcluidas(0);
+      setVistoriasAguardando(0);
+      return;
+    }
+    let ativo = true;
+    supabase.rpc("fdl_resumo_vistorias_gestao").then(({ data }) => {
+      if (!ativo) return;
+      const row = Array.isArray(data) ? data[0] : data;
+      setVistoriasConcluidas(
+        Number((row as { concluidas_recentes?: number } | null)
+          ?.concluidas_recentes ?? 0)
+      );
+      setVistoriasAguardando(
+        Number((row as { aguardando?: number } | null)?.aguardando ?? 0)
+      );
+    });
+    return () => {
+      ativo = false;
+    };
+  }, [supabase, somenteLeitura]);
+
   function limparFiltros() {
     setGestorSelecionado("");
     setProjetoSelecionado("");
@@ -636,6 +662,29 @@ export default function DashboardClient({
             className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary shrink-0"
           >
             Ver manutenções
+          </Link>
+        </div>
+      ) : null}
+
+      {!somenteLeitura && (vistoriasConcluidas > 0 || vistoriasAguardando > 0) ? (
+        <div className="flex flex-col gap-4 rounded-3xl border border-[var(--fdl-cream)]/25 bg-[var(--fdl-cream)]/[0.08] p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-bold text-[var(--fdl-cream)]">
+              {vistoriasConcluidas > 0
+                ? `${vistoriasConcluidas} vistoria(s) técnica(s) concluída(s) nos últimos 7 dias`
+                : `${vistoriasAguardando} vistoria(s) técnica(s) aguardando preenchimento`}
+            </p>
+            <p className="mt-0.5 text-xs text-white/60">
+              {vistoriasConcluidas > 0 && vistoriasAguardando > 0
+                ? `${vistoriasAguardando} ainda aguardando preenchimento no local.`
+                : "Relatórios de V.T. pré-montados e preenchidos pelo responsável."}
+            </p>
+          </div>
+          <Link
+            href="/vistorias"
+            className="fdl-ui-btn fdl-ui-btn-sm fdl-ui-btn-secondary shrink-0"
+          >
+            Ver vistorias
           </Link>
         </div>
       ) : null}
