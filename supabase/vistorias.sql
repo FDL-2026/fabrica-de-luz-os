@@ -141,9 +141,19 @@ revoke all on public.vistorias, public.vistoria_locais, public.vistoria_pontos,
 -- p_titulo é opcional: se vazio, é derivado do projeto.
 -- (p_endereco mantido por compatibilidade de assinatura; não é mais usado.)
 -- ----------------------------------------------------------------------------
--- Assinatura anterior usava p_pontos; renomeamos para p_locais, então é
--- preciso dropar antes (o CREATE OR REPLACE não renomeia parâmetros).
-drop function if exists public.fdl_criar_vistoria(uuid, text, text, text, date, jsonb);
+-- Assinatura anterior usava p_pontos; renomeamos para p_locais. Como o
+-- CREATE OR REPLACE não renomeia parâmetros, removemos QUALQUER versão
+-- existente da função (independente da assinatura) antes de recriar.
+do $$
+declare r record;
+begin
+  for r in
+    select oid::regprocedure as sig from pg_proc
+    where proname = 'fdl_criar_vistoria' and pronamespace = 'public'::regnamespace
+  loop
+    execute 'drop function ' || r.sig;
+  end loop;
+end $$;
 
 create or replace function public.fdl_criar_vistoria(
   p_projeto_id    uuid,
@@ -524,8 +534,17 @@ grant execute on function public.fdl_obter_vistoria_token(text) to anon, authent
 -- PÚBLICO (token) — salva o preenchimento (rascunho) ou conclui.
 -- p_pontos: jsonb array [{ "id": uuid, "itens": jsonb, "anotacoes": text }]
 -- ----------------------------------------------------------------------------
--- Assinatura anterior (sem acompanhante) — removida para recriar.
-drop function if exists public.fdl_salvar_vistoria_token(text, jsonb, text, jsonb, boolean);
+-- Assinatura anterior (sem acompanhante) — remove qualquer versão antes de recriar.
+do $$
+declare r record;
+begin
+  for r in
+    select oid::regprocedure as sig from pg_proc
+    where proname = 'fdl_salvar_vistoria_token' and pronamespace = 'public'::regnamespace
+  loop
+    execute 'drop function ' || r.sig;
+  end loop;
+end $$;
 
 create or replace function public.fdl_salvar_vistoria_token(
   p_token             text,
@@ -644,9 +663,17 @@ grant execute on function public.fdl_contexto_vistoria_token(text, uuid) to anon
 -- ----------------------------------------------------------------------------
 -- PÚBLICO (token) — registra o anexo (foto) de um ponto
 -- ----------------------------------------------------------------------------
--- Assinatura anterior (sem categoria) — removida para recriar com p_categoria.
-drop function if exists public.fdl_registrar_anexo_vistoria_token(
-  text, uuid, text, text, text, bigint, text, text, text, text, text);
+-- Assinatura anterior (sem categoria) — remove qualquer versão antes de recriar.
+do $$
+declare r record;
+begin
+  for r in
+    select oid::regprocedure as sig from pg_proc
+    where proname = 'fdl_registrar_anexo_vistoria_token' and pronamespace = 'public'::regnamespace
+  loop
+    execute 'drop function ' || r.sig;
+  end loop;
+end $$;
 
 create or replace function public.fdl_registrar_anexo_vistoria_token(
   p_token              text,
